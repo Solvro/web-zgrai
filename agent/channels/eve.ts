@@ -1,18 +1,22 @@
-import { type AuthFn, localDev } from "eve/channels/auth";
+import { type AuthFn, extractBearerToken, localDev } from "eve/channels/auth";
 import { eveChannel } from "eve/channels/eve";
-import { auth } from "@/lib/auth";
+import { isMasterInternalToken } from "@/lib/master/internal-auth";
 
-const appSession: AuthFn<Request> = async (request) => {
-  const result = await auth.api.getSession({ headers: request.headers });
-  if (!result) return null;
+// Only our own server drives the Master (src/lib/master/session.ts). The
+// dashboard reads the space from the database, not from eve.
+const appServer: AuthFn<Request> = async (request) => {
+  const token = extractBearerToken(request.headers.get("authorization"));
+  if (!isMasterInternalToken(token)) return null;
   return {
-    authenticator: "better-auth",
-    principalId: result.user.id,
-    principalType: "user",
+    authenticator: "grokownik-server",
+    principalId: "grokownik-server",
+    principalType: "service",
     attributes: {},
   };
 };
 
+// localDev() accepts every same-machine caller, which includes an ngrok tunnel,
+// so it is opt-in for working on the agent in the eve terminal UI.
 export default eveChannel({
-  auth: [appSession, localDev()],
+  auth: process.env.EVE_ALLOW_LOCAL_DEV === "1" ? [appServer, localDev()] : [appServer],
 });
