@@ -79,21 +79,6 @@ export async function completeWakes(ids: number[]) {
     .where(inArray(masterWake.id, ids));
 }
 
-// Questions whose deadline hasn't passed yet, for the Master's snapshot.
-export async function pendingDeadlines(spaceId: string) {
-  return db
-    .select({ questionId: masterWake.refMessageId, dueAt: masterWake.dueAt })
-    .from(masterWake)
-    .where(
-      and(
-        eq(masterWake.spaceId, spaceId),
-        eq(masterWake.kind, "deadline"),
-        isNull(masterWake.doneAt),
-      ),
-    )
-    .orderBy(asc(masterWake.dueAt));
-}
-
 // Stops pending wakes, e.g. once the space is closed.
 export async function cancelWakes(spaceId: string) {
   await db

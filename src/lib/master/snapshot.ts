@@ -1,10 +1,12 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { message, participant, proposalVote } from "@/db/schema";
+import { message } from "@/db/schema";
 import { getBoard, getMasterContext } from "@/lib/spaces/master";
 import { finalPlanApproval } from "./final-plan";
 import { getPlan } from "./plan";
-import { activeCheck, pendingDeadlines } from "./wake";
+import { getQuestionStatuses } from "./questions";
+import { getProposalDetails } from "./votes";
+import { activeCheck, pendingReminders } from "./wake";
 
 const RECENT_MESSAGES = 30;
 const RECENT_PROPOSALS = 10;
@@ -28,43 +30,56 @@ async function recentWindowStart(spaceId: string) {
   return oldest ? oldest - 1 : 0;
 }
 
+function ids(people: { participant_id: string }[]) {
+  return people.map((p) => p.participant_id).join(",");
+}
+
 async function proposalsBlock(spaceId: string) {
-  const proposals = await db
-    .select()
-    .from(message)
-    .where(and(eq(message.spaceId, spaceId), eq(message.kind, "proposal")))
-    .orderBy(desc(message.id))
-    .limit(RECENT_PROPOSALS);
+  const proposals = await getProposalDetails(spaceId, {
+    limit: RECENT_PROPOSALS,
+  });
   if (proposals.length === 0) return "<proposals/>";
-  const votes = await db
-    .select({
-      proposalId: proposalVote.proposalMessageId,
-      choice: proposalVote.choice,
-      comment: proposalVote.comment,
-      participantId: participant.id,
-      represents: participant.represents,
-    })
-    .from(proposalVote)
-    .innerJoin(participant, eq(participant.id, proposalVote.participantId))
-    .where(
-      inArray(
-        proposalVote.proposalMessageId,
-        proposals.map((p) => p.id),
-      ),
-    );
-  const lines = proposals.reverse().map((p) => {
-    const mine = votes.filter((v) => v.proposalId === p.id);
-    const tally = { yes: 0, no: 0, abstain: 0 };
-    for (const v of mine) tally[v.choice] += 1;
-    const voters = mine
+  const lines = proposals.map((p) => {
+    const attrs = [
+      `id="${p.proposal_id}"`,
+      `outcome="${p.outcome}"`,
+      `yes="${p.tally.yes}" no="${p.tally.no}" abstain="${p.tally.abstain}"`,
+      p.not_voted.length ? `not_voted="${ids(p.not_voted)}"` : null,
+      p.subproblem_id ? `subproblem="${p.subproblem_id}"` : null,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const voters = p.votes
       .map(
         (v) =>
-          `    <vote from="participant:${v.participantId}" represents="${esc(v.represents)}" choice="${v.choice}">${esc(v.comment ?? "")}</vote>`,
+          `    <vote from="participant:${v.participant_id}" represents="${esc(v.represents)}" choice="${v.choice}">${esc(v.comment ?? "")}</vote>`,
       )
       .join("\n");
-    return `  <proposal id="${p.id}" yes="${tally.yes}" no="${tally.no}" abstain="${tally.abstain}">\n    ${esc(p.content)}\n${voters}\n  </proposal>`;
+    return `  <proposal ${attrs}>\n    ${esc(p.content)}\n${voters}\n  </proposal>`;
   });
   return `<proposals>\n${lines.join("\n")}\n</proposals>`;
+}
+
+async function openQuestionsBlock(spaceId: string) {
+  const waiting = (await getQuestionStatuses(spaceId, { limit: 30 })).filter(
+    (q) => q.waiting,
+  );
+  if (waiting.length === 0) return "<open_questions/>";
+  const lines = waiting.map(
+    (q) =>
+      `  <question id="${q.question_id}" due="${q.deadline}" missing="${ids(q.missing)}">${esc(q.question)}</question>`,
+  );
+  return `<open_questions>\n${lines.join("\n")}\n</open_questions>`;
+}
+
+async function remindersBlock(spaceId: string) {
+  const reminders = await pendingReminders(spaceId);
+  if (reminders.length === 0) return "<reminders/>";
+  const lines = reminders.map(
+    (r) =>
+      `  <reminder id="${r.id}" due="${r.dueAt.toISOString()}">${esc(r.note ?? "")}</reminder>`,
+  );
+  return `<reminders>\n${lines.join("\n")}\n</reminders>`;
 }
 
 // Everything the Master needs to know about the space, read fresh from the
@@ -96,12 +111,11 @@ export async function buildMasterSnapshot(spaceId: string, now: Date) {
     ? `<final_plan proposal_id="${approval.proposal.id}" approved_by="${people(approval.approvedBy)}" waiting_for="${people(approval.waitingFor)}" not_approving="${people(approval.notApproving)}"/>`
     : "<final_plan/>";
   const board = await getBoard(spaceId);
-  const deadlines = await pendingDeadlines(spaceId);
 
   const participants = context.participants
     .map(
       (p) =>
-        `  <participant id="participant:${p.participant_id}" represents="${esc(p.represents)}" role="${p.role}" harness="${esc(p.harness ?? "unknown")}"/>`,
+        `  <participant id="participant:${p.participant_id}" represents="${esc(p.represents)}" role="${p.role}" harness="${esc(p.harness ?? "unknown")}" last_seen="${p.last_seen_at.toISOString()}"/>`,
     )
     .join("\n");
   const subproblems = plan.subproblems
@@ -119,12 +133,6 @@ export async function buildMasterSnapshot(spaceId: string, now: Date) {
     .map(
       (item) =>
         `  <pin id="${item.id}" title="${esc(item.title ?? "")}">${esc(item.content)}</pin>`,
-    )
-    .join("\n");
-  const pending = deadlines
-    .map(
-      (d) =>
-        `  <deadline question_id="${d.questionId}" due="${d.dueAt.toISOString()}"/>`,
     )
     .join("\n");
 
@@ -147,7 +155,8 @@ export async function buildMasterSnapshot(spaceId: string, now: Date) {
     `<notes>${esc(notes?.content ?? "")}</notes>`,
     `<pins>\n${pins}\n</pins>`,
     await proposalsBlock(spaceId),
-    `<open_questions>\n${pending}\n</open_questions>`,
+    await openQuestionsBlock(spaceId),
+    await remindersBlock(spaceId),
     `<boxes>\n${context.boxes}\n</boxes>`,
     `<recent_messages>\n${context.transcript}\n</recent_messages>`,
     "</space>",
