@@ -100,7 +100,10 @@ async function SessionLink({ params }: PageProps<"/s/[code]">) {
 function Centered({ children }: { children: React.ReactNode }) {
   return (
     <main className="relative z-10 flex flex-1 items-center justify-center px-4 pt-4 pb-20 sm:px-6">
-      <div className="flex w-full max-w-[600px] flex-col items-center gap-[22px] text-center">
+      <div
+        data-jelly-clear
+        className="flex w-full max-w-[600px] flex-col items-center gap-[22px] text-center"
+      >
         {children}
       </div>
     </main>

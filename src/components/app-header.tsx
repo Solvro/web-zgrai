@@ -39,7 +39,10 @@ export function AppHeader({
 // The header of the entry screens (sign in, start): a bigger wordmark.
 export function EntryHeader({ user }: { user?: AccountUser }) {
   return (
-    <header className="relative z-10 flex items-center justify-between gap-4 px-4 py-5 sm:px-7">
+    <header
+      data-jelly-clear
+      className="relative z-10 flex items-center justify-between gap-4 px-4 py-5 sm:px-7"
+    >
       <Wordmark size="lg" href={user ? "/spaces" : undefined} />
       {user && <AccountMenu user={user} />}
     </header>

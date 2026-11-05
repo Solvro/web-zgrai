@@ -9,3 +9,5 @@ next-env.d.ts
 *.mdx
 design
 .claude
+public/vendor
+public/jelly

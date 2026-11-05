@@ -17,6 +17,9 @@ const eslintConfig = defineConfig([
     ".eve/**",
     ".output/**",
     ".claude/**",
+    // Prebuilt browser scripts for the 3D agent bots.
+    "public/vendor/**",
+    "public/jelly/**",
   ]),
 ]);
 
