@@ -20,6 +20,18 @@ document our work, so it has to show the whole process step by step.
 - Push as often as possible, ideally right after every commit, so the rest of
   the team always works on the latest state. Several people push to `main`,
   so run `git pull --rebase` before pushing.
+
+## Branches and pull requests
+
+- Small changes (docs, notes, config, small fixes) can go straight to `main`.
+- Larger code contributions go through a pull request: a new feature, a
+  refactor touching several files, or anything the rest of the team should
+  review before it lands.
+- Name the branch `<type>/<short-description>`, e.g. `feat/space-tools`, and
+  open the PR against `main` with `gh pr create`.
+- Commit and push to the branch just as often as you would to `main`.
+- PR titles follow the Conventional Commits format above. Write PR
+  descriptions in English.
 - Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
   ```
