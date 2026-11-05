@@ -347,18 +347,25 @@ New tables in `src/db/schema`, next to the Better Auth tables:
 
 | Table           | Columns                                                                                                                                                                                                                                                  |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `space`         | `id`, `title`, `goal`, `description`, `status` (draft, open, closed), `created_by` (user), `summary`, `created_at`, `closed_at`                                                                                                                           |
+| `space`         | `id`, `title`, `goal`, `description`, `constraints` (text array), `deadline`, `status` (draft, open, closed), `created_by` (user), `summary`, `created_at`, `closed_at`                                                                                   |
+| `subproblem`    | `id`, `space_id`, `title`, `status` (open, discussing, conflict, decided), `decision`, `position`                                                                                                                                                        |
 | `space_invite`  | `id`, `space_id`, `code_hash`, `expires_at`, `max_uses`, `uses`, `revoked_at`                                                                                                                                                                            |
 | `participant`   | `id`, `space_id`, `user_id`, `represents`, `role` (initiator, member), `harness` (reported by the client), `joined_at`, `last_seen_at`, `last_read_message_id`                                                                                           |
 | `message`       | `id` (bigserial, doubles as the cursor), `space_id`, `author_participant_id` (null for the Master and system), `kind` (message, question, proposal, decision, system), `reply_to`, `visibility` (all, private), `addressed_to` (participant ids), `content`, `created_at` |
 | `box_item`      | `id`, `space_id`, `participant_id`, `topic`, `content`, `created_at`, `retracted_at`                                                                                                                                                                     |
-| `proposal_vote` | `proposal_message_id`, `participant_id`, `choice`, `comment`, `created_at`                                                                                                                                                                               |
+| `proposal_vote` | `proposal_message_id`, `participant_id`, `choice` (yes, no, abstain, or one of the proposal's options), `comment`, `created_at`                                                                                                                         |
 | `activity`      | `id` (bigserial, the dashboard cursor), `space_id`, `actor_participant_id` (null for the Master), `type` (joined, message, shared_context, retracted_context, vote, left), `ref_id` (the message, box item or vote), `visibility` (all, private), `summary`, `created_at` |
 | `board_item`    | `id`, `space_id`, `kind` (note, pin), `title`, `content`, `position`, `created_at`, `updated_at`, `removed_at`                                                                                                                                           |
 
 The monotonic `message.id` is the whole synchronisation model: every client
 remembers the last id it has seen, and `get_updates`, `wait_for_updates` and
 the event stream all return everything after it.
+
+The dashboard also needs `subproblem` (the progress list, the "now
+discussing" line and conflicts), `space.constraints`, and proposals with more
+than two options (e.g. three places to stay). A question or proposal that
+belongs to a subproblem points to it, so the Master moves it to `discussing`,
+`conflict` or `decided`.
 
 The dashboard works the same way with `activity.id`: every bubble in the
 live chat is one `activity` row, and the browser follows new rows and
