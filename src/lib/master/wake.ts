@@ -101,3 +101,77 @@ export async function cancelWakes(spaceId: string) {
     .set({ doneAt: new Date() })
     .where(and(eq(masterWake.spaceId, spaceId), isNull(masterWake.doneAt)));
 }
+
+// Self-scheduled check-ins: the Master asks to be woken every few minutes to
+// review the criteria and stages, even when nobody writes. One per space.
+export const CHECK_MIN_MINUTES = 5;
+export const CHECK_MAX_MINUTES = 60;
+
+export async function cancelChecks(spaceId: string) {
+  await db
+    .update(masterWake)
+    .set({ doneAt: new Date() })
+    .where(
+      and(
+        eq(masterWake.spaceId, spaceId),
+        eq(masterWake.kind, "check"),
+        isNull(masterWake.doneAt),
+      ),
+    );
+}
+
+// Replaces the space's active check.
+export async function scheduleCheck(
+  spaceId: string,
+  everyMinutes: number,
+  reason: string,
+) {
+  await cancelChecks(spaceId);
+  return queueCheck(spaceId, everyMinutes, reason);
+}
+
+async function queueCheck(spaceId: string, everyMinutes: number, reason: string) {
+  const dueAt = new Date(Date.now() + everyMinutes * 60_000);
+  await db
+    .insert(masterWake)
+    .values({
+      spaceId,
+      kind: "check",
+      dueAt,
+      intervalMinutes: everyMinutes,
+      reason,
+    })
+    .onConflictDoNothing();
+  return dueAt;
+}
+
+// After a check fired: queue the next one, unless cancel_check or a new
+// schedule_check replaced it while the turn ran.
+export async function repeatCheck(wake: MasterWake) {
+  if (wake.kind !== "check" || !wake.intervalMinutes) return;
+  const [current] = await db
+    .select({ doneAt: masterWake.doneAt })
+    .from(masterWake)
+    .where(eq(masterWake.id, wake.id));
+  if (current?.doneAt) return;
+  await completeWakes([wake.id]);
+  await queueCheck(wake.spaceId, wake.intervalMinutes, wake.reason ?? "");
+}
+
+export async function activeCheck(spaceId: string) {
+  const [row] = await db
+    .select({
+      everyMinutes: masterWake.intervalMinutes,
+      reason: masterWake.reason,
+      dueAt: masterWake.dueAt,
+    })
+    .from(masterWake)
+    .where(
+      and(
+        eq(masterWake.spaceId, spaceId),
+        eq(masterWake.kind, "check"),
+        isNull(masterWake.doneAt),
+      ),
+    );
+  return row ?? null;
+}
