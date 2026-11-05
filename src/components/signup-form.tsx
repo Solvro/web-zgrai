@@ -1,10 +1,10 @@
 "use client"
 
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { QueryLink } from "@/components/query-link"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -25,9 +25,8 @@ import { Spinner } from "@/components/ui/spinner"
 import { signUp } from "@/lib/auth-client"
 
 export function SignupForm({
-  query = "",
   ...props
-}: React.ComponentProps<typeof Card> & { query?: string }) {
+}: React.ComponentProps<typeof Card>) {
   const router = useRouter()
   const [pending, setPending] = useState(false)
   const [passwordMismatch, setPasswordMismatch] = useState(false)
@@ -139,7 +138,7 @@ export function SignupForm({
                 </Button>
                 <FieldDescription className="px-6 text-center">
                   Already have an account?{" "}
-                  <Link href={`/login${query}`}>Sign in</Link>
+                  <QueryLink href="/login">Sign in</QueryLink>
                 </FieldDescription>
               </Field>
             </FieldGroup>

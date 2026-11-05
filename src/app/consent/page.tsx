@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -9,13 +10,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { auth } from "@/lib/auth";
-import { firstParam, toQueryString } from "@/lib/search-params";
+import {
+  firstParam,
+  toQueryString,
+  type SearchParams,
+} from "@/lib/search-params";
 import { ConsentActions } from "./consent-actions";
 
-export default async function ConsentPage({
+export default function ConsentPage({ searchParams }: PageProps<"/consent">) {
+  return (
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <Card className="w-full max-w-sm">
+        <Suspense fallback={<ConsentSkeleton />}>
+          <ConsentContent searchParams={searchParams} />
+        </Suspense>
+      </Card>
+    </div>
+  );
+}
+
+async function ConsentContent({
   searchParams,
-}: PageProps<"/consent">) {
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const params = await searchParams;
   const requestHeaders = await headers();
 
@@ -35,27 +55,39 @@ export default async function ConsentPage({
   const clientName = client?.client_name ?? clientId;
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Authorize {clientName}</CardTitle>
-          <CardDescription>
-            {clientName} wants to access your account as {session.user.email}.
-          </CardDescription>
-        </CardHeader>
-        {scopes.length > 0 && (
-          <CardContent className="flex flex-wrap gap-2">
-            {scopes.map((scope) => (
-              <Badge key={scope} variant="secondary">
-                {scope}
-              </Badge>
-            ))}
-          </CardContent>
-        )}
-        <CardFooter>
-          <ConsentActions />
-        </CardFooter>
-      </Card>
-    </div>
+    <>
+      <CardHeader>
+        <CardTitle>Authorize {clientName}</CardTitle>
+        <CardDescription>
+          {clientName} wants to access your account as {session.user.email}.
+        </CardDescription>
+      </CardHeader>
+      {scopes.length > 0 && (
+        <CardContent className="flex flex-wrap gap-2">
+          {scopes.map((scope) => (
+            <Badge key={scope} variant="secondary">
+              {scope}
+            </Badge>
+          ))}
+        </CardContent>
+      )}
+      <CardFooter>
+        <ConsentActions />
+      </CardFooter>
+    </>
+  );
+}
+
+function ConsentSkeleton() {
+  return (
+    <>
+      <CardHeader>
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-4 w-full" />
+      </CardHeader>
+      <CardFooter>
+        <Skeleton className="h-8 w-full" />
+      </CardFooter>
+    </>
   );
 }

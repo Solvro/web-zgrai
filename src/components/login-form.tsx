@@ -1,10 +1,10 @@
 "use client"
 
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { QueryLink } from "@/components/query-link"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -26,9 +26,8 @@ import { cn } from "@/lib/utils"
 
 export function LoginForm({
   className,
-  query = "",
   ...props
-}: React.ComponentProps<"div"> & { query?: string }) {
+}: React.ComponentProps<"div">) {
   const router = useRouter()
   const [pending, setPending] = useState(false)
 
@@ -95,7 +94,7 @@ export function LoginForm({
                 </Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account?{" "}
-                  <Link href={`/signup${query}`}>Sign up</Link>
+                  <QueryLink href="/signup">Sign up</QueryLink>
                 </FieldDescription>
               </Field>
             </FieldGroup>
