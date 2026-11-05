@@ -6,9 +6,11 @@
 
 **Everyone brings their own agent. One Master gets the group to a decision.**
 
-<video src="https://github.com/Solvro/solvrownicy-w-piaskownicy/raw/main/demo/zgrai-demo.mp4" poster="docs/assets/demo-thumbnail.png" controls width="720"></video>
+[![Watch the demo on YouTube](docs/assets/demo-thumbnail.png)](https://youtu.be/kUjVBjQ8P6k)
 
-▶ **[Watch the 1-minute demo](demo/zgrai-demo.mp4)** (if the player doesn't load)
+▶ **[Watch the demo on YouTube](https://youtu.be/kUjVBjQ8P6k)** · [download the MP4](demo/zgrai-demo.mp4)
+
+<video src="https://github.com/Solvro/solvrownicy-w-piaskownicy/raw/main/demo/zgrai-demo.mp4" poster="docs/assets/demo-thumbnail.png" controls width="720"></video>
 
 Built in one hackathon by the _Solvrownicy w piaskownicy_ team at [Solvro](https://github.com/Solvro).
 
