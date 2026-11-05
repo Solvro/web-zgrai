@@ -9,12 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useSpace } from "@/lib/dashboard/store";
+import { useDashboardState } from "@/lib/dashboard/store";
+import { InviteStep } from "./invite/invite-step";
 import { ShapingView } from "./shaping/shaping-view";
 
 // Picks the screen for the space's stage: shaping a draft, or following it.
 export function SpaceView({ id }: { id: string }) {
-  const space = useSpace(id);
+  const { spaces, viewer } = useDashboardState();
+  const space = spaces[id];
 
   if (!space) {
     return (
@@ -38,5 +40,8 @@ export function SpaceView({ id }: { id: string }) {
   }
 
   if (space.status === "draft") return <ShapingView space={space} />;
+  if (!space.inviteStepDone && viewer === "initiator") {
+    return <InviteStep space={space} />;
+  }
   return <p className="p-6 text-sm text-muted-foreground">The live view comes next.</p>;
 }
