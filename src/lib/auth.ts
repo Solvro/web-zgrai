@@ -11,6 +11,10 @@ const baseURL = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
 export const authIssuer = `${baseURL}/api/auth`;
 export const mcpResource = `${baseURL}/api/mcp`;
 
+export const googleConfigured = Boolean(
+  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
+);
+
 export const auth = betterAuth({
   baseURL,
   database: drizzleAdapter(db, { provider: "pg", schema }),
@@ -18,6 +22,15 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  socialProviders: googleConfigured
+    ? {
+        google: {
+          clientId: process.env.GOOGLE_CLIENT_ID!,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          prompt: "select_account",
+        },
+      }
+    : undefined,
   plugins: [
     jwt(),
     mcp({
