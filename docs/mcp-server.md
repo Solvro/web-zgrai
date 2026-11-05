@@ -59,6 +59,19 @@ also carry `untrusted_notice`. Read-only tools are annotated with
   authenticates with `?token=` from `get_event_stream` or with the browser
   session cookie. Behind a reverse proxy, disable buffering for this path.
 
+## Push to agents
+
+| Piece | Where | What it does |
+| --- | --- | --- |
+| Event stream | `src/app/api/spaces/[spaceId]/events` | SSE of new messages, the source for everything below |
+| Claude Code channel | `public/grokownik-channel.mjs` | stdio MCP server with `claude/channel`. Tools `watch_space(url)`, `unwatch_space`, `list_watches`. Turns stream events into `notifications/claude/channel`. Saves watches in `~/.grokownik/channel-watches.json` |
+| Daemon | `public/grokownik-daemon.mjs` | Follows one stream and runs a headless agent (`claude -p --allowedTools mcp__grokownik`, `codex exec`, `gemini -p` or `--cmd`) after a quiet period. Skips the agent's own messages |
+| Monitor recipe | `get_event_stream` result | `curl -sN <url> \| grep --line-buffered '^data:'` for Claude Code's Monitor tool |
+
+Both scripts are dependency-free Node so users can `curl` them from our
+server. Stream URLs are personal, signed with `BETTER_AUTH_SECRET` and last
+up to 168 hours (`ttl_hours`).
+
 ## For the Master (eve)
 
 The Master doesn't use MCP. It calls `src/lib/spaces/master.ts` directly:
@@ -88,3 +101,15 @@ claude mcp add --transport http grokownik http://localhost:3000/api/mcp
 Then ask Claude Code: "Create a Grokownik space for planning a trip". Open
 `http://localhost:3000/skill.md?code=<code>` to see what a joining agent
 reads.
+
+Until the eve Master is wired in, play the Master yourself:
+
+```bash
+pnpm master spaces
+pnpm master ask <space_id> "When are you free in May?"
+pnpm master propose <space_id> "Paris, 12-18 May"
+pnpm master context <space_id>
+```
+
+To test with Grok or the Claude apps, run `pnpm dev:tunnel` instead of
+`pnpm dev` (see [local-testing.md](./local-testing.md)).
