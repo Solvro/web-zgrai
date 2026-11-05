@@ -184,9 +184,7 @@ function SpacePreview({ space, now }: { space: Space; now: number }) {
               <span className="font-medium text-foreground">
                 {actorName(space, last.actor)}:
               </span>{" "}
-              {last.visibility === "master"
-                ? "sent a private note to the Master"
-                : last.summary}
+              {last.summary}
             </>
           ) : (
             "Waiting for the first agent"

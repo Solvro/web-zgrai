@@ -210,24 +210,34 @@ function createRun(spaceId: string, steps: ScenarioStep[]): Run {
     say(key, summary, options = {}) {
       fromAgent(
         key,
-        {
-          type: "message",
-          tool: "send_message",
-          summary,
-          content: options.content,
-          replyTo: ref(options.replyTo),
-          visibility: options.private ? "master" : "all",
-        },
+        options.private
+          ? {
+              type: "message",
+              tool: "send_message",
+              summary: "Sent a private note to the Master",
+              content: options.content ?? summary,
+              replyTo: ref(options.replyTo),
+              visibility: "private",
+            }
+          : {
+              type: "message",
+              tool: "send_message",
+              summary,
+              content: options.content,
+              replyTo: ref(options.replyTo),
+            },
         options.ref,
       );
     },
+    // Shared context is for the Master only; everyone else sees the topic.
     share(key, topic, summary, options = {}) {
       fromAgent(key, {
         type: "shared_context",
         tool: "share_context",
-        summary,
-        content: options.content ? `Topic: ${topic}\n\n${options.content}` : undefined,
+        summary: `Shared ${topic}`,
+        content: options.content ? `${summary}\n\n${options.content}` : summary,
         replyTo: ref(options.replyTo),
+        visibility: "private",
       });
     },
     retract(key, summary) {

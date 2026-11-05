@@ -48,9 +48,11 @@ export type Activity = {
   actor: Actor;
   // MCP tool called by an agent, or the Master's internal tool.
   tool?: string;
+  // Shown to everyone, so it never contains private details.
   summary: string;
   content?: string;
-  visibility: "all" | "master";
+  // "private": `content` is for the author and the Master only.
+  visibility: "all" | "private";
   addressedTo?: string[];
   replyTo?: number;
   deadline?: number;

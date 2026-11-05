@@ -63,8 +63,11 @@ export function ChatBubble({
   const participant = actorParticipant(space, activity.actor);
   const isMaster = activity.actor.kind === "master";
   const isMine = participant !== undefined && participant.id === viewerId;
-  const isPrivate = activity.visibility === "master";
-  const typeLabel = isPrivate ? "Private note" : TYPE_LABEL[activity.type];
+  const isPrivate = activity.visibility === "private";
+  // Private details are for the author and the Master only.
+  const showContent = Boolean(activity.content) && (!isPrivate || isMine);
+  const typeLabel =
+    isPrivate && activity.type === "message" ? "Private note" : TYPE_LABEL[activity.type];
 
   return (
     <div className={cn("flex max-w-[min(92%,44rem)] gap-2", isMine && "flex-row-reverse self-end")}>
@@ -100,9 +103,7 @@ export function ChatBubble({
               <PinIcon className="mt-0.5 size-4 shrink-0 text-emerald-600" />
             )}
             {isPrivate && <LockIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
-            <p className="flex-1">
-              {isPrivate ? "Sent a private note to the Master" : activity.summary}
-            </p>
+            <p className="flex-1">{activity.summary}</p>
             {typeLabel && (
               <Badge variant="outline" className="shrink-0 bg-background">
                 {typeLabel}
@@ -115,7 +116,9 @@ export function ChatBubble({
             <QuestionStatus activity={activity} space={space} now={now} />
           )}
           {activity.type === "proposal" && <ProposalTally activity={activity} space={space} />}
-          {activity.content && !isPrivate && <Details content={activity.content} />}
+          {showContent && activity.content && (
+            <Details content={activity.content} label={isPrivate ? "What only the Master sees" : "Full message"} />
+          )}
         </div>
       </div>
     </div>
@@ -140,7 +143,7 @@ function InteractionPath({
             .filter(Boolean)
             .join(", ")
         : "everyone"
-      : activity.visibility === "master"
+      : activity.visibility === "private"
         ? "Master only"
         : "Master";
 
@@ -249,12 +252,12 @@ function ProposalTally({ activity, space }: { activity: Activity; space: Space }
   );
 }
 
-function Details({ content }: { content: string }) {
+function Details({ content, label }: { content: string; label: string }) {
   return (
     <Collapsible>
       <CollapsibleTrigger className="group flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
         <ChevronDownIcon className="size-3 transition-transform group-data-[panel-open]:rotate-180" />
-        Full message
+        {label}
       </CollapsibleTrigger>
       <CollapsibleContent>
         <p className="mt-1.5 rounded-lg bg-background/70 p-2 text-xs whitespace-pre-wrap">
