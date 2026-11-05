@@ -15,14 +15,16 @@ import { space } from "./spaces";
 // Tables owned by the Master agent (eve). The MCP tables in ./spaces stay
 // untouched, so this side can change without migrating theirs.
 
-// One eve session per space. `lastMessageId` is the Master's cursor: every
-// message after it is "new" in the next turn.
+// One eve session per space. `lastMessageId` and `lastActivityId` are the
+// Master's cursors: every message and activity after them is "new" in the
+// next turn (activity covers events that aren't messages, like votes).
 export const masterSession = pgTable("master_session", {
   spaceId: text("space_id")
     .primaryKey()
     .references(() => space.id, { onDelete: "cascade" }),
   sessionId: text("session_id").notNull().unique(),
   lastMessageId: bigint("last_message_id", { mode: "number" }).default(0).notNull(),
+  lastActivityId: bigint("last_activity_id", { mode: "number" }).default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   endedAt: timestamp("ended_at"),
 });
@@ -49,10 +51,13 @@ export const masterWake = pgTable(
   },
   (table) => [
     index("master_wake_due_idx").on(table.doneAt, table.dueAt),
-    // At most one pending debounce per space: later events join that batch.
+    // At most one unclaimed debounce per space: later events join that batch.
+    // A claimed row being processed doesn't block the next batch.
     uniqueIndex("master_wake_pending_debounce_idx")
       .on(table.spaceId)
-      .where(sql`${table.kind} = 'debounce' and ${table.doneAt} is null`),
+      .where(
+        sql`${table.kind} = 'debounce' and ${table.claimedAt} is null and ${table.doneAt} is null`,
+      ),
   ],
 );
 
