@@ -46,6 +46,60 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #525252;
+  --color-grey: #6b6b6b;
+  --color-grey-light: #a3a3a3;
+  --color-line: #f0f0f0;
+  --color-panel: #f6f6f6;
+  --color-asleep: #ececec;
+  --color-step: #ea580c;
+  --color-step-text: #9a3412;
+  --animate-doze: doze 5s ease-in-out infinite;
+  --animate-zzz: zzz 3.4s ease-out infinite;
+  --animate-hop: hop 1.3s ease-in-out infinite;
+  --animate-ring: ring 1.8s ease-out infinite;
+
+  @keyframes doze {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(5px) rotate(-2deg);
+    }
+  }
+  @keyframes zzz {
+    0% {
+      opacity: 0;
+      transform: translate(0, 0) scale(0.7);
+    }
+    25% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(12px, -26px) scale(1.15);
+    }
+  }
+  @keyframes hop {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    40%,
+    60% {
+      transform: translateY(-9px);
+    }
+  }
+  @keyframes ring {
+    0% {
+      box-shadow: 0 0 0 0 rgb(234 88 12 / 0.35);
+    }
+    100% {
+      box-shadow: 0 0 0 8px rgb(234 88 12 / 0);
+    }
+  }
 }
 
 :root {
@@ -126,5 +180,14 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
   }
 }
