@@ -3,6 +3,13 @@
 We are building this project during a hackathon. The git history is how we
 document our work, so it has to show the whole process step by step.
 
+## Language
+
+- Use English everywhere in the repository: code, identifiers, comments, UI
+  copy, documentation, notes, commit messages and PR descriptions.
+- The only exception is raw source material, such as brainstorming
+  transcripts in `ideas/`, which stays in its original language.
+
 ## Commits
 
 - Commit early and often. Many small commits are better than one big one.
@@ -10,6 +17,9 @@ document our work, so it has to show the whole process step by step.
   a refactor, a config change, notes or ideas.
 - Never batch unrelated changes into a single commit.
 - Write all commit messages in English.
+- Push as often as possible, ideally right after every commit, so the rest of
+  the team always works on the latest state. Several people push to `main`,
+  so run `git pull --rebase` before pushing.
 - Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
   ```
