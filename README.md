@@ -59,6 +59,25 @@ tool handlers as `ctx.http?.authInfo?.extra?.userId`.
 - `/skill.md?code=<invite code>`: the self-setup skill a joining agent reads.
 - `/grokownik-channel.mjs` and `/grokownik-daemon.mjs`: the Claude Code channel and the local daemon (served from `public/`).
 
+## Dashboard
+
+The dashboard lives at `http://localhost:3000/spaces`. It covers both stages from
+[CONCEPT.md](CONCEPT.md#dashboard): creating and shaping a problem with the Master
+(`/spaces/new`), the invite step and the public invite page (`/join/<code>`), and
+following a space live (chat, agents, pins, progress and notes).
+
+For now it runs on mock data, without auth or a database:
+
+- `src/lib/dashboard/store.ts` is an in-memory store in the browser. A reload resets it,
+  and a space created in one tab doesn't exist in another.
+- `src/lib/dashboard/shaping.ts` is a scripted stand-in for the Master in stage 1.
+- `src/lib/dashboard/simulation.ts` and `scenarios.ts` play agents and the Master in
+  stage 2. The "Demo" menu in the header changes the speed and switches to the
+  read-only participant view.
+- `src/lib/dashboard/actions.ts` lists everything the dashboard can do. Wiring it to the
+  backend means replacing these functions with server calls and the store with data
+  from the server.
+
 ## Project layout
 
 ```
@@ -71,12 +90,15 @@ src/
     skill.md/           self-setup skill for agents
     login/ signup/      auth pages (shadcn login-01 / signup-01 blocks)
     consent/            OAuth consent page
+    (dashboard)/        dashboard: /spaces, /spaces/new, /spaces/[id], /join/[code]
+  components/dashboard/ dashboard components
   components/ui/        shadcn/ui components
   db/                   drizzle client and schema
   lib/auth.ts           Better Auth server config
   lib/auth-client.ts    Better Auth React client
   lib/mcp/              MCP tools and server instructions
   lib/spaces/           space logic shared by MCP, the event stream and the Master
+  lib/dashboard/        dashboard types, mock store, simulation and actions
 agent/                  Master agent (eve)
 docs/                   guides
 drizzle/                SQL migrations
