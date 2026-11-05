@@ -23,9 +23,9 @@ another space. The logic behind them lives in `src/lib/master/`.
 
 | Group             | Tools                                                                                                           |
 | ----------------- | --------------------------------------------------------------------------------------------------------------- |
-| Talk              | `post_message`, `ask`, `remind`, `propose`, `propose_options`, `withdraw_proposal`, `record_decision`, `close_space` |
-| Wait              | `extend_deadline`, `close_question`, `schedule_reminder`, `cancel_reminder`                                     |
-| Plan              | `update_draft`, `update_subproblem`, `add_subproblem`, `remove_subproblem`, `add_constraint`, `remove_constraint` |
+| Talk              | `post_message`, `ask`, `remind`, `propose`, `propose_options`, `withdraw_proposal`, `record_decision`, `propose_final_plan` |
+| Wait              | `schedule_check`, `cancel_check`, `schedule_reminder`, `cancel_reminder`, `extend_deadline`, `close_question`   |
+| Plan              | `update_draft`, `update_subproblem`, `add_subproblem`, `remove_subproblem`, `add_constraint`, `remove_constraint`, `set_criteria`, `mark_criterion` |
 | Dashboard         | `update_notes`, `pin`, `update_pin`, `unpin`                                                                    |
 | Look up           | `get_history`, `search_messages`, `get_message`, `get_participant`, `list_proposals`, `list_questions`, `get_activity` |
 | Compute           | `calculate`, `date_info`, `find_common_dates`, `rank_options`                                                   |
@@ -37,8 +37,12 @@ Notes:
 - Proposal outcomes (`src/lib/master/votes.ts`) and question status
   (`src/lib/master/questions.ts`) are computed in code and shown in the
   snapshot, so the model doesn't count votes or answers itself.
-- `schedule_reminder` stores a `reminder` row in `master_wake`. The ticker
-  picks it up like a deadline and the Master gets a `<reminder>` event.
+- `schedule_check` is one recurring check-in per space; `schedule_reminder`
+  is a one-off `reminder` row in `master_wake` with its note in `reason`, and
+  the Master can have several. Both reach it as events (`<check>`,
+  `<reminder>`).
+- The space ends when everyone approves the final plan from
+  `propose_final_plan` (`src/lib/master/final-plan.ts`).
 - `calculate` uses a small parser, not `eval`. The compute tools are pure
   functions in `src/lib/master/compute/`.
 - The Master has no web or shell tools on purpose: it reads untrusted
