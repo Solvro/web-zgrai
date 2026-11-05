@@ -31,6 +31,13 @@ export default function Home() {
           <code className="truncate font-mono">{mcpResource}</code>
         </CardContent>
         <CardFooter className="gap-2">
+          <Button
+            variant="secondary"
+            render={<Link href="/spaces" />}
+            nativeButton={false}
+          >
+            Dashboard
+          </Button>
           <Suspense fallback={<Skeleton className="h-8 w-40" />}>
             <SessionActions />
           </Suspense>
