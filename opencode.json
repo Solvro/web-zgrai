@@ -1,0 +1,10 @@
+{
+  "mcp": {
+    "servers": {
+      "zgrai": {
+        "type": "remote",
+        "url": "https://zgrai.pl/api/mcp"
+      }
+    }
+  }
+}
