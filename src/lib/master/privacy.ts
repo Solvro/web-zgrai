@@ -39,3 +39,12 @@ export async function findPrivateQuote(spaceId: string, text: string) {
   }
   return null;
 }
+
+export async function assertNoPrivateQuote(spaceId: string, text: string) {
+  const quoted = await findPrivateQuote(spaceId, text);
+  if (quoted) {
+    throw new Error(
+      `This repeats a participant's private note ("${quoted}"). Rephrase without revealing it.`,
+    );
+  }
+}

@@ -73,11 +73,16 @@ export function ask(input: {
   });
 }
 
-export function propose(input: { spaceId: string; proposal: string }) {
+export function propose(input: {
+  spaceId: string;
+  proposal: string;
+  replyTo?: number;
+}) {
   return postMasterMessage({
     spaceId: input.spaceId,
     text: input.proposal,
     kind: "proposal",
+    replyTo: input.replyTo,
   });
 }
 
@@ -143,6 +148,26 @@ export async function pin(input: {
     position: existing.length,
   });
   return id;
+}
+
+export async function updatePin(
+  spaceId: string,
+  itemId: string,
+  patch: { title?: string; content?: string },
+) {
+  const rows = await db
+    .update(boardItem)
+    .set(patch)
+    .where(
+      and(
+        eq(boardItem.id, itemId),
+        eq(boardItem.spaceId, spaceId),
+        eq(boardItem.kind, "pin"),
+        isNull(boardItem.removedAt),
+      ),
+    )
+    .returning({ id: boardItem.id });
+  if (rows.length === 0) throw new Error(`Pin ${itemId} not found.`);
 }
 
 export async function unpin(spaceId: string, itemId: string) {

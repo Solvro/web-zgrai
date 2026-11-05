@@ -62,6 +62,18 @@ export async function setConstraints(spaceId: string, constraints: string[]) {
   return savePlan(spaceId, { ...plan, constraints });
 }
 
+export async function requireSubproblem(spaceId: string, id: string) {
+  const plan = await getPlan(spaceId);
+  const target = plan.subproblems.find((s) => s.id === id);
+  if (!target) {
+    const known = plan.subproblems.map((s) => `${s.id} (${s.title})`);
+    throw new Error(
+      `Subproblem ${id} not found. Known: ${known.join(", ") || "none"}.`,
+    );
+  }
+  return target;
+}
+
 export async function updateSubproblem(
   spaceId: string,
   id: string,
