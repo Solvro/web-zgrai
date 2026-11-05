@@ -6,7 +6,9 @@ import { masterWake } from "@/db/schema";
 export const DEBOUNCE_MS = 5_000;
 
 // How long participants have to answer a Master question by default.
-export const DEFAULT_DEADLINE_MINUTES = Number(process.env.MASTER_DEFAULT_DEADLINE_MINUTES ?? 10);
+export const DEFAULT_DEADLINE_MINUTES = Number(
+  process.env.MASTER_DEFAULT_DEADLINE_MINUTES ?? 10,
+);
 
 // A claimed row that never finished (crash mid-turn) is picked up again.
 const CLAIM_TIMEOUT_MS = 2 * 60_000;
@@ -18,11 +20,19 @@ export type MasterWake = typeof masterWake.$inferSelect;
 export async function scheduleDebounce(spaceId: string, delayMs = DEBOUNCE_MS) {
   await db
     .insert(masterWake)
-    .values({ spaceId, kind: "debounce", dueAt: new Date(Date.now() + delayMs) })
+    .values({
+      spaceId,
+      kind: "debounce",
+      dueAt: new Date(Date.now() + delayMs),
+    })
     .onConflictDoNothing();
 }
 
-export async function scheduleDeadline(spaceId: string, questionId: number, minutes: number) {
+export async function scheduleDeadline(
+  spaceId: string,
+  questionId: number,
+  minutes: number,
+) {
   const dueAt = new Date(Date.now() + minutes * 60_000);
   await db
     .insert(masterWake)
@@ -51,14 +61,22 @@ export async function claimDueWakes(limit = 20) {
     await tx
       .update(masterWake)
       .set({ claimedAt: now })
-      .where(inArray(masterWake.id, rows.map((row) => row.id)));
+      .where(
+        inArray(
+          masterWake.id,
+          rows.map((row) => row.id),
+        ),
+      );
     return rows;
   });
 }
 
 export async function completeWakes(ids: number[]) {
   if (ids.length === 0) return;
-  await db.update(masterWake).set({ doneAt: new Date() }).where(inArray(masterWake.id, ids));
+  await db
+    .update(masterWake)
+    .set({ doneAt: new Date() })
+    .where(inArray(masterWake.id, ids));
 }
 
 // Questions whose deadline hasn't passed yet, for the Master's snapshot.

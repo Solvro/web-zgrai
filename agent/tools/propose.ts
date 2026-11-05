@@ -10,7 +10,8 @@ export default defineTool({
   inputSchema: z.object({ proposal: z.string().min(1) }),
   async execute({ proposal }, ctx) {
     const space = await toolSpace(ctx);
-    if (space.status !== "open") throw new Error("Proposals need an open space.");
+    if (space.status !== "open")
+      throw new Error("Proposals need an open space.");
     const quoted = await findPrivateQuote(space.id, proposal);
     if (quoted) {
       throw new Error(

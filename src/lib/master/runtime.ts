@@ -3,7 +3,13 @@ import { db } from "@/db";
 import { message } from "@/db/schema";
 import { type MasterTrigger, onMasterTrigger } from "@/lib/spaces/master-hook";
 import { runMasterTurn } from "./turn";
-import { claimDueWakes, completeWakes, DEBOUNCE_MS, type MasterWake, scheduleDebounce } from "./wake";
+import {
+  claimDueWakes,
+  completeWakes,
+  DEBOUNCE_MS,
+  type MasterWake,
+  scheduleDebounce,
+} from "./wake";
 
 const TICK_MS = 1_000;
 
@@ -57,7 +63,9 @@ async function tick() {
   }
 }
 
-const store = globalThis as typeof globalThis & { __masterTicker?: NodeJS.Timeout };
+const store = globalThis as typeof globalThis & {
+  __masterTicker?: NodeJS.Timeout;
+};
 
 // Called once per server from src/instrumentation.ts.
 export function startMaster() {

@@ -45,7 +45,12 @@ async function proposalsBlock(spaceId: string) {
     })
     .from(proposalVote)
     .innerJoin(participant, eq(participant.id, proposalVote.participantId))
-    .where(inArray(proposalVote.proposalMessageId, proposals.map((p) => p.id)));
+    .where(
+      inArray(
+        proposalVote.proposalMessageId,
+        proposals.map((p) => p.id),
+      ),
+    );
   const lines = proposals.reverse().map((p) => {
     const mine = votes.filter((v) => v.proposalId === p.id);
     const tally = { yes: 0, no: 0, abstain: 0 };
@@ -67,7 +72,10 @@ async function proposalsBlock(spaceId: string) {
 // `now` comes from the caller (eve's ctx.now), so the same events always
 // produce the same snapshot.
 export async function buildMasterSnapshot(spaceId: string, now: Date) {
-  const context = await getMasterContext(spaceId, await recentWindowStart(spaceId));
+  const context = await getMasterContext(
+    spaceId,
+    await recentWindowStart(spaceId),
+  );
   const { space } = context;
   const plan = await getPlan(spaceId);
   const board = await getBoard(spaceId);
@@ -85,22 +93,34 @@ export async function buildMasterSnapshot(spaceId: string, now: Date) {
         `  <subproblem id="${s.id}" status="${s.status}"${s.decision ? ` decision="${esc(s.decision)}"` : ""}>${esc(s.title)}</subproblem>`,
     )
     .join("\n");
-  const constraints = plan.constraints.map((c) => `  <constraint>${esc(c)}</constraint>`).join("\n");
+  const constraints = plan.constraints
+    .map((c) => `  <constraint>${esc(c)}</constraint>`)
+    .join("\n");
   const notes = board.find((item) => item.kind === "note");
   const pins = board
     .filter((item) => item.kind === "pin")
-    .map((item) => `  <pin id="${item.id}" title="${esc(item.title ?? "")}">${esc(item.content)}</pin>`)
+    .map(
+      (item) =>
+        `  <pin id="${item.id}" title="${esc(item.title ?? "")}">${esc(item.content)}</pin>`,
+    )
     .join("\n");
   const pending = deadlines
-    .map((d) => `  <deadline question_id="${d.questionId}" due="${d.dueAt.toISOString()}"/>`)
+    .map(
+      (d) =>
+        `  <deadline question_id="${d.questionId}" due="${d.dueAt.toISOString()}"/>`,
+    )
     .join("\n");
 
   return [
     `<space id="${space.id}" status="${space.status}" now="${now.toISOString()}">`,
     `<title>${esc(space.title)}</title>`,
     `<goal>${esc(space.goal || "(not set yet)")}</goal>`,
-    space.description ? `<description>${esc(space.description)}</description>` : "",
-    space.deadline ? `<space_deadline>${space.deadline.toISOString()}</space_deadline>` : "",
+    space.description
+      ? `<description>${esc(space.description)}</description>`
+      : "",
+    space.deadline
+      ? `<space_deadline>${space.deadline.toISOString()}</space_deadline>`
+      : "",
     `<participants>\n${participants}\n</participants>`,
     `<subproblems>\n${subproblems}\n</subproblems>`,
     `<constraints>\n${constraints}\n</constraints>`,

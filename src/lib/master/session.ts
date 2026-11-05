@@ -9,7 +9,10 @@ export type MasterSession = typeof masterSession.$inferSelect;
 // Next.js proxies /eve/v1 to the agent in dev and in `next start`, so the
 // server reaches it on its own origin. EVE_INTERNAL_URL overrides that.
 function masterBaseUrl() {
-  return process.env.EVE_INTERNAL_URL ?? `http://127.0.0.1:${process.env.PORT ?? 3000}`;
+  return (
+    process.env.EVE_INTERNAL_URL ??
+    `http://127.0.0.1:${process.env.PORT ?? 3000}`
+  );
 }
 
 let client: Client | null = null;
@@ -23,7 +26,10 @@ function masterClient() {
 }
 
 export async function getMasterSession(spaceId: string) {
-  const [row] = await db.select().from(masterSession).where(eq(masterSession.spaceId, spaceId));
+  const [row] = await db
+    .select()
+    .from(masterSession)
+    .where(eq(masterSession.spaceId, spaceId));
   return row ?? null;
 }
 

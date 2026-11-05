@@ -17,7 +17,9 @@ type Listener = (
 // Kept on globalThis: Next.js can load instrumentation.ts (where the listener
 // is registered) and the route handlers (which call notifyMaster) as separate
 // module instances, so a module-level variable wouldn't be shared.
-const store = globalThis as typeof globalThis & { __masterListener?: Listener | null };
+const store = globalThis as typeof globalThis & {
+  __masterListener?: Listener | null;
+};
 
 export function onMasterTrigger(next: Listener) {
   store.__masterListener = next;

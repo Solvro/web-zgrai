@@ -9,7 +9,10 @@ export default defineTool({
   inputSchema: z.object({
     subproblem_id: z.string(),
     status: z.enum(["open", "discussing", "conflict", "decided"]),
-    decision: z.string().optional().describe("What was decided, when status is decided."),
+    decision: z
+      .string()
+      .optional()
+      .describe("What was decided, when status is decided."),
   }),
   async execute({ subproblem_id, status, decision }, ctx) {
     const space = await toolSpace(ctx);

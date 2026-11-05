@@ -4,7 +4,8 @@ import { toolSpace } from "@/lib/master/tool-space";
 import { unpin } from "@/lib/spaces/master";
 
 export default defineTool({
-  description: "Remove a pin from the dashboard, e.g. when a constraint no longer holds.",
+  description:
+    "Remove a pin from the dashboard, e.g. when a constraint no longer holds.",
   inputSchema: z.object({ item_id: z.string() }),
   async execute({ item_id }, ctx) {
     const space = await toolSpace(ctx);

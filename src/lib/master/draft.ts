@@ -18,14 +18,16 @@ import { setConstraints, setSubproblems } from "./plan";
 
 async function requireDraft(spaceId: string) {
   const row = await getSpaceOrThrow(spaceId);
-  if (row.status !== "draft") throw new SpaceError(`Space "${row.title}" is ${row.status}.`);
+  if (row.status !== "draft")
+    throw new SpaceError(`Space "${row.title}" is ${row.status}.`);
   return row;
 }
 
 async function requireDraftInitiator(spaceId: string, userId: string) {
   await requireDraft(spaceId);
   const me = await getParticipantOrThrow(spaceId, userId);
-  if (me.role !== "initiator") throw new SpaceError("Only the initiator can shape the draft.");
+  if (me.role !== "initiator")
+    throw new SpaceError("Only the initiator can shape the draft.");
   return me;
 }
 
@@ -34,7 +36,10 @@ export async function createDraftSpace(input: {
   description: string;
   represents?: string;
 }) {
-  const [owner] = await db.select({ name: user.name }).from(user).where(eq(user.id, input.userId));
+  const [owner] = await db
+    .select({ name: user.name })
+    .from(user)
+    .where(eq(user.id, input.userId));
   const represents = input.represents ?? owner?.name ?? "Initiator";
 
   const created = await db.transaction(async (tx) => {
@@ -62,7 +67,11 @@ export async function createDraftSpace(input: {
       .returning();
     await tx
       .insert(message)
-      .values({ spaceId: row.id, authorParticipantId: me.id, content: input.description });
+      .values({
+        spaceId: row.id,
+        authorParticipantId: me.id,
+        content: input.description,
+      });
     await recordActivity(tx, {
       spaceId: row.id,
       actorParticipantId: me.id,
@@ -77,11 +86,19 @@ export async function createDraftSpace(input: {
 }
 
 // The initiator's side of the shaping chat.
-export async function sendDraftMessage(input: { spaceId: string; userId: string; text: string }) {
+export async function sendDraftMessage(input: {
+  spaceId: string;
+  userId: string;
+  text: string;
+}) {
   const me = await requireDraftInitiator(input.spaceId, input.userId);
   const [row] = await db
     .insert(message)
-    .values({ spaceId: input.spaceId, authorParticipantId: me.id, content: input.text })
+    .values({
+      spaceId: input.spaceId,
+      authorParticipantId: me.id,
+      content: input.text,
+    })
     .returning();
   await recordActivity(db, {
     spaceId: input.spaceId,
@@ -119,10 +136,14 @@ export async function updateDraft(
 export async function confirmDraft(input: { spaceId: string; userId: string }) {
   const me = await requireDraftInitiator(input.spaceId, input.userId);
   const row = await getSpaceOrThrow(input.spaceId);
-  if (!row.goal.trim()) throw new SpaceError("The draft needs a goal before it can open.");
+  if (!row.goal.trim())
+    throw new SpaceError("The draft needs a goal before it can open.");
 
   await db.transaction(async (tx) => {
-    await tx.update(space).set({ status: "open" }).where(eq(space.id, input.spaceId));
+    await tx
+      .update(space)
+      .set({ status: "open" })
+      .where(eq(space.id, input.spaceId));
     await tx.insert(message).values({
       spaceId: input.spaceId,
       kind: "system",
@@ -136,7 +157,10 @@ export async function confirmDraft(input: { spaceId: string; userId: string }) {
     });
   });
 
-  const invite = await createInvite({ spaceId: input.spaceId, userId: input.userId });
+  const invite = await createInvite({
+    spaceId: input.spaceId,
+    userId: input.userId,
+  });
   notifyMaster(input.spaceId, "opened");
   return invite;
 }

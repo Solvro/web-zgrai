@@ -18,5 +18,8 @@ const appServer: AuthFn<Request> = async (request) => {
 // localDev() accepts every same-machine caller, which includes an ngrok tunnel,
 // so it is opt-in for working on the agent in the eve terminal UI.
 export default eveChannel({
-  auth: process.env.EVE_ALLOW_LOCAL_DEV === "1" ? [appServer, localDev()] : [appServer],
+  auth:
+    process.env.EVE_ALLOW_LOCAL_DEV === "1"
+      ? [appServer, localDev()]
+      : [appServer],
 });

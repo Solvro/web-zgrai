@@ -9,8 +9,14 @@ import { type Subproblem, type SubproblemStatus, spacePlan } from "@/db/schema";
 export type Plan = { subproblems: Subproblem[]; constraints: string[] };
 
 export async function getPlan(spaceId: string): Promise<Plan> {
-  const [row] = await db.select().from(spacePlan).where(eq(spacePlan.spaceId, spaceId));
-  return { subproblems: row?.subproblems ?? [], constraints: row?.constraints ?? [] };
+  const [row] = await db
+    .select()
+    .from(spacePlan)
+    .where(eq(spacePlan.spaceId, spaceId));
+  return {
+    subproblems: row?.subproblems ?? [],
+    constraints: row?.constraints ?? [],
+  };
 }
 
 async function savePlan(spaceId: string, plan: Plan) {
@@ -25,10 +31,16 @@ async function savePlan(spaceId: string, plan: Plan) {
 // status and decision, so reshaping the draft doesn't lose progress.
 export async function setSubproblems(spaceId: string, titles: string[]) {
   const plan = await getPlan(spaceId);
-  const byTitle = new Map(plan.subproblems.map((s) => [s.title.toLowerCase(), s]));
+  const byTitle = new Map(
+    plan.subproblems.map((s) => [s.title.toLowerCase(), s]),
+  );
   const subproblems = titles.map(
     (title): Subproblem =>
-      byTitle.get(title.toLowerCase()) ?? { id: randomUUID(), title, status: "open" },
+      byTitle.get(title.toLowerCase()) ?? {
+        id: randomUUID(),
+        title,
+        status: "open",
+      },
   );
   return savePlan(spaceId, { ...plan, subproblems });
 }
@@ -46,7 +58,9 @@ export async function updateSubproblem(
   const plan = await getPlan(spaceId);
   const target = plan.subproblems.find((s) => s.id === id);
   if (!target) throw new Error(`Subproblem ${id} not found.`);
-  const subproblems = plan.subproblems.map((s) => (s.id === id ? { ...s, ...patch } : s));
+  const subproblems = plan.subproblems.map((s) =>
+    s.id === id ? { ...s, ...patch } : s,
+  );
   await savePlan(spaceId, { ...plan, subproblems });
   return subproblems.find((s) => s.id === id)!;
 }

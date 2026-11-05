@@ -5,9 +5,12 @@ import { createHash, timingSafeEqual } from "node:crypto";
 // Falls back to a value derived from BETTER_AUTH_SECRET, so local setups work
 // without another variable.
 export function masterInternalToken() {
-  const raw = process.env.MASTER_INTERNAL_SECRET ?? process.env.BETTER_AUTH_SECRET;
+  const raw =
+    process.env.MASTER_INTERNAL_SECRET ?? process.env.BETTER_AUTH_SECRET;
   if (!raw) {
-    throw new Error("Set MASTER_INTERNAL_SECRET or BETTER_AUTH_SECRET for the Master agent.");
+    throw new Error(
+      "Set MASTER_INTERNAL_SECRET or BETTER_AUTH_SECRET for the Master agent.",
+    );
   }
   return createHash("sha256").update(`zgrai-master:${raw}`).digest("hex");
 }

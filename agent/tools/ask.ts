@@ -13,14 +13,18 @@ export default defineTool({
     participant_ids: z
       .array(z.string())
       .optional()
-      .describe("Participant ids (without the participant: prefix) to ask. Omit to ask everyone."),
+      .describe(
+        "Participant ids (without the participant: prefix) to ask. Omit to ask everyone.",
+      ),
     deadline_minutes: z
       .number()
       .int()
       .min(1)
       .max(24 * 60)
       .optional()
-      .describe(`Minutes to wait for answers. Default ${DEFAULT_DEADLINE_MINUTES}.`),
+      .describe(
+        `Minutes to wait for answers. Default ${DEFAULT_DEADLINE_MINUTES}.`,
+      ),
   }),
   async execute({ question, participant_ids, deadline_minutes }, ctx) {
     const space = await toolSpace(ctx);
@@ -30,7 +34,11 @@ export default defineTool({
         `This repeats a participant's private note ("${quoted}"). Rephrase without revealing it.`,
       );
     }
-    const row = await ask({ spaceId: space.id, question, participantIds: participant_ids });
+    const row = await ask({
+      spaceId: space.id,
+      question,
+      participantIds: participant_ids,
+    });
     if (space.status !== "open") return { question_id: row.id };
     const dueAt = await scheduleDeadline(
       space.id,

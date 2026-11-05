@@ -166,7 +166,10 @@ function escapeAttr(value: string) {
 // Participant text goes inside <message> and <item> tags. Escape it, so a
 // participant can't close the tag and forge a message from the Master.
 function escapeText(value: string) {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 export async function getMasterContext(spaceId: string, afterMessageId = 0) {

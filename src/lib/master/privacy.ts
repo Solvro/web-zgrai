@@ -32,7 +32,9 @@ export async function findPrivateQuote(spaceId: string, text: string) {
     );
   const haystack = normalize(text);
   for (const note of notes) {
-    const quoted = fragments(note.content).find((fragment) => haystack.includes(fragment));
+    const quoted = fragments(note.content).find((fragment) =>
+      haystack.includes(fragment),
+    );
     if (quoted) return quoted;
   }
   return null;

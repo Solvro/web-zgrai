@@ -16,7 +16,9 @@ export default defineTool({
   async execute(patch, ctx) {
     const space = await toolSpace(ctx);
     if (space.status !== "draft") {
-      throw new Error("The space is open. The goal can only change through the initiator.");
+      throw new Error(
+        "The space is open. The goal can only change through the initiator.",
+      );
     }
     await updateDraft(space.id, patch);
     return { updated: Object.keys(patch) };

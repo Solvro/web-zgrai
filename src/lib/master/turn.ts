@@ -8,10 +8,17 @@ import { cancelWakes, type MasterWake } from "./wake";
 
 // Events that aren't messages. Joins, leaves and goal changes already show up
 // as system messages in the transcript.
-const ACTIVITY_EVENTS = ["vote", "shared_context", "retracted_context"] as const;
+const ACTIVITY_EVENTS = [
+  "vote",
+  "shared_context",
+  "retracted_context",
+] as const;
 
 function escapeText(value: string) {
-  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 async function newActivity(spaceId: string, afterId: number) {
@@ -90,20 +97,25 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
       ),
     )
     .limit(1);
-  const hasNews = fromOthers.length > 0 || activities.length > 0 || expired.length > 0;
+  const hasNews =
+    fromOthers.length > 0 || activities.length > 0 || expired.length > 0;
   const lastActivityId = activities.at(-1)?.id ?? session.lastActivityId;
 
   if (hasNews) {
     const parts: string[] = ["<events>"];
     if (context.transcript) parts.push(context.transcript);
     for (const item of activities) {
-      const actor = item.actorParticipantId ? `participant:${item.actorParticipantId}` : "master";
+      const actor = item.actorParticipantId
+        ? `participant:${item.actorParticipantId}`
+        : "master";
       parts.push(
         `<activity id="${item.id}" type="${item.type}" from="${actor}">${escapeText(item.summary)}</activity>`,
       );
     }
     for (const { question, missing } of expired) {
-      const names = missing.map((p) => `participant:${p.id} (${escapeText(p.represents)})`);
+      const names = missing.map(
+        (p) => `participant:${p.id} (${escapeText(p.represents)})`,
+      );
       parts.push(
         `<deadline question_id="${question.id}">The answer time ran out. No answer from: ${names.join(", ")}.</deadline>`,
       );

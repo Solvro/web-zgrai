@@ -23,13 +23,20 @@ export const masterSession = pgTable("master_session", {
     .primaryKey()
     .references(() => space.id, { onDelete: "cascade" }),
   sessionId: text("session_id").notNull().unique(),
-  lastMessageId: bigint("last_message_id", { mode: "number" }).default(0).notNull(),
-  lastActivityId: bigint("last_activity_id", { mode: "number" }).default(0).notNull(),
+  lastMessageId: bigint("last_message_id", { mode: "number" })
+    .default(0)
+    .notNull(),
+  lastActivityId: bigint("last_activity_id", { mode: "number" })
+    .default(0)
+    .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   endedAt: timestamp("ended_at"),
 });
 
-export const masterWakeKind = pgEnum("master_wake_kind", ["debounce", "deadline"]);
+export const masterWakeKind = pgEnum("master_wake_kind", [
+  "debounce",
+  "deadline",
+]);
 
 // Pending Master turns. A `debounce` row batches events for a few seconds; a
 // `deadline` row fires when a question's answer time runs out. The ticker in

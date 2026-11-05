@@ -9,6 +9,7 @@ export async function spaceIdForSession(sessionId: string) {
     .select({ spaceId: masterSession.spaceId })
     .from(masterSession)
     .where(eq(masterSession.sessionId, sessionId));
-  if (!row) throw new Error(`No space is bound to Master session ${sessionId}.`);
+  if (!row)
+    throw new Error(`No space is bound to Master session ${sessionId}.`);
   return row.spaceId;
 }

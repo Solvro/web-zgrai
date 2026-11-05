@@ -14,7 +14,10 @@ export default defineTool({
   description:
     "Close the space with a summary once the goal is reached. First propose closing with propose (e.g. 'Close the space: we go to Paris 12-18 May'); call this only after the initiator voted yes on that proposal.",
   inputSchema: z.object({
-    proposal_id: z.number().int().describe("Your closing proposal the initiator voted yes on."),
+    proposal_id: z
+      .number()
+      .int()
+      .describe("Your closing proposal the initiator voted yes on."),
     summary: z.string().min(1),
   }),
   async execute({ proposal_id, summary }, ctx) {
