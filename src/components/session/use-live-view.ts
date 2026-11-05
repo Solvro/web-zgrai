@@ -57,6 +57,7 @@ export function useLiveView(initial: SessionView, beforeUpdate?: () => void) {
     let pollTimer: ReturnType<typeof setTimeout> | undefined;
     let watchdog: ReturnType<typeof setTimeout> | undefined;
     let errors = 0;
+    let opened = false;
 
     const poll = async () => {
       if (stopped || closed.current) return;
@@ -84,6 +85,7 @@ export function useLiveView(initial: SessionView, beforeUpdate?: () => void) {
       watchdog = setTimeout(fallBack, FIRST_EVENT_MS);
       const alive = () => {
         errors = 0;
+        opened = true;
         setTransport("sse");
         clearTimeout(watchdog);
         watchdog = setTimeout(fallBack, SILENCE_MS);
@@ -97,9 +99,15 @@ export function useLiveView(initial: SessionView, beforeUpdate?: () => void) {
         clearTimeout(watchdog);
         source?.close();
       });
+      // Before the first event an error means the stream doesn't work here;
+      // after it, EventSource gets a few reconnects first.
       source.onerror = () => {
         errors += 1;
-        if (source?.readyState === EventSource.CLOSED || errors >= MAX_ERRORS)
+        if (
+          !opened ||
+          source?.readyState === EventSource.CLOSED ||
+          errors >= MAX_ERRORS
+        )
           fallBack();
       };
     }
