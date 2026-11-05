@@ -24,6 +24,7 @@ Open http://localhost:3000.
 | `pnpm dev:tunnel`  | dev server behind an ngrok tunnel, see [docs/local-testing.md](docs/local-testing.md) |
 | `pnpm master`      | act as the Master from the terminal, for testing |
 | `pnpm build`       | production build                             |
+| `pnpm start`       | apply pending migrations, then start the production server |
 | `pnpm lint`        | run eslint, failing on warnings              |
 | `pnpm format`      | format everything with prettier              |
 | `pnpm format:check` | check formatting without writing            |

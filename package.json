@@ -7,7 +7,7 @@
     "dev:tunnel": "node scripts/dev-tunnel.mjs",
     "master": "tsx --tsconfig ./tsconfig.json scripts/master.ts",
     "build": "eve build && next build",
-    "start": "next start",
+    "start": "node scripts/migrate.mjs && next start",
     "lint": "eslint --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
