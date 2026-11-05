@@ -78,7 +78,7 @@ export function newSubproblems(titles: string[]): Subproblem[] {
   return titles.map((title) => ({ id: randomUUID(), title, status: "open" }));
 }
 
-export function currentStep(plan: Plan) {
+export function currentStep(plan: Pick<Plan, "subproblems">) {
   return plan.subproblems.find(
     (s) => s.status === "discussing" || s.status === "conflict",
   );

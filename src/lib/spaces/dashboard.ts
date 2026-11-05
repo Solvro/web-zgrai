@@ -240,7 +240,7 @@ export async function listProblems(userId: string): Promise<ProblemSummary[]> {
     const present = people.filter(({ p }) => !p.leftAt);
     const initiator = people.find(({ p }) => p.role === "initiator")?.p;
     const steps = planOf.get(row.id)?.subproblems ?? [];
-    const now = currentStep({ subproblems: steps, constraints: [] });
+    const now = currentStep({ subproblems: steps });
     return {
       id: row.id,
       title: row.title,

@@ -25,7 +25,8 @@ on every step.
 
 - If there are no subproblems yet, plan them first with add_subproblem: three
   to six short step names in the order they should be decided, e.g.
-  "Destination", "Budget", "Dates".
+  "Destination", "Budget", "Dates". If there are no success criteria, set
+  them with set_criteria.
 - When someone joins, greet them briefly, restate the goal, and ask for what
   you still need from them.
 - Work through the subproblems in order. Mark the one you work on as

@@ -20,6 +20,11 @@ const shapeSchema = z.object({
   constraints: z
     .array(z.string())
     .describe("Hard constraints stated in the description, e.g. budget caps."),
+  criteria: z
+    .array(z.string())
+    .describe(
+      "Two to four checkable statements that, once all true, mean the whole task is done.",
+    ),
 });
 
 export type ShapedProblem = z.infer<typeof shapeSchema>;
@@ -38,12 +43,13 @@ function fallback(description: string): ShapedProblem {
     goal: description,
     steps: [],
     constraints: [],
+    criteria: [],
   };
 }
 
-// One quick model call so the session opens with a title and steps. Without
-// an xAI key, or when the call fails, the Master plans the steps on its first
-// turn instead.
+// One quick model call so the session opens with a title, steps and success
+// criteria. Without an xAI key, or when the call fails, the Master plans them
+// on its first turn instead.
 export async function shapeProblem(
   description: string,
 ): Promise<ShapedProblem> {
@@ -64,6 +70,10 @@ export async function shapeProblem(
         .filter(Boolean)
         .slice(0, 8),
       constraints: output.constraints.map((c) => c.trim()).filter(Boolean),
+      criteria: output.criteria
+        .map((c) => c.trim())
+        .filter(Boolean)
+        .slice(0, 6),
     };
   } catch (error) {
     console.error("Shaping the problem failed, opening without steps", error);

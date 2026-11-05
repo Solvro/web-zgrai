@@ -18,5 +18,6 @@ export async function startSpace(input: {
     harness: DASHBOARD_HARNESS,
     steps: shaped.steps,
     constraints: shaped.constraints,
+    criteria: shaped.criteria,
   });
 }

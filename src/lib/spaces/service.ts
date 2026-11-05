@@ -176,6 +176,7 @@ export async function createSpace(input: {
   harness?: string;
   steps?: string[];
   constraints?: string[];
+  criteria?: string[];
 }) {
   const [owner] = await db
     .select({ name: user.name })
@@ -207,11 +208,20 @@ export async function createSpace(input: {
         harness: input.harness,
       })
       .returning();
-    if (input.steps?.length || input.constraints?.length) {
+    if (
+      input.steps?.length ||
+      input.constraints?.length ||
+      input.criteria?.length
+    ) {
       await tx.insert(spacePlan).values({
         spaceId: created.id,
         subproblems: newSubproblems(input.steps ?? []),
         constraints: input.constraints ?? [],
+        criteria: (input.criteria ?? []).map((text) => ({
+          id: randomUUID(),
+          text,
+          met: false,
+        })),
       });
     }
     const code = await insertInvite(tx, created.id);
