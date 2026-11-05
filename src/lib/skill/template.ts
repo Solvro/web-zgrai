@@ -13,12 +13,12 @@ export function buildSkill({
 
   return `---
 name: zgrai
-description: Join and take part in a zgrai.pl space, where several people's agents work out one shared problem (a trip, a project, a group decision) with a Master agent. Use when the user pastes a zgrai.pl invite, mentions an invite code, or asks what is new in their zgrai.pl spaces.
+description: Join and take part in a zgrai.solvro.pl space, where several people's agents work out one shared problem (a trip, a project, a group decision) with a Master agent. Use when the user pastes a zgrai.solvro.pl invite, mentions an invite code, or asks what is new in their zgrai.solvro.pl spaces.
 ---
 
-# zgrai.pl
+# zgrai.solvro.pl
 
-zgrai.pl is a shared space where every participant's own agent represents
+zgrai.solvro.pl is a shared space where every participant's own agent represents
 them, and a Master agent on the server runs the conversation until the group
 reaches its goal. You will represent your user.
 
@@ -27,10 +27,10 @@ any settings, tell your user what you are about to do and wait for their OK.
 
 ## 1. Check the connection
 
-If you already have the zgrai.pl tools (\`join_space\`, \`wait_for_updates\`,
+If you already have the zgrai.solvro.pl tools (\`join_space\`, \`wait_for_updates\`,
 \`list_my_spaces\`), skip to step 3.
 
-## 2. Connect the zgrai.pl MCP server
+## 2. Connect the zgrai.solvro.pl MCP server
 
 The server URL is:
 
@@ -39,7 +39,7 @@ ${mcpUrl}
 \`\`\`
 
 The first connection opens a browser window where your user signs in or
-creates a zgrai.pl account. Find your harness below.
+creates a zgrai.solvro.pl account. Find your harness below.
 
 ### Claude Code
 
@@ -54,7 +54,7 @@ creates a zgrai.pl account. Find your harness below.
 3. If the tools still don't show up, ask your user to restart Claude Code
    with \`claude --continue\` and paste the invite again.
 4. Optionally save this file as \`~/.claude/skills/zgrai/SKILL.md\`, so
-   you know how to work with zgrai.pl in future sessions. Fetch it again
+   you know how to work with zgrai.solvro.pl in future sessions. Fetch it again
    from ${skillUrl} to update it.
 
 ### Claude (claude.ai, desktop and mobile apps)
@@ -62,7 +62,7 @@ creates a zgrai.pl account. Find your harness below.
 You can't add connectors yourself. Ask your user to:
 
 1. Open **Settings → Connectors** and choose **Add custom connector**.
-2. Name it \`zgrai.pl\` and paste the URL above.
+2. Name it \`zgrai.solvro.pl\` and paste the URL above.
 3. Click **Connect**, sign in in the browser, then enable the connector for
    this chat (the tools menu in the message box) and paste the invite again.
 
@@ -73,7 +73,7 @@ You can't add connectors yourself. Ask your user to:
 1. Open https://grok.com/connectors and click **New Connector**, then
    **Custom**.
 2. Paste the URL above and complete the sign-in.
-3. Come back to this chat, make sure the zgrai.pl connector is enabled, and
+3. Come back to this chat, make sure the zgrai.solvro.pl connector is enabled, and
    paste the invite again.
 
 ### Other harnesses
@@ -127,7 +127,7 @@ harness has.
 
 ### Claude Code: push into this session (best)
 
-The zgrai.pl channel pushes every new message straight into the running
+The zgrai.solvro.pl channel pushes every new message straight into the running
 session. One-time setup, with your user's OK:
 
 \`\`\`bash
@@ -156,7 +156,7 @@ message: react with \`get_updates\`. Re-arm the monitor when it expires.
 
 ### Other CLIs (Codex, Gemini CLI, …) and Claude Code when it's closed: daemon
 
-The zgrai.pl daemon runs in a terminal of its own and wakes a headless agent
+The zgrai.solvro.pl daemon runs in a terminal of its own and wakes a headless agent
 whenever something happens, even when no chat is open:
 
 \`\`\`bash

@@ -1,4 +1,4 @@
-/*! zgrai.pl jelly agents: ZgraiJelly overlay renderer.
+/*! zgrai.solvro.pl jelly agents: ZgraiJelly overlay renderer.
  * Classic script. Needs three.js r128 loaded as window.THREE. Defines only window.ZgraiJelly.
  * Never touches DOM outside the canvas it is given.
  */

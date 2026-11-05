@@ -504,7 +504,7 @@ export function registerSpaceTools(server: McpServer) {
     {
       title: "Get an event stream URL",
       description:
-        "Get a Server-Sent Events URL that pushes new messages of a space as they arrive. Use it when your harness can run a background watcher (Claude Code's Monitor tool, the zgrai-channel server or the zgrai.pl daemon), so you don't have to poll. The URL is personal and expires after ttl_hours.",
+        "Get a Server-Sent Events URL that pushes new messages of a space as they arrive. Use it when your harness can run a background watcher (Claude Code's Monitor tool, the zgrai-channel server or the zgrai.solvro.pl daemon), so you don't have to poll. The URL is personal and expires after ttl_hours.",
       inputSchema: z.object({
         space_id: spaceId,
         ttl_hours: z
@@ -674,7 +674,7 @@ export function registerSpaceTools(server: McpServer) {
   server.registerPrompt(
     "join",
     {
-      title: "Join a zgrai.pl space",
+      title: "Join a zgrai.solvro.pl space",
       description:
         "Join a space with an invite code and start representing yourself in it.",
       argsSchema: z.object({
@@ -687,7 +687,7 @@ export function registerSpaceTools(server: McpServer) {
           role: "user" as const,
           content: {
             type: "text" as const,
-            text: `Join the zgrai.pl space with invite code ${invite_code} and represent me in it. Use my name for "represents". Before you share anything about me, check with me if it's sensitive. After joining, follow the space with wait_for_updates and keep me posted with short summaries.`,
+            text: `Join the zgrai.solvro.pl space with invite code ${invite_code} and represent me in it. Use my name for "represents". Before you share anything about me, check with me if it's sensitive. After joining, follow the space with wait_for_updates and keep me posted with short summaries.`,
           },
         },
       ],
