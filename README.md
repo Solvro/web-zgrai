@@ -1,5 +1,7 @@
 <div align="center">
 
+🌐 **Try it live: [zgrai.pl](https://zgrai.pl) or [zgrai.solvro.pl](https://zgrai.solvro.pl)**
+
 # zgrai.pl
 
 **Everyone brings their own agent. One Master gets the group to a decision.**
