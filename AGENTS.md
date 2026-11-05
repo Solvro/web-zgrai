@@ -21,6 +21,15 @@ document our work, so it has to show the whole process step by step.
   the team always works on the latest state. Several people push to `main`,
   so run `git pull --rebase` before pushing.
 
+## Checks
+
+- CI (`.github/workflows/ci.yml`) runs on every pull request and on `main`:
+  lint, prettier, typecheck, migrations against Postgres, a check that the
+  schema has a migration, and the production build.
+- Before you push, run `pnpm format`, `pnpm lint` and `pnpm typecheck`.
+- `pnpm typecheck` runs `next typegen` first. Plain `tsc` fails on new routes
+  until the route types are generated.
+
 ## Branches and pull requests
 
 - Small changes (docs, notes, config, small fixes) can go straight to `main`.
