@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Solvrownicy w piaskownicy
 
-## Getting Started
+Hackathon project built with Next.js 16, Better Auth, Drizzle ORM, PostgreSQL and shadcn/ui.
+The app is also an OAuth 2.1 authorization server for MCP clients and exposes an MCP server at `/api/mcp`.
 
-First, run the development server:
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env              # then set BETTER_AUTH_SECRET (openssl rand -base64 32)
+pnpm db:up                        # postgres on localhost:5433
+pnpm db:migrate
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Script             | Description                                  |
+| ------------------ | -------------------------------------------- |
+| `pnpm dev`         | start the dev server                         |
+| `pnpm build`       | production build                             |
+| `pnpm lint`        | run eslint                                   |
+| `pnpm db:up`       | start postgres with docker compose           |
+| `pnpm db:generate` | generate a migration from the drizzle schema |
+| `pnpm db:migrate`  | apply migrations                             |
+| `pnpm db:push`     | push the schema without a migration          |
+| `pnpm db:studio`   | open drizzle studio                          |
 
-## Learn More
+After adding Better Auth plugins, regenerate the auth schema and a migration:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm exec auth generate --config src/lib/auth.ts --output src/db/schema/auth.ts --yes
+pnpm db:generate
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## MCP
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The MCP server lives at `http://localhost:3000/api/mcp` and requires an OAuth access token.
+Clients discover the authorization server through
+`/.well-known/oauth-protected-resource/api/mcp`, register dynamically, send the user through
+`/login` and `/consent`, and then call tools with the issued token.
 
-## Deploy on Vercel
+Add it to Claude Code:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+claude mcp add --transport http solvrownicy http://localhost:3000/api/mcp
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tools are registered in `src/app/api/mcp/route.ts`. The signed-in user's id is available in
+tool handlers as `ctx.http?.authInfo?.extra?.userId`.
+
+## Project layout
+
+```
+src/
+  app/
+    .well-known/        OAuth / OIDC / protected resource metadata
+    api/auth/           Better Auth handler
+    api/mcp/            MCP server
+    login/ signup/      auth pages (shadcn login-01 / signup-01 blocks)
+    consent/            OAuth consent page
+  components/ui/        shadcn/ui components
+  db/                   drizzle client and schema
+  lib/auth.ts           Better Auth server config
+  lib/auth-client.ts    Better Auth React client
+drizzle/                SQL migrations
+ideas/                  brainstorming transcripts
+```
