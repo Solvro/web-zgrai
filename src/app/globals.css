@@ -183,6 +183,12 @@
   }
 }
 
+/* Once the 3D jelly overlay runs, it draws every <Bot>; the flat SVG inside
+   stays only as the fallback. */
+html[data-jelly="live"] .jelly-fallback {
+  visibility: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
