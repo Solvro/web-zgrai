@@ -119,10 +119,18 @@ export async function buildMasterSnapshot(spaceId: string, now: Date) {
     )
     .join("\n");
   const subproblems = plan.subproblems
-    .map(
-      (s) =>
-        `  <subproblem id="${s.id}" status="${s.status}"${s.decision ? ` decision="${esc(s.decision)}"` : ""}>${esc(s.title)}</subproblem>`,
-    )
+    .map((s) => {
+      const opinions = Object.entries(s.opinions ?? {}).map(
+        ([participantId, text]) =>
+          `    <opinion from="participant:${participantId}">${esc(text)}</opinion>`,
+      );
+      return [
+        `  <subproblem id="${s.id}" status="${s.status}"${s.decision ? ` decision="${esc(s.decision)}"` : ""}>`,
+        `    <title>${esc(s.title)}</title>`,
+        ...opinions,
+        "  </subproblem>",
+      ].join("\n");
+    })
     .join("\n");
   const constraints = plan.constraints
     .map((c) => `  <constraint>${esc(c)}</constraint>`)
