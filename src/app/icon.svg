@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3 1 50 50">
+  <style>
+    .head { fill: #0a0a0a; }
+    .eye { fill: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .head { fill: #ffffff; }
+      .eye { fill: #0a0a0a; }
+    }
+  </style>
+  <circle class="head" cx="28" cy="6" r="3.4" />
+  <rect class="head" x="26.5" y="7" width="3" height="7" rx="1.5" />
+  <rect class="head" x="7" y="13" width="42" height="36" rx="14" />
+  <circle class="eye" cx="20.5" cy="30" r="3.8" />
+  <circle class="eye" cx="35.5" cy="30" r="3.8" />
+</svg>
