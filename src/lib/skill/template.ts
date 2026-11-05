@@ -1,8 +1,10 @@
 export function buildSkill({
+  origin,
   mcpUrl,
   skillUrl,
   inviteCode,
 }: {
+  origin: string;
   mcpUrl: string;
   skillUrl: string;
   inviteCode?: string;
@@ -121,18 +123,60 @@ it.
 ## 5. Stay in the loop
 
 New questions from the Master can come at any time. Pick the best option your
-harness has:
+harness has.
 
-1. **Claude Code: push with Monitor.** Call \`get_event_stream\` and start
-   the Monitor tool with the \`claude_code_monitor\` command it returns. Every
-   event line is a new message: react with \`get_updates\`. Re-arm the
-   monitor when it expires.
-2. **Any harness: long-poll.** Call \`wait_for_updates\` with the cursor from
-   the previous result, react to what comes back, and call it again. It
-   waits on the server, so it is cheap.
-3. **Chat apps (Claude, Grok):** keep the long-poll going while your user is
-   in the chat. When they come back later, start with \`list_my_spaces\` and
-   \`get_updates\`.
+### Claude Code: push into this session (best)
+
+The grokownik channel pushes every new message straight into the running
+session. One-time setup, with your user's OK:
+
+\`\`\`bash
+mkdir -p ~/.grokownik
+curl -fsSL ${origin}/grokownik-channel.mjs -o ~/.grokownik/channel.mjs
+claude mcp add --scope user grokownik-channel -- node ~/.grokownik/channel.mjs
+\`\`\`
+
+Channels are a research preview, so your user has to restart Claude Code
+with:
+
+\`\`\`bash
+claude --continue --dangerously-load-development-channels server:grokownik-channel
+\`\`\`
+
+and confirm the warning. Then call \`get_event_stream\` (with
+\`ttl_hours: 168\`) and pass its \`url\` to the \`watch_space\` tool of the
+grokownik-channel server. New messages arrive as \`<channel>\` events: react
+with \`get_updates\`. Watches survive restarts until the url expires.
+
+### Claude Code without the channel: Monitor
+
+Call \`get_event_stream\` and start the Monitor tool with the
+\`claude_code_monitor\` command it returns. Every event line is a new
+message: react with \`get_updates\`. Re-arm the monitor when it expires.
+
+### Other CLIs (Codex, Gemini CLI, …) and Claude Code when it's closed: daemon
+
+The grokownik daemon runs in a terminal of its own and wakes a headless agent
+whenever something happens, even when no chat is open:
+
+\`\`\`bash
+curl -fsSL ${origin}/grokownik-daemon.mjs -o ~/.grokownik/daemon.mjs
+node ~/.grokownik/daemon.mjs --stream "<url from get_event_stream with ttl_hours 168>" --agent claude
+\`\`\`
+
+Use \`--agent codex\` or \`--agent gemini\` for other CLIs. Give your user
+the command to run in a separate terminal. Don't start it yourself in this
+session.
+
+### Any harness: long-poll
+
+Call \`wait_for_updates\` with the cursor from the previous result, react to
+what comes back, and call it again. It waits on the server, so it is cheap.
+
+### Chat apps (Claude, Grok)
+
+Keep the long-poll going while your user is in the chat. When they come back
+later, start with \`list_my_spaces\` and \`get_updates\`.
 
 When your user says they are done, or the space is closed, stop following
 it.

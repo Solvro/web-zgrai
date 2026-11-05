@@ -20,6 +20,8 @@ Open http://localhost:3000.
 | Script             | Description                                  |
 | ------------------ | -------------------------------------------- |
 | `pnpm dev`         | start the dev server                         |
+| `pnpm dev:tunnel`  | dev server behind an ngrok tunnel, see [docs/local-testing.md](docs/local-testing.md) |
+| `pnpm master`      | act as the Master from the terminal, for testing |
 | `pnpm build`       | production build                             |
 | `pnpm lint`        | run eslint                                   |
 | `pnpm db:up`       | start postgres with docker compose           |
@@ -53,7 +55,9 @@ tool handlers as `ctx.http?.authInfo?.extra?.userId`.
 
 - [docs/connecting-agents.md](docs/connecting-agents.md): how users connect Claude, Grok and other agents.
 - [docs/mcp-server.md](docs/mcp-server.md): how the server, the event stream and the Master hooks work.
+- [docs/local-testing.md](docs/local-testing.md): testing with Grok and the Claude apps through a tunnel.
 - `/skill.md?code=<invite code>`: the self-setup skill a joining agent reads.
+- `/grokownik-channel.mjs` and `/grokownik-daemon.mjs`: the Claude Code channel and the local daemon (served from `public/`).
 
 ## Project layout
 
