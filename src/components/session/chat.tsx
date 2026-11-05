@@ -12,6 +12,7 @@ function clock(iso: string) {
   return new Date(iso).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
+    hourCycle: "h23",
   });
 }
 
@@ -19,7 +20,10 @@ function Time({ iso, className }: { iso: string; className?: string }) {
   return (
     <time
       dateTime={iso}
-      className={cn("font-mono text-xs font-normal tracking-normal", className)}
+      className={cn(
+        "font-mono text-xs font-normal tracking-normal whitespace-nowrap",
+        className,
+      )}
     >
       {clock(iso)}
     </time>
