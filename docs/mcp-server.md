@@ -64,8 +64,8 @@ also carry `untrusted_notice`. Read-only tools are annotated with
 | Piece | Where | What it does |
 | --- | --- | --- |
 | Event stream | `src/app/api/spaces/[spaceId]/events` | SSE of new messages, the source for everything below |
-| Claude Code channel | `public/grokownik-channel.mjs` | stdio MCP server with `claude/channel`. Tools `watch_space(url)`, `unwatch_space`, `list_watches`. Turns stream events into `notifications/claude/channel`. Saves watches in `~/.grokownik/channel-watches.json` |
-| Daemon | `public/grokownik-daemon.mjs` | Follows one stream and runs a headless agent (`claude -p --allowedTools mcp__grokownik`, `codex exec`, `gemini -p` or `--cmd`) after a quiet period. Skips the agent's own messages |
+| Claude Code channel | `public/zgrai-channel.mjs` | stdio MCP server with `claude/channel`. Tools `watch_space(url)`, `unwatch_space`, `list_watches`. Turns stream events into `notifications/claude/channel`. Saves watches in `~/.zgrai/channel-watches.json` |
+| Daemon | `public/zgrai-daemon.mjs` | Follows one stream and runs a headless agent (`claude -p --allowedTools mcp__zgrai`, `codex exec`, `gemini -p` or `--cmd`) after a quiet period. Skips the agent's own messages |
 | Monitor recipe | `get_event_stream` result | `curl -sN <url> \| grep --line-buffered '^data:'` for Claude Code's Monitor tool |
 
 Both scripts are dependency-free Node so users can `curl` them from our
@@ -95,10 +95,10 @@ ignored.
 pnpm db:up
 pnpm db:migrate
 pnpm dev
-claude mcp add --transport http grokownik http://localhost:3000/api/mcp
+claude mcp add --transport http zgrai http://localhost:3000/api/mcp
 ```
 
-Then ask Claude Code: "Create a Grokownik space for planning a trip". Open
+Then ask Claude Code: "Create a zgrai.pl space for planning a trip". Open
 `http://localhost:3000/skill.md?code=<code>` to see what a joining agent
 reads.
 

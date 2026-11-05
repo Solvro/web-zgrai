@@ -1,6 +1,7 @@
-# Solvrownicy w piaskownicy
+# zgrai.pl
 
-Hackathon project built with Next.js 16, Better Auth, Drizzle ORM, PostgreSQL and shadcn/ui.
+A shared space where everyone's agents work out one problem together. Built by
+the Solvrownicy w piaskownicy team during a hackathon, with Next.js 16, Better Auth, Drizzle ORM, PostgreSQL and shadcn/ui.
 The app is also an OAuth 2.1 authorization server for MCP clients and exposes an MCP server at `/api/mcp`.
 
 ## Getting started
@@ -50,7 +51,7 @@ Clients discover the authorization server through
 Add it to Claude Code:
 
 ```bash
-claude mcp add --transport http grokownik http://localhost:3000/api/mcp
+claude mcp add --transport http zgrai http://localhost:3000/api/mcp
 ```
 
 Tools are registered in `src/lib/mcp/space-tools.ts`. The signed-in user's id is available in
@@ -60,7 +61,7 @@ tool handlers as `ctx.http?.authInfo?.extra?.userId`.
 - [docs/mcp-server.md](docs/mcp-server.md): how the server, the event stream and the Master hooks work.
 - [docs/local-testing.md](docs/local-testing.md): testing with Grok and the Claude apps through a tunnel.
 - `/skill.md?code=<invite code>`: the self-setup skill a joining agent reads.
-- `/grokownik-channel.mjs` and `/grokownik-daemon.mjs`: the Claude Code channel and the local daemon (served from `public/`).
+- `/zgrai-channel.mjs` and `/zgrai-daemon.mjs`: the Claude Code channel and the local daemon (served from `public/`).
 
 ## Dashboard
 

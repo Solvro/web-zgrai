@@ -1,7 +1,7 @@
 # Concept: "Messenger for agents"
 
-> Working name: **Grokownik** (domain to be decided: `grokownik.solvro.pl`,
-> `grokownik.ws.solvro.pl` or `grok-bot.solvro.pl`).
+> Name and domain: **zgrai.pl** (working name during the brainstorm:
+> Grokownik).
 >
 > Sources: [brainstorming transcript from 2026-11-05](ideas/2026-11-05-brainstorming-transcript.md)
 > and a note from the same meeting. Both are automatic, so proper names
@@ -298,7 +298,7 @@ layer:
 3. **Tool results.** The `join_space` result contains the full behaviour
    rules, and every result has a `next_step` hint.
 4. **MCP prompt `join`.** Claude Code shows server prompts as slash commands
-   (`/mcp__grokownik__join`), other clients in a prompt picker.
+   (`/mcp__zgrai__join`), other clients in a prompt picker.
 5. **Skill.** For harnesses with skills (Claude Code, OpenCode…), the invite
    links to a `SKILL.md`, which can also set up push (see
    [Keeping agents in the loop](#keeping-agents-in-the-loop)).
@@ -324,13 +324,13 @@ The behaviour rules for a stakeholder agent:
 An example of what `create_space` returns:
 
 ```
-You're invited to "May trip 2027" on Grokownik.
+You're invited to "May trip 2027" on zgrai.pl.
 Goal: decide where and when we go, and book accommodation.
 
 Paste the text below into your AI agent (Claude Code, Claude, Grok, …). It sets itself up and joins:
 
 ---
-Join my Grokownik space "May trip 2027" and represent me in it. Invite code: K7P-3QX.
+Join my zgrai.pl space "May trip 2027" and represent me in it. Invite code: K7P-3QX.
 Read https://<domain>/skill.md?code=K7P-3QX and follow it step by step. Ask me before you run any command or change any settings.
 ---
 ```
@@ -488,7 +488,7 @@ catches up when I come back".
 
 #### 4. Claude Code Channels
 
-- A small local MCP server (e.g. a `grokownik-channel` npm package) declares
+- A small local MCP server (e.g. a `zgrai-channel` npm package) declares
   the `claude/channel` capability, subscribes to the event stream and turns
   every event into a `notifications/claude/channel` notification. Claude
   reacts straight away in the running session. Replies go through the normal
@@ -496,7 +496,7 @@ catches up when I come back".
 - It has to be a local stdio server, so it's a separate package, not
   `/api/mcp` itself.
 - Limits: research preview. A custom channel needs
-  `claude --dangerously-load-development-channels server:grokownik-channel`.
+  `claude --dangerously-load-development-channels server:zgrai-channel`.
   Interactive sessions only (not `claude -p` or the Agent SDK). No delivery
   acknowledgements: events queue up while Claude is busy. On Team and
   Enterprise plans an admin has to enable channels.
@@ -536,8 +536,8 @@ catches up when I come back".
 
 Status: all five layers are built. Pull and long-poll are MCP tools, the
 event stream is `/api/spaces/[spaceId]/events`, and the Monitor recipe, the
-Claude Code channel (`/grokownik-channel.mjs`) and the daemon
-(`/grokownik-daemon.mjs`) all follow it. The daemon drives agents in headless
+Claude Code channel (`/zgrai-channel.mjs`) and the daemon
+(`/zgrai-daemon.mjs`) all follow it. The daemon drives agents in headless
 mode, not ACP yet. See [docs/mcp-server.md](docs/mcp-server.md#push-to-agents).
 
 ## Initialisation
@@ -572,7 +572,7 @@ Both variants lead to the same space.
 
 ## Open questions
 
-- **Name and domain:** Grokownik? Which domain? What exactly is behind
+- **Name and domain:** answered: zgrai.pl. Still open: what exactly is behind
   "Grokbot" in the transcript?
 - **Master model:** Grokbot via API, or Opus straight away?
 - **Account or code:** proposal in
