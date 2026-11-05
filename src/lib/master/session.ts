@@ -1,5 +1,5 @@
-import { eq } from "drizzle-orm";
-import { Client } from "eve/client";
+import { and, eq } from "drizzle-orm";
+import { Client, SessionNotActiveError } from "eve/client";
 import {
   APPROVE_OPTION_ID,
   emptySessionView,
@@ -52,10 +52,45 @@ export async function ensureMasterSession(spaceId: string) {
   return (await getMasterSession(spaceId))!;
 }
 
+// Swaps a session eve no longer has (e.g. its state was lost on redeploy) for
+// a fresh one. The Master gets the space back from its dynamic instructions.
+async function replaceMasterSession(spaceId: string, staleSessionId: string) {
+  const { session } = await masterClient().sessions.create();
+  await db
+    .update(masterSession)
+    .set({
+      sessionId: session.id,
+      pausedAt: null,
+      budgetInteractionId: null,
+    })
+    .where(
+      and(
+        eq(masterSession.spaceId, spaceId),
+        eq(masterSession.sessionId, staleSessionId),
+      ),
+    );
+  return (await getMasterSession(spaceId))!.sessionId;
+}
+
 // Queues one Master turn. eve runs turns of a session one after another, so a
 // turn sent while another runs waits for it.
-export async function sendToMaster(sessionId: string, text: string) {
-  await masterClient().sessions.attach(sessionId).send(text);
+export async function sendToMaster(
+  spaceId: string,
+  sessionId: string,
+  text: string,
+) {
+  try {
+    await masterClient().sessions.attach(sessionId).send(text);
+  } catch (error) {
+    if (!(error instanceof SessionNotActiveError) || error.retryable) {
+      throw error;
+    }
+    console.warn(
+      `Master session ${sessionId} of space ${spaceId} is gone, starting a new one`,
+    );
+    const fresh = await replaceMasterSession(spaceId, sessionId);
+    await masterClient().sessions.attach(fresh).send(text);
+  }
 }
 
 export async function markMasterSessionEnded(spaceId: string) {

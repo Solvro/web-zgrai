@@ -161,7 +161,7 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
     parts.push(
       "Decide what the space needs next and act through your tools. React to what participants said or asked so the current step keeps moving. End the turn without posting only if nothing new needs an answer.",
     );
-    await sendToMaster(session.sessionId, parts.join("\n"));
+    await sendToMaster(spaceId, session.sessionId, parts.join("\n"));
   }
 
   await db
