@@ -7,6 +7,7 @@ import {
   peekMessages,
   type Participant,
   SpaceError,
+  touchParticipant,
   truncate,
 } from "@/lib/spaces/service";
 import { verifyStreamToken } from "@/lib/spaces/stream-token";
@@ -87,6 +88,7 @@ export async function GET(
           }
           if (Date.now() - lastBeat > HEARTBEAT_MS) {
             send(": ping\n\n");
+            await touchParticipant(participant.id);
             lastBeat = Date.now();
           }
         } catch (error) {
