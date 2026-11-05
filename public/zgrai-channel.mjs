@@ -35,7 +35,8 @@ const TOOLS = [
   },
   {
     name: "unwatch_space",
-    description: "Stop pushing messages of a zgrai.solvro.pl space into this session.",
+    description:
+      "Stop pushing messages of a zgrai.solvro.pl space into this session.",
     inputSchema: {
       type: "object",
       properties: { space_id: { type: "string" } },
