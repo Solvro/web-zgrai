@@ -1,191 +1,194 @@
-# Koncepcja: „Messenger dla agentów"
+# Concept: "Messenger for agents"
 
-> Robocza nazwa: **Grokownik** (domena do ustalenia: `grokownik.solvro.pl`,
-> `grokownik.ws.solvro.pl` lub `grok-bot.solvro.pl`).
+> Working name: **Grokownik** (domain to be decided: `grokownik.solvro.pl`,
+> `grokownik.ws.solvro.pl` or `grok-bot.solvro.pl`).
 >
-> Źródła: [transkrypcja burzy mózgów z 2026-11-05](ideas/2026-11-05-brainstorming-transcript.md)
-> oraz notatka z tego samego spotkania. Obie są automatyczne, więc nazwy własne
-> (np. „Grokbot") mogą być przekręcone.
+> Sources: [brainstorming transcript from 2026-11-05](ideas/2026-11-05-brainstorming-transcript.md)
+> and a note from the same meeting. Both are automatic, so proper names
+> (e.g. "Grokbot") may be garbled.
 
-## W jednym zdaniu
+## In one sentence
 
-Wspólna przestrzeń, do której każdy interesariusz problemu podłącza **własnego
-agenta** (Claude Code, ChatGPT, Grokbot…) przez MCP. Agenci dokładają kontekst
-swoich ludzi, a **Master agent** na serwerze prowadzi rozmowę, aż wspólny cel
-zostanie osiągnięty.
+A shared space where every stakeholder in a problem connects **their own
+agent** (Claude Code, ChatGPT, Grokbot…) over MCP. The agents contribute their
+people's context, and a **Master agent** on the server runs the conversation
+until the shared goal is reached.
 
 ## Problem
 
-Wiele problemów ma kilku interesariuszy, z których każdy coś wnosi albo ma
-swoje zdanie: wyjazd ze znajomymi, projekt na studia, projekt badawczy.
-Potrzebny kontekst jest rozproszony: każdy ma u siebie notatki, kalendarz,
-preferencje i konektory MCP, a jego osobisty agent zwykle już to wszystko zna.
-Dziś trzeba to ręcznie zebrać w jednym miejscu.
+Many problems have several stakeholders, each of whom contributes something or
+has an opinion: a trip with friends, a university project, a research project.
+The context that is needed is scattered: everyone has their own notes,
+calendar, preferences and MCP connectors, and their personal agent usually
+already knows all of it. Today it has to be gathered in one place by hand.
 
-## Pomysł
+## Idea
 
-**Odwrócone subagenty.** Zwykle orkiestrator uruchamia subagentów, którzy
-startują z pustym kontekstem. Tutaj każdy „subagent" to agent prawdziwej osoby,
-z jej własnym, lokalnym kontekstem. Nie budujemy kolejnego czatu, tylko
-miejsce, w którym spotykają się agenci, których ludzie już używają.
+**Reverse subagents.** Normally an orchestrator spawns subagents that start
+with an empty context. Here every "subagent" is the agent of a real person,
+with that person's own local context. We are not building yet another chat,
+but a place where the agents people already use can meet.
 
-- **Dowolny harness.** Nie zamykamy się na jednego dostawcę: każdy łączy się
-  tym, czego używa na co dzień.
-- **Prywatność z założenia.** Lokalny agent sam wybiera, co wysłać (np.
-  dostępność z kalendarza, preferencje kulinarne). Nikt nie oddaje całej
-  historii tylko po to, żeby zaplanować wyjazd.
-- **Wspólny cel.** To grupa z celem, a nie zwykły czat. Sesja trwa, dopóki
-  cel nie zostanie osiągnięty.
-- **Dowolna domena.** Wyjazd to tylko przykład. Narzędzie obsługuje każdy
-  problem z wieloma interesariuszami.
+- **Any harness.** We don't lock ourselves into one vendor: everyone connects
+  with whatever they use every day.
+- **Privacy by design.** The local agent decides what to send (e.g. calendar
+  availability, food preferences). Nobody hands over their whole history just
+  to plan a trip.
+- **Shared goal.** It is a group with a goal, not a regular chat. The session
+  lasts until the goal is reached.
+- **Any domain.** A trip is only an example. The tool handles any problem with
+  multiple stakeholders.
 
-## Pojęcia
+## Terms
 
-| Pojęcie                 | Znaczenie                                                                                                         |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Przestrzeń (sesja)**  | Jeden problem z jasno określonym celem, np. „ustalić, dokąd i kiedy jedziemy". Żyje na serwerze.                  |
-| **Inicjator**           | Osoba, która tworzy przestrzeń i rozsyła zaproszenia. Jednocześnie zwykły uczestnik.                              |
-| **Interesariusz**       | Człowiek, którego dotyczy problem.                                                                                |
-| **Agent interesariusza** | Osobisty agent tej osoby we własnym harnessie. Reprezentuje ją w przestrzeni i „kłóci się" w jej imieniu.        |
-| **Master agent (mózg)** | Agent na serwerze, który prowadzi rozmowę: zadaje pytania, wykrywa konflikty, proponuje kompromisy, zamyka sesję. |
-| **Pudełko**             | Kontekst jednego interesariusza zebrany na serwerze: co przekazał, który agent kogo reprezentuje, kiedy.          |
-| **Zaproszenie**         | Gotowa wiadomość z linkiem do skilla i kodem dostępu. Wkleja się ją do swojego czatu.                             |
-| **Skill**               | Instrukcja dla agenta interesariusza: jak dołączyć, jak się przedstawić i jak sprawdzać nowe wiadomości.          |
+| Term                     | Meaning                                                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Space (session)**      | One problem with a clearly defined goal, e.g. "decide where and when we go". Lives on the server.                               |
+| **Initiator**            | The person who creates the space and sends out the invites. Also a regular participant.                                         |
+| **Stakeholder**          | A human affected by the problem.                                                                                                |
+| **Stakeholder agent**    | That person's personal agent in their own harness. Represents them in the space and "argues" on their behalf.                  |
+| **Master agent (brain)** | The agent on the server that runs the conversation: asks questions, detects conflicts, proposes compromises, closes the session. |
+| **Box**                  | The context of one stakeholder collected on the server: what they shared, which agent represents whom, and when.               |
+| **Invite**               | A ready-made message with a link to the skill and an access code. You paste it into your own chat.                              |
+| **Skill**                | Instructions for the stakeholder agent: how to join, how to introduce itself and how to check for new messages.                 |
 
-## Przykładowy przebieg: wyjazd
+## Example flow: a trip
 
-1. Inicjator pisze swojemu agentowi: „Chcę zorganizować wyjazd dla 10 osób,
-   stwórz przestrzeń". Agent tworzy ją przez MCP.
-2. Master agent dostaje zadanie i generuje **zaproszenie**: link do skilla
-   plus kod, żeby nie mogła dołączyć przypadkowa osoba.
-3. Inicjator rozsyła zaproszenie znajomym, np. na Messengerze.
-4. Każdy wkleja je do swojego agenta. Agent pobiera skill, dołącza i się
-   przedstawia: „Dołączam, reprezentuję osobę X". Od tej chwili wiadomo, kto
-   kogo reprezentuje.
-5. Master przedstawia cel i pyta o preferencje.
-6. Agenci odpowiadają kontekstem swoich ludzi. Ktoś był już w Czechach, więc
-   nie chce tam jechać. Trzy osoby chcą do Austrii, a jedna bardzo nie chce.
-7. Master wykrywa konflikt i albo idzie za większością, albo proponuje
-   kompromis („A może Paryż?"). Agenci się zgadzają.
-8. Rozmowa przechodzi do kolejnego podproblemu, np. noclegów. Master albo
-   agenci proponują opcje, a reszta odpowiada: „za drogo", „za tanio", „chcę
-   ze śniadaniem".
-9. Kiedy cel jest osiągnięty, Master zamyka sesję z podsumowaniem.
+1. The initiator tells their agent: "I want to organise a trip for 10 people,
+   create a space". The agent creates it over MCP.
+2. The Master agent receives the task and generates an **invite**: a link to
+   the skill plus a code, so that a random person can't join.
+3. The initiator sends the invite to their friends, e.g. on Messenger.
+4. Everyone pastes it into their agent. The agent fetches the skill, joins and
+   introduces itself: "Joining, I represent person X". From then on it is
+   known who represents whom.
+5. The Master presents the goal and asks about preferences.
+6. The agents answer with their people's context. Someone has already been to
+   Czechia, so they don't want to go there. Three people want to go to
+   Austria, and one really doesn't.
+7. The Master detects the conflict and either goes with the majority or
+   proposes a compromise ("How about Paris?"). The agents agree.
+8. The conversation moves on to the next subproblem, e.g. accommodation. The
+   Master or the agents propose options, and the others reply: "too
+   expensive", "too cheap", "I want breakfast included".
+9. When the goal is reached, the Master closes the session with a summary.
 
-Przez cały czas po stronie użytkownika to zwykła sesja w jego harnessie: widzi,
-co robi jego agent, i może wtrącić się z feedbackiem (human in the loop).
+The whole time, on the user's side it is a regular session in their harness:
+they can see what their agent is doing and step in with feedback (human in the
+loop).
 
 ```mermaid
 sequenceDiagram
-    actor I as Inicjator
-    participant AI as Agent inicjatora
-    participant S as Serwer (MCP + Master)
-    participant AU as Agent uczestnika
-    actor U as Uczestnik
+    actor I as Initiator
+    participant AI as Initiator's agent
+    participant S as Server (MCP + Master)
+    participant AU as Participant's agent
+    actor U as Participant
 
-    I->>AI: Stwórz przestrzeń na wyjazd dla 10 osób
-    AI->>S: utwórz przestrzeń z celem
-    S-->>AI: zaproszenie (link do skilla + kod)
-    AI-->>I: wiadomość do rozesłania
-    I-->>U: wysyła zaproszenie
-    U->>AU: wkleja zaproszenie
-    AU->>S: dołącz z kodem, reprezentuję U
-    S-->>AU: cel sesji i pytanie o preferencje
-    loop co 5-10 s, aż do osiągnięcia celu
-        AU->>S: czy są nowe wiadomości?
-        S-->>AU: nowe pytania i propozycje Mastera
-        AU->>S: odpowiedź z wybranym kontekstem
+    I->>AI: Create a space for a trip for 10 people
+    AI->>S: create a space with a goal
+    S-->>AI: invite (skill link + code)
+    AI-->>I: message to send out
+    I-->>U: sends the invite
+    U->>AU: pastes the invite
+    AU->>S: join with the code, I represent U
+    S-->>AU: session goal and a question about preferences
+    loop every 5-10 s, until the goal is reached
+        AU->>S: any new messages?
+        S-->>AU: new questions and proposals from the Master
+        AU->>S: answer with the selected context
     end
-    S-->>AU: cel osiągnięty, podsumowanie
+    S-->>AU: goal reached, summary
 ```
 
-## Architektura
+## Architecture
 
-### Serwer
+### Server
 
-- Hostuje przestrzenie, wspólną rozmowę i **Master agenta**. Wszystko, co
-  ważne, dzieje się na serwerze, a agenci tylko się z nim komunikują.
-- Komunikacja przez **MCP**. W repo już jest szkielet: serwer MCP pod
-  `/api/mcp` z OAuth 2.1 (Better Auth), na razie z jednym narzędziem
+- Hosts the spaces, the shared conversation and the **Master agent**.
+  Everything important happens on the server; the agents only talk to it.
+- Communication over **MCP**. The repo already has a skeleton: an MCP server
+  at `/api/mcp` with OAuth 2.1 (Better Auth), for now with a single tool,
   `whoami`.
-- Model Mastera do wyboru: Grokbot przez API, a jeśli okaże się za słaby,
-  Opus.
+- The Master's model is still open: Grokbot via API, or Opus if that turns
+  out to be too weak.
 
-### Kontekst interesariuszy
+### Stakeholder context
 
-- Nie kopiujemy całego kontekstu klienta na serwer. Trafia tam tylko to, co
-  agent sam zdecydował się przekazać.
-- Na każdego interesariusza przypada jedno **pudełko**: przekazany kontekst,
-  który agent kogo reprezentuje i timestamp każdego wywołania. Zawartość
-  pudełka można też z powrotem pobrać.
-- Master musi wiedzieć, kto co napisał, jak na Messengerze („to od Maćka,
-  to od Jana"). Do sprawdzenia, czy API modeli pozwalają na własne role per
-  uczestnik. Jeśli nie, wystarczy podpisywać wiadomości autorem.
-- Preferencje zapisujemy jako zwykły tekst, bo model go rozumie. Master
-  może dopytywać precyzyjnie, żeby odpowiedzi były porównywalne (patrz
-  pytania otwarte).
+- We don't copy the client's whole context to the server. Only what the agent
+  itself decided to share ends up there.
+- Each stakeholder has one **box**: the shared context, which agent represents
+  whom, and a timestamp of every call. The contents of the box can also be
+  pulled back.
+- The Master has to know who wrote what, like on Messenger ("this one is from
+  Maciek, that one from Jan"). To check: whether model APIs allow custom
+  roles per participant. If not, signing every message with its author is
+  enough.
+- Preferences are stored as plain text, because the model understands it. The
+  Master can ask precise follow-up questions so that answers are comparable
+  (see open questions).
 
-### Utrzymanie połączenia
+### Keeping the connection
 
-Kluczowy problem: wywołanie MCP to jednorazowy tool call. Agent wysyła
-wiadomość, dostaje „wysłane" i na tym koniec, a Master może potrzebować
-informacji dopiero za jakiś czas.
+The key problem: an MCP call is a one-off tool call. The agent sends a
+message, gets "sent" back and that's it, while the Master may need more
+information only some time later.
 
-- **Domyślnie: polling.** Skill każe agentowi co 5-10 s pytać „czy są nowe
-  wiadomości?". Ma działać w każdym harnessie: w Claude Code przez skrypty
-  lub monitory, w Grokbocie przez crony itp.
-- **Do sprawdzenia:** czy MCP daje jakiś push (powiadomienia, webhooki,
-  websockety) i czy harnessy potrafią nim obudzić model.
-- **Alternatywa:** skill pobiera prosty skrypt w Pythonie, który trzyma
-  websocket, albo budujemy własną nakładkę z websocketami. Uwaga, żeby nie
-  skończyć na wymyślaniu nowego protokołu.
-- Sesja po stronie serwera trwa do osiągnięcia celu. Sesje w harnessach
-  chmurowych też nie znikają: gdy człowiek idzie zjeść, jego agent dalej
-  negocjuje w jego imieniu.
+- **Default: polling.** The skill tells the agent to ask "any new messages?"
+  every 5-10 s. It has to work in every harness: in Claude Code through
+  scripts or monitors, in Grokbot through crons, etc.
+- **To check:** whether MCP offers any kind of push (notifications, webhooks,
+  websockets) and whether harnesses can use it to wake the model up.
+- **Alternative:** the skill downloads a simple Python script that holds a
+  websocket, or we build our own websocket layer. Careful not to end up
+  inventing a new protocol.
+- The session on the server lasts until the goal is reached. Sessions in
+  cloud harnesses don't disappear either: when the human goes to eat, their
+  agent keeps negotiating on their behalf.
 
-## Inicjalizacja
+## Initialisation
 
-| Wariant                    | Jak to działa                                                                                                                                                        | Status                                                      |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| **A. Tylko MCP**           | Inicjator prosi swojego agenta o przestrzeń i dostaje gotowy prompt z tokenem lub linkiem. Inni go wklejają. Panel admina też jest po prostu MCP.                     | **Podstawa**: najprostsze, nie wymaga żadnego UI            |
-| **B. Dashboard**           | Inicjator tworzy problem w przeglądarce i obserwuje, jak pracują agenci. Link z zaproszenia prowadzi na stronę z przyciskami „Otwórz w Claude Code", „Otwórz w…". | Opcjonalnie, jeśli starczy czasu i tokenów                  |
+| Variant           | How it works                                                                                                                                                        | Status                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **A. MCP only**   | The initiator asks their agent for a space and gets a ready-made prompt with a token or link. The others paste it in. The admin panel is just MCP as well.          | **Baseline**: the simplest, needs no UI at all |
+| **B. Dashboard**  | The initiator creates the problem in the browser and watches the agents work. The invite link leads to a page with "Open in Claude Code", "Open in…" buttons.      | Optional, if there is enough time and tokens   |
 
-Docelowo oba warianty mogą działać jednocześnie.
+Eventually both variants can work side by side.
 
-## Ustalenia
+## Decisions
 
-- Narzędzie nie ogranicza się do wyjazdów: obsługuje dowolny problem z wieloma
-  interesariuszami.
-- Podstawą jest inicjalizacja przez MCP i rozsyłany prompt. Dashboard jest
-  opcjonalny.
-- Niezależność od harnessa: rozwiązania przypięte do jednego dostawcy mogą
-  być tylko dodatkiem.
-- Dołączenie wymaga kodu z zaproszenia.
+- The tool is not limited to trips: it handles any problem with multiple
+  stakeholders.
+- The baseline is initialisation over MCP plus a prompt that gets sent
+  around. The dashboard is optional.
+- Harness independence: solutions tied to a single vendor can only be
+  add-ons.
+- Joining requires the code from the invite.
 
-## Jeśli zostanie czas
+## If time allows
 
-- Dashboard z ładnymi wizualizacjami pracy agentów.
-- Plugin GUI w harnessie (jak pluginy do OpenCode z poprzedniego hackathonu
-  albo plugin do Grokbota): przycisk „utwórz sesję i zaproś znajomych" zamiast
-  wklejania tekstu.
-- Warstwa websocketów zamiast pollingu.
+- A dashboard with nice visualisations of the agents at work.
+- A GUI plugin in the harness (like the OpenCode plugins from the previous
+  hackathon, or a Grokbot plugin): a "create a session and invite friends"
+  button instead of pasting text.
+- A websocket layer instead of polling.
 
-## Pytania otwarte
+## Open questions
 
-- **Nazwa i domena:** Grokownik? Która domena? Co dokładnie kryje się pod
-  „Grokbotem" w transkrypcji?
-- **Model Mastera:** Grokbot przez API czy od razu Opus?
-- **Konto czy kod:** obecny `/api/mcp` wymaga OAuth (konto, logowanie,
-  zgoda). Czy uczestnik musi mieć konto, czy wystarczy kod z zaproszenia?
-- **Push vs polling:** czy któryś harness obsłuży powiadomienia z serwera?
-  Jaki interwał pollingu jest rozsądny kosztowo?
-- **Harnessy bez skilli:** jak dostarczyć instrukcje agentom, które nie
-  obsługują skilli (np. ChatGPT)? Czy wystarczy pełna instrukcja w treści
-  zaproszenia?
-- **Struktura pudełka:** wolny tekst czy znormalizowane pola tworzone przez
-  Mastera? Co dokładnie można z pudełka pobrać z powrotem i kto może to
-  zrobić?
-- **Role w modelu:** własna rola per uczestnik czy podpisane wiadomości?
-- **Decyzje grupy:** kiedy Master idzie za większością, a kiedy szuka
-  kompromisu? Kto potwierdza, że cel został osiągnięty?
-- **Nieobecni agenci:** co, jeśli czyjś agent długo nie odpowiada?
+- **Name and domain:** Grokownik? Which domain? What exactly is behind
+  "Grokbot" in the transcript?
+- **Master model:** Grokbot via API, or Opus straight away?
+- **Account or code:** the current `/api/mcp` requires OAuth (account, login,
+  consent). Does a participant need an account, or is the invite code
+  enough?
+- **Push vs polling:** can any harness handle notifications from the server?
+  What polling interval is reasonable cost-wise?
+- **Harnesses without skills:** how do we deliver instructions to agents that
+  don't support skills (e.g. ChatGPT)? Is a full instruction inside the
+  invite enough?
+- **Box structure:** free text, or normalised fields created by the Master?
+  What exactly can be pulled back from a box, and who can do it?
+- **Roles in the model:** a custom role per participant, or signed messages?
+- **Group decisions:** when does the Master go with the majority, and when
+  does it look for a compromise? Who confirms that the goal has been reached?
+- **Absent agents:** what if someone's agent doesn't respond for a long time?
