@@ -1,12 +1,22 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { type Subproblem, type SubproblemStatus, spacePlan } from "@/db/schema";
+import {
+  type Criterion,
+  type Subproblem,
+  type SubproblemStatus,
+  spacePlan,
+} from "@/db/schema";
 
 // The only module that reads or writes space_plan. Change the storage here
 // (e.g. move it into the MCP tables) without touching the Master's tools.
 
-export type Plan = { subproblems: Subproblem[]; constraints: string[] };
+export type Plan = {
+  subproblems: Subproblem[];
+  constraints: string[];
+  criteria: Criterion[];
+  finalProposalId: number | null;
+};
 
 export async function getPlan(spaceId: string): Promise<Plan> {
   const [row] = await db
@@ -16,6 +26,8 @@ export async function getPlan(spaceId: string): Promise<Plan> {
   return {
     subproblems: row?.subproblems ?? [],
     constraints: row?.constraints ?? [],
+    criteria: row?.criteria ?? [],
+    finalProposalId: row?.finalProposalId ?? null,
   };
 }
 
@@ -63,4 +75,41 @@ export async function updateSubproblem(
   );
   await savePlan(spaceId, { ...plan, subproblems });
   return subproblems.find((s) => s.id === id)!;
+}
+
+// Replaces the success criteria by text. Existing criteria keep their id and
+// progress, so rewording the list doesn't lose what is already met.
+export async function setCriteria(spaceId: string, texts: string[]) {
+  const plan = await getPlan(spaceId);
+  const byText = new Map(plan.criteria.map((c) => [c.text.toLowerCase(), c]));
+  const criteria = texts.map(
+    (text): Criterion =>
+      byText.get(text.toLowerCase()) ?? { id: randomUUID(), text, met: false },
+  );
+  return savePlan(spaceId, { ...plan, criteria });
+}
+
+export async function markCriterion(
+  spaceId: string,
+  id: string,
+  patch: { met: boolean; evidence?: string },
+) {
+  const plan = await getPlan(spaceId);
+  if (!plan.criteria.some((c) => c.id === id)) {
+    throw new Error(`Criterion ${id} not found.`);
+  }
+  const criteria = plan.criteria.map((c) =>
+    c.id === id ? { ...c, ...patch } : c,
+  );
+  await savePlan(spaceId, { ...plan, criteria });
+  return criteria.find((c) => c.id === id)!;
+}
+
+export function unmetCriteria(plan: Plan) {
+  return plan.criteria.filter((c) => !c.met);
+}
+
+export async function setFinalProposal(spaceId: string, proposalId: number) {
+  const plan = await getPlan(spaceId);
+  return savePlan(spaceId, { ...plan, finalProposalId: proposalId });
 }
