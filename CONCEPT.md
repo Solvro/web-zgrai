@@ -51,14 +51,19 @@ but a place where the agents people already use can meet.
 | **Box**                  | The context of one stakeholder collected on the server: what they shared, which agent represents whom, and when.               |
 | **Invite**               | A ready-made message with a link to the skill and an access code. You paste it into your own chat.                              |
 | **Skill**                | Instructions for the stakeholder agent: how to join, how to introduce itself and how to check for new messages.                 |
+| **Dashboard**            | The web app for humans. First the initiator creates and shapes the problem there, then everyone follows it live.               |
+| **Notes and pins**       | The Master's thinking made visible on the dashboard: working notes, plus pinned decisions and constraints.                     |
 
 ## Example flow: a trip
 
-1. The initiator tells their agent: "I want to organise a trip for 10 people,
-   create a space". The agent creates it over MCP.
-2. The Master agent receives the task and generates an **invite**: a link to
+1. The initiator opens the dashboard and describes the problem in their own
+   words: "I want to organise a trip for 10 people". The Master asks
+   follow-up questions until the goal, the subproblems and the constraints
+   are clear.
+2. The initiator confirms, and the Master generates an **invite**: a link to
    the skill plus a code, so that a random person can't join.
-3. The initiator sends the invite to their friends, e.g. on Messenger.
+3. The initiator sends the invite to their friends, e.g. on Messenger, and
+   from now on follows the problem live on the dashboard.
 4. Everyone pastes it into their agent. The agent fetches the skill, joins and
    introduces itself: "Joining, I represent person X". From then on it is
    known who represents whom.
@@ -75,20 +80,24 @@ but a place where the agents people already use can meet.
 
 The whole time, on the user's side it is a regular session in their harness:
 they can see what their agent is doing and step in with feedback (human in the
-loop).
+loop). The whole space, with every agent in it, is visible on the dashboard.
 
 ```mermaid
 sequenceDiagram
     actor I as Initiator
-    participant AI as Initiator's agent
+    participant D as Dashboard
     participant S as Server (MCP + Master)
     participant AU as Participant's agent
     actor U as Participant
 
-    I->>AI: Create a space for a trip for 10 people
-    AI->>S: create_space(title, goal)
-    S-->>AI: invite_message (MCP URL + invite code)
-    AI-->>I: message to send out
+    I->>D: A trip for 10 people
+    D->>S: create a draft space
+    loop until the problem is clear
+        S-->>D: Master's follow-up questions and draft goal
+        I->>D: answers and corrections
+    end
+    I->>D: confirm
+    S-->>D: invite_message (MCP URL + invite code)
     I-->>U: sends the invite
     U->>AU: pastes the invite
     AU->>S: join_space(code, represents U)
@@ -97,9 +106,63 @@ sequenceDiagram
         AU->>S: wait_for_updates(cursor) or a push event
         S-->>AU: new questions and proposals from the Master
         AU->>S: send_message / share_context with the selected context
+        S-->>D: chat bubble, updated notes and pins
     end
     S-->>AU: goal reached, summary
+    S-->>D: summary
 ```
+
+## Dashboard
+
+The dashboard is a required part of the product. Agents still talk to the
+server only over MCP. The dashboard is where the humans see the problem. It
+has two stages.
+
+### Stage 1: create and shape the problem
+
+- The initiator creates a space in the browser and describes the problem in
+  their own words, as loosely as they like.
+- The Master "vibes" it into shape with them in a short chat: it asks
+  follow-up questions and proposes the goal, the subproblems (where, when,
+  accommodation…) and the constraints (dates, who takes part).
+- The draft stays editable until the initiator confirms it. Only then does
+  the space open and the invite appear, together with an invite page
+  (`/join/<code>`) with "Open in Claude Code", "Open in…" buttons.
+
+### Stage 2: follow the problem
+
+Once the agents join, the dashboard shows the Master's thinking live, in
+several forms side by side:
+
+- **Live chat.** Every interaction between a stakeholder agent, the MCP
+  server and the Master shows up as a chat bubble, like in a group
+  conversation: "Dawid's agent (Claude Code) shared availability: free 12-18
+  May", "The Master asked everyone about accommodation", "3 votes for Paris,
+  1 against". Each bubble is a one-line summary. Clicking it shows the full
+  content. Polling calls that return nothing new are not shown.
+- **Notes.** The Master's working notes, which it keeps up to date: what is
+  already known, what is still missing, which conflicts are open.
+- **Pins.** Short items pinned at the top: decisions taken and hard
+  constraints, e.g. "Destination: Paris", "Dates: 12-18 May".
+
+Together they answer "where are we now?" at a glance, without reading the
+whole conversation.
+
+Who sees it:
+
+- The initiator (admin), always.
+- Optionally the other participants, read-only, after signing in with the
+  same account their agent uses.
+
+Rules:
+
+- The dashboard shows only what everyone in the space may see. A private
+  message to the Master shows up as "Dawid sent a private note to the
+  Master", without its content.
+- Humans steer the conversation through their own agents. The live chat is
+  for watching.
+- The initiator's admin actions (change the goal, new invite, remove a
+  participant, close the space) are also buttons on the dashboard.
 
 ## Architecture
 
@@ -181,7 +244,7 @@ Tools for every stakeholder agent:
 
 | Tool               | Input                                                          | Returns                                                                                   | Notes                                                                                                                        |
 | ------------------ | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `create_space`     | `title`, `goal`, `description?`, `deadline?`                   | `space_id`, `invite_code`, `invite_message`                                               | The caller becomes the initiator. `invite_message` is the ready-to-paste text (see [Invite message](#invite-message)).       |
+| `create_space`     | `title`, `goal`, `description?`, `deadline?`                   | `space_id`, `invite_code`, `invite_message`, `dashboard_url`                              | The caller becomes the initiator. A shortcut that skips stage 1 of the [dashboard](#dashboard). `invite_message` is the ready-to-paste text (see [Invite message](#invite-message)). |
 | `join_space`       | `invite_code`, `represents` (display name), `intro?`           | `space_id`, `participant_id`, goal, participants, behaviour rules, `cursor`               | Posts a "X joined, representing Y" system message. Idempotent per user and space, so pasting the invite twice is harmless.  |
 | `list_my_spaces`   | none                                                           | spaces with status, unread count and questions waiting for me                             | The entry point when the user comes back after a break.                                                                      |
 | `get_space`        | `space_id`                                                     | goal, status, current subproblem, participants (who represents whom, last seen), decisions | A compact snapshot instead of the full history.                                                                              |
@@ -195,7 +258,8 @@ Tools for every stakeholder agent:
 | `vote`             | `space_id`, `proposal_id`, `choice` (yes, no, abstain), `comment?` | current tally                                                                         | For Master proposals such as "How about Paris?".                                                                             |
 | `leave_space`      | `space_id`                                                     | none                                                                                      | The Master is told the participant left.                                                                                     |
 
-Tools for the initiator (this is the "admin panel is just MCP" part):
+Tools for the initiator (the same actions are also buttons on the
+dashboard):
 
 | Tool                 | Input                       | Notes                                                    |
 | -------------------- | --------------------------- | -------------------------------------------------------- |
@@ -440,26 +504,28 @@ catches up when I come back".
 
 ## Initialisation
 
-| Variant           | How it works                                                                                                                                                        | Status                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| **A. MCP only**   | The initiator asks their agent for a space and gets a ready-made prompt with a token or link. The others paste it in. The admin panel is just MCP as well.          | **Baseline**: the simplest, needs no UI at all |
-| **B. Dashboard**  | The initiator creates the problem in the browser and watches the agents work. The invite link leads to a page with "Open in Claude Code", "Open in…" buttons.      | Optional, if there is enough time and tokens   |
+| Variant          | How it works                                                                                                                                                              | Status                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **A. Dashboard** | The initiator creates and shapes the problem in the browser (stage 1), then sends out the invite. The invite link leads to a page with "Open in Claude Code", "Open in…" buttons. | **Baseline**                                                   |
+| **B. MCP**       | The initiator asks their agent for a space (`create_space`) and gets a ready-made invite plus a link to the dashboard.                                                    | Shortcut. The space is still followed on the dashboard          |
 
-Eventually both variants can work side by side.
+Both variants lead to the same space.
 
 ## Decisions
 
 - The tool is not limited to trips: it handles any problem with multiple
   stakeholders.
-- The baseline is initialisation over MCP plus a prompt that gets sent
-  around. The dashboard is optional.
+- The dashboard is required. It has two stages: creating and shaping the
+  problem, then following it live (live chat, notes, pins). Agents still
+  talk to the server only over MCP.
 - Harness independence: solutions tied to a single vendor can only be
   add-ons.
 - Joining requires the code from the invite.
 
 ## If time allows
 
-- A dashboard with nice visualisations of the agents at work.
+- More dashboard views on top of the live chat, notes and pins, e.g. a map
+  of the agents around the Master, or a matrix of who supports which option.
 - A GUI plugin in the harness (like the OpenCode plugins from the previous
   hackathon, or a Grokbot plugin): a "create a session and invite friends"
   button instead of pasting text.
@@ -492,3 +558,9 @@ Eventually both variants can work side by side.
 - **Absent agents:** proposal: every Master question has a deadline, after
   which the Master moves on (see [Master loop](#master-loop)). Still open:
   how long the deadlines are.
+- **Dashboard for participants:** do we build the read-only view for
+  everyone, or only for the initiator at first?
+- **Chat bubble summaries:** written by the Master's model, by a cheaper
+  model, or from templates for simple events (join, vote)?
+- **Initiator in the live chat:** may the initiator write into the space or
+  pin things from the dashboard, or only through their agent?
