@@ -36,10 +36,17 @@ description. Keep step names to one to three words, like "Destination",
 "Budget", "Dates", "Accommodation", "Transport". Only list constraints that the
 description states; don't invent any.`;
 
+// The first clause, cut at a word: "Plan a May trip for 10 friends".
+function fallbackTitle(description: string) {
+  const clause = description.split(/[:.!?\n]/)[0]?.trim() || description;
+  if (clause.length <= 48) return clause;
+  const cut = clause.slice(0, 48);
+  return `${cut.slice(0, cut.lastIndexOf(" ")).replace(/[,;]$/, "")}…`;
+}
+
 function fallback(description: string): ShapedProblem {
-  const firstSentence = description.split(/(?<=[.!?])\s/)[0] ?? description;
   return {
-    title: truncate(firstSentence, 48),
+    title: fallbackTitle(description),
     goal: description,
     steps: [],
     constraints: [],
