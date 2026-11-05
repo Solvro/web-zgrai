@@ -51,6 +51,22 @@ chore: set up eslint and prettier
 
 - `ideas/` - transcripts and notes from our brainstorming sessions. Read
   these to understand what we are building and why.
+- See `README.md` for the stack, scripts and project structure.
+
+## Stack notes
+
+- Package manager: `pnpm`.
+- UI: shadcn/ui (base-nova style, Base UI primitives). Add components and
+  blocks with `pnpm dlx shadcn@latest add <name>` instead of writing them by
+  hand.
+- Next.js runs with `cacheComponents` enabled: wrap anything reading
+  `headers()`, `cookies()`, `searchParams` or the database in `<Suspense>`.
+- Database: Drizzle ORM + PostgreSQL (docker compose, port 5433). Schema lives
+  in `src/db/schema`. After schema changes run `pnpm db:generate` and commit
+  the migration.
+- Auth: Better Auth (`src/lib/auth.ts`) with the MCP plugin. After adding a
+  Better Auth plugin regenerate `src/db/schema/auth.ts` with the `auth` CLI.
+- MCP tools are registered in `src/app/api/mcp/route.ts`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
