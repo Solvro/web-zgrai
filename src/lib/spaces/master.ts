@@ -172,21 +172,24 @@ function escapeText(value: string) {
     .replace(/>/g, "&gt;");
 }
 
-export async function getMasterContext(spaceId: string, afterMessageId = 0) {
-  const row = await getSpaceOrThrow(spaceId);
+type MessageRow = typeof message.$inferSelect;
+type ParticipantRow = typeof participant.$inferSelect;
+
+export async function spaceParticipantsById(spaceId: string) {
   const people = await db
     .select()
     .from(participant)
     .where(eq(participant.spaceId, spaceId));
-  const byId = new Map(people.map((p) => [p.id, p]));
+  return new Map(people.map((p) => [p.id, p]));
+}
 
-  const messages = await db
-    .select()
-    .from(message)
-    .where(and(eq(message.spaceId, spaceId), gt(message.id, afterMessageId)))
-    .orderBy(asc(message.id));
-
-  const transcript = messages
+// The signed form the Master reads messages in, in its events, snapshot and
+// read tools alike.
+export function signMessages(
+  messages: MessageRow[],
+  byId: Map<string, ParticipantRow>,
+) {
+  return messages
     .map((m) => {
       const author = m.authorParticipantId
         ? byId.get(m.authorParticipantId)
@@ -201,12 +204,27 @@ export async function getMasterContext(spaceId: string, afterMessageId = 0) {
         m.addressedTo?.length
           ? `addressed_to="${m.addressedTo.join(",")}"`
           : null,
+        `at="${m.createdAt.toISOString()}"`,
       ]
         .filter(Boolean)
         .join(" ");
       return `<message ${attrs}>\n${escapeText(m.content)}\n</message>`;
     })
     .join("\n");
+}
+
+export async function getMasterContext(spaceId: string, afterMessageId = 0) {
+  const row = await getSpaceOrThrow(spaceId);
+  const byId = await spaceParticipantsById(spaceId);
+  const people = [...byId.values()];
+
+  const messages = await db
+    .select()
+    .from(message)
+    .where(and(eq(message.spaceId, spaceId), gt(message.id, afterMessageId)))
+    .orderBy(asc(message.id));
+
+  const transcript = signMessages(messages, byId);
 
   const items = await db
     .select()
