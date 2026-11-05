@@ -6,6 +6,7 @@
     "dev": "next dev",
     "dev:tunnel": "node scripts/dev-tunnel.mjs",
     "master": "tsx --tsconfig ./tsconfig.json scripts/master.ts",
+    "master:happy-path": "tsx --tsconfig ./tsconfig.json scripts/happy-path.ts",
     "build": "eve build && next build",
     "start": "node scripts/migrate.mjs && next start",
     "lint": "eslint --max-warnings=0",
