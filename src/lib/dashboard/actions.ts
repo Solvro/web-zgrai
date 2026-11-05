@@ -129,7 +129,9 @@ export function draftIssues(space: Space) {
   const issues: string[] = [];
   if (!space.title.trim()) issues.push("a title");
   if (!space.goal.trim()) issues.push("a goal");
-  if (!space.subproblems.length) issues.push("at least one subproblem");
+  if (!space.subproblems.some((s) => s.title.trim())) {
+    issues.push("at least one subproblem");
+  }
   return issues;
 }
 
@@ -142,6 +144,10 @@ export function openSpace(spaceId: string) {
     openedAt: now(),
     inviteCode: generateInviteCode(),
     masterThinking: false,
+    subproblems: s.subproblems
+      .filter((sub) => sub.title.trim())
+      .map((sub) => ({ ...sub, id: makeId("sub"), status: "open" })),
+    constraints: s.constraints.filter((c) => c.trim()),
   }));
   addActivity(spaceId, {
     type: "system",
