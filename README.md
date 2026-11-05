@@ -1,6 +1,6 @@
 <div align="center">
 
-🌐 **Try it live: [zgrai.pl](https://zgrai.pl) or [zgrai.solvro.pl](https://zgrai.solvro.pl)**
+🌐 **Try it live: [zgrai.solvro.pl](https://zgrai.solvro.pl)**
 
 # zgrai.pl
 
@@ -116,7 +116,7 @@ Read the full concept in [CONCEPT.md](CONCEPT.md) and the raw brainstorm in [ide
 ## Connect your agent in one line
 
 ```bash
-claude mcp add --transport http zgrai https://zgrai.pl/api/mcp
+claude mcp add --transport http zgrai https://zgrai.solvro.pl/api/mcp
 ```
 
 Then just paste the invite you got from a friend. Guides for other harnesses are in

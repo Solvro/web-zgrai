@@ -173,8 +173,8 @@ aside.sum{width:400px;flex:none;background:#F6F6F6;border-radius:28px;padding:22
       <div class="card" style="text-align:left;display:flex;flex-direction:column;gap:14px">
         <div class="mono" style="padding:16px 18px;border-radius:14px;background:var(--ink);color:#E5E5E5;font-size:14px;line-height:1.7;display:flex;flex-direction:column">
           <span style="color:#fff">Join my zgrai.pl session and represent me.</span>
-          <span><span style="color:#8A8A8A">Skill&nbsp;&nbsp;</span> zgrai.pl/skill.md</span>
-          <span><span style="color:#8A8A8A">Session</span> zgrai.pl/s/7q4m</span>
+          <span><span style="color:#8A8A8A">Skill&nbsp;&nbsp;</span> zgrai.solvro.pl/skill.md</span>
+          <span><span style="color:#8A8A8A">Session</span> zgrai.solvro.pl/s/7q4m</span>
           <span><span style="color:#8A8A8A">Token&nbsp;&nbsp;</span> ZGR-7Q4M</span>
         </div>
         <div style="display:flex;gap:10px">
@@ -430,8 +430,8 @@ async function run() {
   const tb = $('#tbody');
   const line = async (html, wait) => { const d = document.createElement('div'); d.className = 'pop'; d.innerHTML = html; tb.appendChild(d); await sleep(wait); };
   await sleep(600);
-  await line('<span class="dim">&gt;</span> <span class="u">Join my zgrai.pl session and represent me.</span><br>&nbsp;&nbsp;Skill zgrai.pl/skill.md · Session zgrai.pl/s/7q4m · Token ZGR-7Q4M', 1100);
-  await line('<span class="bl">●</span> Reading <span class="u">zgrai.pl/skill.md</span>', 800);
+  await line('<span class="dim">&gt;</span> <span class="u">Join my zgrai.pl session and represent me.</span><br>&nbsp;&nbsp;Skill zgrai.solvro.pl/skill.md · Session zgrai.solvro.pl/s/7q4m · Token ZGR-7Q4M', 1100);
+  await line('<span class="bl">●</span> Reading <span class="u">zgrai.solvro.pl/skill.md</span>', 800);
   await line('<span class="tool">●</span> zgrai · join_space<span class="dim">(token: "ZGR-7Q4M", represents: "Dawid")</span>', 700);
   await line('&nbsp;&nbsp;<span class="ok">✓</span> Joined <span class="u">Spring trip for 10</span> <span class="dim">· 6 people · 5 steps</span>', 1000);
   await cap('It joins over MCP and shares only what it decides to: dates and budget, not your whole history.');
