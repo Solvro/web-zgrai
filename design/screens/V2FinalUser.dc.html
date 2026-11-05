@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>zgrai.pl dashboard, participant</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#0A0A0A}a:hover{color:#404040}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(234,88,12,.35)}100%{box-shadow:0 0 0 8px rgba(234,88,12,0)}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div style="min-height: 1000px; background: #FFFFFF; font-family: 'Geist', system-ui, sans-serif; color: #0A0A0A">
+
+  <header style="border-bottom: 1px solid #F0F0F0">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px">
+      <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+        <a href="V2Problems.dc.html" style="display: inline-flex; align-items: baseline; text-decoration: none; color: #0A0A0A; font-size: 19px; font-weight: 700; letter-spacing: -0.04em">zgr<span style="margin-left: 2px; padding: 0 6px 2px; border-radius: 8px; background: #0A0A0A; color: #FFFFFF; letter-spacing: -0.02em">ai</span><span style="margin-left: 1px; color: #A3A3A3; font-weight: 500">.pl</span></a>
+        <span style="color: #D4D4D4; font-size: 20px" aria-hidden="true">/</span>
+        <h1 style="margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap">Spring trip for 10</h1>
+      </div>
+      <button type="button" aria-label="Account: Kasia" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #E5E5E5; background: #F5F5F5; color: #0A0A0A; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">K</button>
+    </div>
+  </header>
+
+  <div style="max-width: 1240px; margin: 0 auto; padding: 28px 24px; display: flex; flex-wrap: wrap; gap: 36px; align-items: flex-start">
+
+    <section aria-label="Chat" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+
+      <div role="list" aria-label="People in the session" style="display: flex; flex-wrap: wrap; gap: 14px 24px; padding: 4px 0 22px; border-bottom: 1px solid #F0F0F0">
+        <sc-for list="{{people}}" as="p" hint-placeholder-count="6">
+          <div role="listitem" style="display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 56px">
+            <svg width="44" height="44" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+              <circle cx="28" cy="6" r="3.6" fill="{{p.fill}}"></circle>
+              <rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="{{p.fill}}"></rect>
+              <rect x="7" y="13" width="42" height="36" rx="14" fill="{{p.fill}}"></rect>
+              <circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF" opacity="{{p.open}}"></circle>
+              <circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF" opacity="{{p.open}}"></circle>
+              <path d="M16 30q4.5 3.5 9 0M31 30q4.5 3.5 9 0" stroke="#B5B5B5" stroke-width="3" stroke-linecap="round" opacity="{{p.closed}}"></path>
+            </svg>
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 1px"><span style="font-size: 13px; font-weight: 600; color: {{p.nameColor}}; white-space: nowrap">{{p.name}}</span><span style="font-size: 11px; color: {{p.statusColor}}; white-space: nowrap">{{p.status}}</span></span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; font-size: 13px; color: #6B6B6B">
+        <span style="flex: 1; height: 1px; background: #F0F0F0"></span>
+        <span style="display: inline-flex; align-items: center; gap: 6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg><strong style="color: #0A0A0A; font-weight: 600">Budget decided: 800 zł each</strong> · 14:16</span>
+        <span style="flex: 1; height: 1px; background: #F0F0F0"></span>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: flex-end">
+        <svg width="34" height="34" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none"><circle cx="28" cy="6" r="3.6" fill="#0A0A0A"></circle><rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="#0A0A0A"></rect><rect x="7" y="13" width="42" height="36" rx="14" fill="#0A0A0A"></rect><circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF"></circle><circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF"></circle></svg>
+        <div style="max-width: 520px; padding: 14px 18px 16px; border-radius: 22px 22px 22px 6px; background: #0A0A0A; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px">
+          <span style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #A3A3A3">Master<span aria-hidden="true" style="width: 3px; height: 3px; border-radius: 999px; background: #525252"></span>Dates<span style="margin-left: auto; padding-left: 20px; font-family: 'Geist Mono', ui-monospace, monospace; font-weight: 400; letter-spacing: 0; text-transform: none; color: #8A8A8A">14:17</span></span>
+          <span style="font-size: 16px; line-height: 1.5">Next up: dates. When can your person go between Apr 29 and May 5?</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; align-items: flex-start">
+        <svg width="34" height="34" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none"><circle cx="28" cy="6" r="3.6" fill="#2563EB"></circle><rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="#2563EB"></rect><rect x="7" y="13" width="42" height="36" rx="14" fill="#2563EB"></rect><circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF"></circle><circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF"></circle></svg>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-top: 2px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600">Dawid's agent</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #8A8A8A">14:18</span></div>
+          <p style="margin: 0; font-size: 16px; line-height: 1.55">Dawid is free from Apr 30 to May 4.</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; align-items: flex-start">
+        <svg width="34" height="34" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none"><circle cx="28" cy="6" r="3.6" fill="#14B8A6"></circle><rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="#14B8A6"></rect><rect x="7" y="13" width="42" height="36" rx="14" fill="#14B8A6"></rect><circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF"></circle><circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF"></circle></svg>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-top: 2px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600">Jan's agent</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #8A8A8A">14:18</span></div>
+          <p style="margin: 0; font-size: 16px; line-height: 1.55">Any of those days work for Jan.</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; align-items: flex-start">
+        <svg width="34" height="34" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none"><circle cx="28" cy="6" r="3.6" fill="#F97316"></circle><rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="#F97316"></rect><rect x="7" y="13" width="42" height="36" rx="14" fill="#F97316"></rect><circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF"></circle><circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF"></circle></svg>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-top: 2px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600">Maciek's agent</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #8A8A8A">14:19</span></div>
+          <p style="margin: 0; font-size: 16px; line-height: 1.55">Maciek has to be back on May 3 in the evening.</p>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: flex-end; justify-content: flex-end">
+        <div style="max-width: 520px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end">
+          <span style="font-size: 12px; color: #8A8A8A"><span style="font-family: 'Geist Mono', ui-monospace, monospace">14:21</span> · <span style="font-weight: 600; color: #0A0A0A">Your agent</span></span>
+          <div style="padding: 12px 16px; border-radius: 20px 20px 6px 20px; background: #FCE7F3; font-size: 16px; line-height: 1.5">Exam on May 2 until 12:00. Can leave that afternoon at the earliest.</div>
+        </div>
+        <svg width="34" height="34" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none"><circle cx="28" cy="6" r="3.6" fill="#EC4899"></circle><rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="#EC4899"></rect><rect x="7" y="13" width="42" height="36" rx="14" fill="#EC4899"></rect><circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF"></circle><circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF"></circle></svg>
+      </div>
+
+      <div style="display: flex; gap: 12px; align-items: flex-end">
+        <svg width="34" height="34" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none"><circle cx="28" cy="6" r="3.6" fill="#0A0A0A"></circle><rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="#0A0A0A"></rect><rect x="7" y="13" width="42" height="36" rx="14" fill="#0A0A0A"></rect><circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF"></circle><circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF"></circle></svg>
+        <div style="max-width: 520px; padding: 14px 18px 16px; border-radius: 22px 22px 22px 6px; background: #0A0A0A; color: #FFFFFF; display: flex; flex-direction: column; gap: 6px">
+          <span style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #A3A3A3">Master<span aria-hidden="true" style="width: 3px; height: 3px; border-radius: 999px; background: #525252"></span>Dates<span style="margin-left: auto; padding-left: 20px; font-family: 'Geist Mono', ui-monospace, monospace; font-weight: 400; letter-spacing: 0; text-transform: none; color: #8A8A8A">14:22</span></span>
+          <span style="font-size: 16px; line-height: 1.5">Maciek, could your person stay one day longer, until May 4?</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; align-items: flex-start">
+        <svg width="34" height="34" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none"><circle cx="28" cy="6" r="3.6" fill="#8B5CF6"></circle><rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="#8B5CF6"></rect><rect x="7" y="13" width="42" height="36" rx="14" fill="#8B5CF6"></rect><circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF"></circle><circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF"></circle></svg>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding-top: 2px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600">Ola's agent</span><span style="font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: #8A8A8A">14:23</span></div>
+          <p style="margin: 0; font-size: 16px; line-height: 1.55">An afternoon start works best for Ola.</p>
+        </div>
+      </div>
+
+    </section>
+
+    <aside aria-labelledby="fu-sum" style="flex: 1 1 380px; max-width: 100%; min-width: 0; background: #F6F6F6; border-radius: 28px; padding: 22px; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 2px 4px 12px">
+        <svg width="36" height="36" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none"><circle cx="28" cy="6" r="3.6" fill="#0A0A0A"></circle><rect x="26.4" y="7" width="3.2" height="7" rx="1.6" fill="#0A0A0A"></rect><rect x="7" y="13" width="42" height="36" rx="14" fill="#0A0A0A"></rect><circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF"></circle><circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF"></circle></svg>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 1px">
+          <h2 id="fu-sum" style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.015em">Summary</h2>
+          <span style="font-size: 13px; color: #6B6B6B">2 of 5 done</span>
+        </div>
+      </div>
+
+      <sc-for list="{{steps}}" as="s" hint-placeholder-count="5">
+        <div style="border-radius: 18px; background: {{s.bg}}; overflow: hidden">
+          <button type="button" onClick="{{s.toggle}}" aria-expanded="{{s.expanded}}" style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 58px; padding: 10px 14px; border: none; background: none; font-family: inherit; text-align: left; cursor: pointer; color: #0A0A0A">
+            <sc-if value="{{s.done}}" hint-placeholder-val="{{ true }}">
+              <span style="width: 22px; height: 22px; flex: none; border-radius: 999px; background: #0A0A0A; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+            </sc-if>
+            <sc-if value="{{s.now}}" hint-placeholder-val="{{ false }}">
+              <span style="width: 22px; height: 22px; flex: none; box-sizing: border-box; border-radius: 999px; border: 2px solid #EA580C; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; animation: ring 1.8s ease-out infinite"><span style="width: 8px; height: 8px; border-radius: 999px; background: #EA580C"></span></span>
+            </sc-if>
+            <sc-if value="{{s.next}}" hint-placeholder-val="{{ false }}">
+              <span style="width: 22px; height: 22px; flex: none; box-sizing: border-box; border-radius: 999px; border: 2px solid #D9D9D9"></span>
+            </sc-if>
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px; font-weight: 600; color: {{s.nameColor}}">{{s.name}}</span><span style="font-size: 13px; color: {{s.outcomeColor}}">{{s.outcome}}</span></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; transform: {{s.chevron}}; transition: transform 0.2s ease"><path d="M6 9l6 6 6-6"></path></svg>
+          </button>
+          <sc-if value="{{s.open}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 0 14px 16px; display: flex; flex-direction: column; gap: 12px">
+              <sc-if value="{{s.hasDecision}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; border-radius: 12px; background: #0A0A0A; color: #FFFFFF">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+                  <span style="font-size: 14px; font-weight: 600">{{s.decision}}</span>
+                  <span style="font-size: 12px; color: #A3A3A3">{{s.decisionNote}}</span>
+                </div>
+              </sc-if>
+              <sc-for list="{{s.opinions}}" as="o" hint-placeholder-count="0">
+                <div style="display: flex; gap: 10px; align-items: flex-start">
+                  <svg width="24" height="24" viewBox="0 0 56 56" fill="none" aria-hidden="true" style="flex: none; margin-top: 2px">
+                    <rect x="7" y="13" width="42" height="36" rx="14" fill="{{o.fill}}"></rect>
+                    <circle cx="20.5" cy="30" r="4" fill="#FFFFFF" opacity="{{o.open}}"></circle>
+                    <circle cx="35.5" cy="30" r="4" fill="#FFFFFF" opacity="{{o.open}}"></circle>
+                    <path d="M16 30q4.5 3.5 9 0M31 30q4.5 3.5 9 0" stroke="#B5B5B5" stroke-width="3" stroke-linecap="round" opacity="{{o.closed}}"></path>
+                  </svg>
+                  <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0"><span style="font-size: 12px; color: #6B6B6B">{{o.name}}</span><span style="font-size: 14px; line-height: 1.4; color: {{o.textColor}}">{{o.text}}</span></span>
+                </div>
+              </sc-for>
+              <sc-if value="{{s.isEmpty}}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 13px; color: #6B6B6B">{{s.empty}}</span>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+
+    </aside>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"step":{"editor":"enum","options":["destination","budget","dates","accommodation","transport"],"default":"destination"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const me = 'Kasia';
+    const sel = (this.state && this.state.sel !== undefined) ? this.state.sel : (this.props.step || 'destination');
+    const label = (n) => n === me ? n + ' (you)' : n;
+    const op = (name, fill, text, asleep) => ({
+      name: label(name), fill: asleep ? '#ECECEC' : fill, text,
+      open: asleep ? 0 : 1, closed: asleep ? 1 : 0,
+      textColor: asleep ? '#8A8A8A' : '#262626'
+    });
+    const raw = [
+      { id: 'destination', name: 'Destination', status: 'done', outcome: 'Paris', decision: 'Paris', decisionNote: 'all 6 agreed', opinions: [
+        op('Dawid', '#2563EB', 'Austria or a big city'),
+        op('Maciek', '#F97316', 'Austria, already has hiking gear'),
+        op('Jan', '#14B8A6', 'Anywhere but Czechia'),
+        op('Ola', '#8B5CF6', 'A city rather than mountains'),
+        op('Kasia', '#EC4899', 'Not Austria, been there three times'),
+        op('Bartek', '#EAB308', 'No preference')
+      ] },
+      { id: 'budget', name: 'Budget', status: 'done', outcome: '800 zł each', decision: 'Up to 800 zł each', decisionNote: 'everyone agreed', opinions: [
+        op('Dawid', '#2563EB', 'Up to 900 zł'),
+        op('Maciek', '#F97316', 'Up to 900 zł'),
+        op('Jan', '#14B8A6', 'Up to 1000 zł'),
+        op('Ola', '#8B5CF6', 'Around 800 zł'),
+        op('Kasia', '#EC4899', 'Max 800 zł'),
+        op('Bartek', '#EAB308', 'Up to 850 zł')
+      ] },
+      { id: 'dates', name: 'Dates', status: 'now', outcome: 'In progress · 5 of 6 answered', opinions: [
+        op('Dawid', '#2563EB', 'Apr 30 – May 4'),
+        op('Maciek', '#F97316', 'Back by May 3'),
+        op('Jan', '#14B8A6', 'Any day'),
+        op('Ola', '#8B5CF6', 'Afternoon start'),
+        op('Kasia', '#EC4899', 'From May 2, 12:00'),
+        op('Bartek', '#EAB308', 'No answer yet', true)
+      ] },
+      { id: 'accommodation', name: 'Accommodation', status: 'next', outcome: 'Up next', empty: 'Starts once dates are decided.', opinions: [] },
+      { id: 'transport', name: 'Transport', status: 'next', outcome: 'Later', empty: 'Starts after accommodation.', opinions: [] }
+    ];
+    const steps = raw.map((s) => {
+      const isOpen = sel === s.id;
+      return Object.assign({}, s, {
+        open: isOpen,
+        expanded: isOpen ? 'true' : 'false',
+        toggle: () => this.setState({ sel: isOpen ? null : s.id }),
+        done: s.status === 'done', now: s.status === 'now', next: s.status === 'next',
+        hasDecision: s.status === 'done',
+        isEmpty: s.opinions.length === 0,
+        bg: isOpen ? '#FFFFFF' : 'transparent',
+        chevron: isOpen ? 'rotate(180deg)' : 'none',
+        nameColor: s.status === 'next' ? '#6B6B6B' : '#0A0A0A',
+        outcomeColor: s.status === 'now' ? '#9A3412' : (s.status === 'next' ? '#8A8A8A' : '#525252')
+      });
+    });
+    const on = (name, fill, status, statusColor) => ({ name, fill, open: 1, closed: 0, status, statusColor: statusColor || '#6B6B6B', nameColor: '#0A0A0A' });
+    const off = (name, status) => ({ name, fill: '#ECECEC', open: 0, closed: 1, status, statusColor: '#8A8A8A', nameColor: '#6B6B6B' });
+    return {
+      steps,
+      people: [
+        on('Kasia (you)', '#EC4899', 'online'),
+        on('Dawid', '#2563EB', 'admin · online'),
+        on('Maciek', '#F97316', 'online'),
+        on('Jan', '#14B8A6', 'online'),
+        on('Ola', '#8B5CF6', 'online'),
+        off('Bartek', 'dozing')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
