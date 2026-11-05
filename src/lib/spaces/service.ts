@@ -44,6 +44,10 @@ type Executor = typeof db | Tx;
 
 export class SpaceError extends Error {}
 
+// Harness of an initiator who started the space on the dashboard and whose
+// own agent hasn't joined yet.
+export const DASHBOARD_HARNESS = "dashboard";
+
 const PAGE_SIZE = 50;
 
 export function truncate(text: string, length = 120) {
@@ -281,7 +285,8 @@ export async function joinSpace(input: {
         eq(participant.userId, input.userId),
       ),
     );
-  if (existing && !existing.leftAt) {
+  const agentless = existing?.harness === DASHBOARD_HARNESS;
+  if (existing && !existing.leftAt && !agentless) {
     return { space: target, participant: existing, alreadyJoined: true };
   }
   if (invite.maxUses != null && invite.uses >= invite.maxUses) {
@@ -296,7 +301,7 @@ export async function joinSpace(input: {
         .set({
           leftAt: null,
           represents: input.represents,
-          harness: input.harness ?? existing.harness,
+          harness: input.harness ?? (agentless ? "agent" : existing.harness),
           lastSeenAt: new Date(),
         })
         .where(eq(participant.id, existing.id))
@@ -997,6 +1002,13 @@ export async function closeSpaceAsInitiator(input: {
     actorParticipantId: me.id,
     summary: input.summary,
   });
+}
+
+export async function touchParticipant(participantId: string) {
+  await db
+    .update(participant)
+    .set({ lastSeenAt: new Date() })
+    .where(eq(participant.id, participantId));
 }
 
 export async function getParticipantById(participantId: string) {
