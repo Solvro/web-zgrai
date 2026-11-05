@@ -359,7 +359,7 @@ export async function joinSpace(input: {
   return { space: target, participant: joined, alreadyJoined: false };
 }
 
-function visibleTo(participantId: string) {
+export function visibleTo(participantId: string) {
   return or(
     eq(message.visibility, "all"),
     eq(message.authorParticipantId, participantId),
