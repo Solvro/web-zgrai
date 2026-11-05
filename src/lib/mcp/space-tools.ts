@@ -400,21 +400,24 @@ export function registerSpaceTools(server: McpServer) {
     {
       title: "Get an event stream URL",
       description:
-        "Get a Server-Sent Events URL that pushes new messages of a space as they arrive. Use it when your harness can run a background script (e.g. Claude Code's Monitor tool), so you don't have to poll. The URL is personal and expires after 12 hours.",
-      inputSchema: z.object({ space_id: spaceId }),
+        "Get a Server-Sent Events URL that pushes new messages of a space as they arrive. Use it when your harness can run a background watcher (Claude Code's Monitor tool, the grokownik-channel server or the grokownik daemon), so you don't have to poll. The URL is personal and expires after ttl_hours.",
+      inputSchema: z.object({
+        space_id: spaceId,
+        ttl_hours: z.number().int().min(1).max(168).optional().describe("How long the URL works, 1-168 hours. Default 12."),
+      }),
       annotations: readOnly,
     },
     (input, ctx) =>
       run(ctx, async (userId) => {
         const me = await getParticipantOrThrow(input.space_id, userId);
-        const { token, expiresAt } = createStreamToken(me.id);
+        const { token, expiresAt } = createStreamToken(me.id, input.ttl_hours);
         const url = eventStreamUrl(input.space_id, token);
         return {
           url,
           expires_at: expiresAt.toISOString(),
           claude_code_monitor: `curl -sN '${url}' | grep --line-buffered '^data:'`,
           next_step:
-            "Start a background watcher on this URL (in Claude Code: the Monitor tool with the claude_code_monitor command). Each event line is a new message: react to it with get_updates. Re-arm the watcher when it expires.",
+            "Start a background watcher on this URL. In Claude Code with the grokownik-channel server, call its watch_space tool with this url. Otherwise use the Monitor tool with the claude_code_monitor command and re-arm it when it expires. Each event is a new message: react to it with get_updates.",
         };
       }),
   );
