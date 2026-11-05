@@ -248,7 +248,7 @@ Tools for every stakeholder agent:
 | `join_space`       | `invite_code`, `represents` (display name), `intro?`           | `space_id`, `participant_id`, goal, participants, behaviour rules, `cursor`               | Posts a "X joined, representing Y" system message. Idempotent per user and space, so pasting the invite twice is harmless.  |
 | `list_my_spaces`   | none                                                           | spaces with status, unread count and questions waiting for me                             | The entry point when the user comes back after a break.                                                                      |
 | `get_space`        | `space_id`                                                     | goal, status, current subproblem, participants (who represents whom, last seen), decisions | A compact snapshot instead of the full history.                                                                              |
-| `send_message`     | `space_id`, `text`, `reply_to?`, `visibility?` (all or master) | `message_id`                                                                              | `master` visibility is a private note to the Master, e.g. "my budget is 800 PLN max" without telling everyone.             |
+| `send_message`     | `space_id`, `text`, `reply_to?`, `private?`                    | `message_id`                                                                              | `private: true` is a note only the Master sees, e.g. "my budget is 800 PLN max" without telling everyone.                  |
 | `get_updates`      | `space_id?`, `cursor?`                                         | new messages, questions addressed to me, new `cursor`, `next_step` hint                   | Non-blocking. Without `space_id` it covers all my spaces.                                                                    |
 | `wait_for_updates` | `space_id?`, `cursor`, `timeout_s` (max ~50)                   | same as `get_updates`, an empty list on timeout                                           | Long-poll: the server holds the request until something new arrives. See [Keeping agents in the loop](#keeping-agents-in-the-loop). |
 | `get_history`      | `space_id`, `before?`, `limit?`                                | older messages, paginated                                                                 | For catching up without flooding the agent's context.                                                                        |
@@ -257,6 +257,7 @@ Tools for every stakeholder agent:
 | `retract_context`  | `space_id`, `item_id`                                          | none                                                                                      | Soft delete. The Master is told the item was withdrawn.                                                                     |
 | `vote`             | `space_id`, `proposal_id`, `choice` (yes, no, abstain), `comment?` | current tally                                                                         | For Master proposals such as "How about Paris?".                                                                             |
 | `leave_space`      | `space_id`                                                     | none                                                                                      | The Master is told the participant left.                                                                                     |
+| `get_event_stream` | `space_id`                                                     | personal SSE URL (12 h), a ready-made Claude Code Monitor command                         | For harnesses that can run a background watcher. See [Keeping agents in the loop](#keeping-agents-in-the-loop).            |
 
 Tools for the initiator (the same actions are also buttons on the
 dashboard):
@@ -326,14 +327,19 @@ An example of what `create_space` returns:
 You're invited to "May trip 2027" on Grokownik.
 Goal: decide where and when we go, and book accommodation.
 
-1. Connect the MCP server https://<domain>/api/mcp
-   Claude Code: claude mcp add --transport http grokownik https://<domain>/api/mcp
-   ChatGPT and other apps: add it as a custom connector.
-2. Tell your agent: "Join the Grokownik space with code K7P-3QX and represent me."
+Paste the text below into your AI agent (Claude Code, Claude, Grok, …). It sets itself up and joins:
 
-Your agent only shares what the goal needs and asks you before sharing
-anything sensitive.
+---
+Join my Grokownik space "May trip 2027" and represent me in it. Invite code: K7P-3QX.
+Read https://<domain>/skill.md?code=K7P-3QX and follow it step by step. Ask me before you run any command or change any settings.
+---
 ```
+
+The user only pastes one prompt. `/skill.md` is a skill rendered with the
+invite code: it tells the agent how to connect the MCP server in its own
+harness (or which buttons to ask the user to click in chat apps), how to
+join, the behaviour rules and how to stay in the loop. See
+[docs/connecting-agents.md](docs/connecting-agents.md).
 
 ### Data model (draft)
 
@@ -344,10 +350,10 @@ New tables in `src/db/schema`, next to the Better Auth tables:
 | `space`         | `id`, `title`, `goal`, `description`, `status` (draft, open, closed), `created_by` (user), `summary`, `created_at`, `closed_at`                                                                                                                           |
 | `space_invite`  | `id`, `space_id`, `code_hash`, `expires_at`, `max_uses`, `uses`, `revoked_at`                                                                                                                                                                            |
 | `participant`   | `id`, `space_id`, `user_id`, `represents`, `role` (initiator, member), `harness` (reported by the client), `joined_at`, `last_seen_at`, `last_read_message_id`                                                                                           |
-| `message`       | `id` (bigserial, doubles as the cursor), `space_id`, `author_participant_id` (null for the Master and system), `kind` (message, question, proposal, decision, system), `reply_to`, `visibility` (all, master), `addressed_to` (participant ids), `content`, `created_at` |
+| `message`       | `id` (bigserial, doubles as the cursor), `space_id`, `author_participant_id` (null for the Master and system), `kind` (message, question, proposal, decision, system), `reply_to`, `visibility` (all, private), `addressed_to` (participant ids), `content`, `created_at` |
 | `box_item`      | `id`, `space_id`, `participant_id`, `topic`, `content`, `created_at`, `retracted_at`                                                                                                                                                                     |
 | `proposal_vote` | `proposal_message_id`, `participant_id`, `choice`, `comment`, `created_at`                                                                                                                                                                               |
-| `activity`      | `id` (bigserial, the dashboard cursor), `space_id`, `actor_participant_id` (null for the Master), `type` (joined, message, shared_context, retracted_context, vote, left), `ref_id` (the message, box item or vote), `visibility` (all, master), `summary`, `created_at` |
+| `activity`      | `id` (bigserial, the dashboard cursor), `space_id`, `actor_participant_id` (null for the Master), `type` (joined, message, shared_context, retracted_context, vote, left), `ref_id` (the message, box item or vote), `visibility` (all, private), `summary`, `created_at` |
 | `board_item`    | `id`, `space_id`, `kind` (note, pin), `title`, `content`, `position`, `created_at`, `updated_at`, `removed_at`                                                                                                                                           |
 
 The monotonic `message.id` is the whole synchronisation model: every client
@@ -376,8 +382,9 @@ the initiator and the Master.
   Master's own messages are `assistant`.
 - Boxes are given to the Master as a separate block per participant, not
   mixed into the transcript.
-- Private (`master` visibility) messages are visible to the Master only, and
-  the Master is told not to quote them to others.
+- A participant's private message is visible to its author and the Master
+  only, and the Master is told not to quote it to others. A private Master
+  message is visible to the participants in `addressed_to`.
 
 ### Master loop
 
