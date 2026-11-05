@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
+  async redirects() {
+    return [
+      { source: "/spaces/new", destination: "/", permanent: false },
+      { source: "/join/:code", destination: "/s/:code", permanent: false },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {
