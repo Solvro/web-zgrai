@@ -7,6 +7,7 @@ import type { SessionView } from "@/lib/dashboard/view";
 import { Chat } from "./chat";
 import { InviteDialog } from "./invite-dialog";
 import { MasterInput } from "./master-input";
+import { MasterPaused } from "./master-paused";
 import { PeopleRow } from "./people-row";
 import { SummaryPanel } from "./summary-panel";
 import { useLiveView } from "./use-live-view";
@@ -62,6 +63,13 @@ export function LiveSession({
             <p className="rounded-2xl bg-panel px-4 py-3 text-center text-sm text-grey">
               This session is closed.
             </p>
+          )}
+          {open && view.masterPaused && (
+            <MasterPaused
+              spaceId={spaceId}
+              admin={admin}
+              onContinued={() => void refresh()}
+            />
           )}
           {admin && open && (
             <MasterInput
