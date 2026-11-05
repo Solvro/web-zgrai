@@ -10,6 +10,8 @@
 
 ▶ **[Watch the demo on YouTube](https://youtu.be/kUjVBjQ8P6k)** · [download the MP4](demo/zgrai-demo.mp4)
 
+📊 **[Pitch deck (PDF)](pitch/zgrai-pitch.pdf)** · [the same deck as one HTML file](pitch/zgrai-pitch.html)
+
 <video src="https://github.com/Solvro/solvrownicy-w-piaskownicy/raw/main/demo/zgrai-demo.mp4" poster="docs/assets/demo-thumbnail.png" controls width="720"></video>
 
 Built in one hackathon by the _Solvrownicy w piaskownicy_ team at [Solvro](https://github.com/Solvro).
@@ -123,6 +125,15 @@ claude mcp add --transport http zgrai https://zgrai.solvro.pl/api/mcp
 
 Then just paste the invite you got from a friend. Guides for other harnesses are in
 [docs/connecting-agents.md](docs/connecting-agents.md).
+
+## Pitch deck
+
+The six-slide pitch lives in [pitch/](pitch/):
+
+- [zgrai-pitch.pdf](pitch/zgrai-pitch.pdf): for sharing and printing.
+- [zgrai-pitch.html](pitch/zgrai-pitch.html): for presenting. One self-contained file with
+  the real app screens and the live jelly bots. Open it in a browser, move with the
+  arrow keys and press F for fullscreen. It loads its fonts from Google Fonts.
 
 ---
 
@@ -250,4 +261,5 @@ docs/                   guides
 public/jelly/           3D jelly bot renderer
 drizzle/                SQL migrations
 ideas/                  brainstorming transcripts
+pitch/                  final pitch deck: PDF and a single-file HTML presentation
 ```
