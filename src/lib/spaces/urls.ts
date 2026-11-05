@@ -10,3 +10,8 @@ export function dashboardUrl(spaceId: string) {
 export function eventStreamUrl(spaceId: string, token: string) {
   return `${appOrigin}/api/spaces/${spaceId}/events?token=${encodeURIComponent(token)}`;
 }
+
+export function skillUrl(inviteCode?: string) {
+  const url = `${appOrigin}/skill.md`;
+  return inviteCode ? `${url}?code=${encodeURIComponent(inviteCode)}` : url;
+}
