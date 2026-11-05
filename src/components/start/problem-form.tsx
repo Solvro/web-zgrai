@@ -23,8 +23,12 @@ const EXAMPLES = [
   },
 ];
 
+// Ten bots wake 0.12 s apart with a 0.7 s fade, so let them all wake up.
+const WAKE_MS = 2000;
+
 // "Wake the agents": opens a session from one description and goes to its
-// invite. `onPendingChange` lets the page wake the background bots meanwhile.
+// invite. `onPendingChange` lets the page wake the background bots meanwhile;
+// the invite opens once they are all awake.
 export function ProblemForm({
   variant = "hero",
   onPendingChange,
@@ -42,7 +46,10 @@ export function ProblemForm({
     if (!text.trim() || pending) return;
     onPendingChange?.(true);
     startTransition(async () => {
-      const result = await startSpaceAction(text);
+      const wakeUp = new Promise((resolve) =>
+        setTimeout(resolve, onPendingChange ? WAKE_MS : 0),
+      );
+      const [result] = await Promise.all([startSpaceAction(text), wakeUp]);
       if (!result.ok) {
         onPendingChange?.(false);
         toast.error(result.error);
