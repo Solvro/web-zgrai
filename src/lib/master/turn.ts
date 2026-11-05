@@ -1,9 +1,10 @@
-import { and, asc, eq, gt, inArray, isNotNull, isNull, or } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, isNotNull, or } from "drizzle-orm";
 import { db } from "@/db";
-import { activity, masterSession, message, participant } from "@/db/schema";
+import { activity, masterSession, message } from "@/db/schema";
 import { getMasterContext } from "@/lib/spaces/master";
 import { getSpaceOrThrow } from "@/lib/spaces/service";
 import { endSpaceIfApproved } from "./final-plan";
+import { getQuestionStatuses } from "./questions";
 import { ensureMasterSession, sendToMaster } from "./session";
 import { cancelWakes, type MasterWake } from "./wake";
 
@@ -36,42 +37,20 @@ async function newActivity(spaceId: string, afterId: number) {
     .orderBy(asc(activity.id));
 }
 
-// For each expired question: who it was for, and who hasn't said anything
-// since it was asked.
+// Expired questions that still miss answers from someone.
 async function expiredQuestions(spaceId: string, wakes: MasterWake[]) {
-  const questionIds = wakes
+  const ids = wakes
     .filter((wake) => wake.kind === "deadline" && wake.refMessageId != null)
     .map((wake) => wake.refMessageId!);
-  if (questionIds.length === 0) return [];
-
-  const people = await db
-    .select()
-    .from(participant)
-    .where(and(eq(participant.spaceId, spaceId), isNull(participant.leftAt)));
-  const questions = await db
-    .select()
-    .from(message)
-    .where(and(eq(message.spaceId, spaceId), inArray(message.id, questionIds)));
-
-  const result = [];
-  for (const question of questions) {
-    const asked = question.addressedTo?.length
-      ? people.filter((p) => question.addressedTo!.includes(p.id))
-      : people;
-    const replies = await db
-      .select({ author: message.authorParticipantId })
-      .from(message)
-      .where(and(eq(message.spaceId, spaceId), gt(message.id, question.id)));
-    const answered = new Set(replies.map((r) => r.author));
-    const missing = asked.filter((p) => !answered.has(p.id));
-    if (missing.length > 0) result.push({ question, missing });
-  }
-  return result;
+  if (ids.length === 0) return [];
+  const statuses = await getQuestionStatuses(spaceId, { ids });
+  return statuses.filter((status) => status.missing.length > 0);
 }
 
 // Runs one Master turn for a space: everything new since the Master's cursors,
-// questions whose deadline passed, and the Master's own scheduled checks. The snapshot of the whole space comes
-// from the agent's dynamic instructions, so this message only carries events.
+// questions whose deadline passed, and the Master's own checks and reminders.
+// The snapshot of the whole space comes from the agent's dynamic
+// instructions, so this message only carries events.
 export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
   const row = await getSpaceOrThrow(spaceId);
   if (row.status === "closed") {
@@ -89,6 +68,7 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
   const context = await getMasterContext(spaceId, session.lastMessageId);
   const activities = await newActivity(spaceId, session.lastActivityId);
   const expired = await expiredQuestions(spaceId, wakes);
+  const reminders = wakes.filter((wake) => wake.kind === "reminder");
 
   // The transcript also holds the Master's own recent messages. They alone
   // are no reason for a turn.
@@ -108,7 +88,8 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
     fromOthers.length > 0 ||
     activities.length > 0 ||
     expired.length > 0 ||
-    checks.length > 0;
+    checks.length > 0 ||
+    reminders.length > 0;
   const lastActivityId = activities.at(-1)?.id ?? session.lastActivityId;
 
   if (hasNews) {
@@ -122,12 +103,17 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
         `<activity id="${item.id}" type="${item.type}" from="${actor}">${escapeText(item.summary)}</activity>`,
       );
     }
-    for (const { question, missing } of expired) {
+    for (const { question_id, missing } of expired) {
       const names = missing.map(
-        (p) => `participant:${p.id} (${escapeText(p.represents)})`,
+        (p) => `participant:${p.participant_id} (${escapeText(p.represents)})`,
       );
       parts.push(
-        `<deadline question_id="${question.id}">The answer time ran out. No answer from: ${names.join(", ")}.</deadline>`,
+        `<deadline question_id="${question_id}">The answer time ran out. No answer from: ${names.join(", ")}.</deadline>`,
+      );
+    }
+    for (const reminder of reminders) {
+      parts.push(
+        `<reminder id="${reminder.id}" set_at="${reminder.createdAt.toISOString()}">${escapeText(reminder.reason ?? "")}</reminder>`,
       );
     }
     for (const check of checks) {
