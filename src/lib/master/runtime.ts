@@ -2,12 +2,14 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { message } from "@/db/schema";
 import { type MasterTrigger, onMasterTrigger } from "@/lib/spaces/master-hook";
+import { detectBudgetPauses } from "./budget";
 import { runMasterTurn } from "./turn";
 import {
   claimDueWakes,
   completeWakes,
   DEBOUNCE_MS,
   type MasterWake,
+  repeatCheck,
   scheduleDebounce,
 } from "./wake";
 
@@ -36,6 +38,8 @@ async function onTrigger(spaceId: string, trigger: MasterTrigger) {
   await scheduleDebounce(spaceId, immediate ? 0 : DEBOUNCE_MS);
 }
 
+const BUDGET_CHECK_MS = 30_000;
+let lastBudgetCheck = 0;
 let ticking = false;
 
 async function tick() {
@@ -50,11 +54,21 @@ async function tick() {
     for (const [spaceId, group] of bySpace) {
       try {
         await runMasterTurn(spaceId, group);
-        await completeWakes(group.map((wake) => wake.id));
+        await completeWakes(
+          group.filter((wake) => wake.kind !== "check").map((wake) => wake.id),
+        );
+        // Checks repeat: each one queues its next run.
+        for (const wake of group.filter((w) => w.kind === "check")) {
+          await repeatCheck(wake);
+        }
       } catch (error) {
         // Left claimed: claimDueWakes picks it up again after its timeout.
         console.error(`Master turn failed for space ${spaceId}`, error);
       }
+    }
+    if (Date.now() - lastBudgetCheck >= BUDGET_CHECK_MS) {
+      lastBudgetCheck = Date.now();
+      await detectBudgetPauses();
     }
   } catch (error) {
     console.error("Master tick failed", error);

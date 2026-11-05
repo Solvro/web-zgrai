@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { activity, masterSession, message, participant } from "@/db/schema";
 import { getMasterContext } from "@/lib/spaces/master";
 import { getSpaceOrThrow } from "@/lib/spaces/service";
+import { endSpaceIfApproved } from "./final-plan";
 import { ensureMasterSession, sendToMaster } from "./session";
 import { cancelWakes, type MasterWake } from "./wake";
 
@@ -69,7 +70,7 @@ async function expiredQuestions(spaceId: string, wakes: MasterWake[]) {
 }
 
 // Runs one Master turn for a space: everything new since the Master's cursors,
-// plus questions whose deadline passed. The snapshot of the whole space comes
+// questions whose deadline passed, and the Master's own scheduled checks. The snapshot of the whole space comes
 // from the agent's dynamic instructions, so this message only carries events.
 export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
   const row = await getSpaceOrThrow(spaceId);
@@ -79,6 +80,11 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
   }
   const session = await ensureMasterSession(spaceId);
   if (session.endedAt) return;
+  // Paused at its token budget: keep the cursors, so everything reaches the
+  // Master once the initiator lets it continue.
+  if (session.pausedAt) return;
+  // Everyone approved the final plan: the space ends without another turn.
+  if (await endSpaceIfApproved(spaceId)) return;
 
   const context = await getMasterContext(spaceId, session.lastMessageId);
   const activities = await newActivity(spaceId, session.lastActivityId);
@@ -97,8 +103,12 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
       ),
     )
     .limit(1);
+  const checks = wakes.filter((wake) => wake.kind === "check");
   const hasNews =
-    fromOthers.length > 0 || activities.length > 0 || expired.length > 0;
+    fromOthers.length > 0 ||
+    activities.length > 0 ||
+    expired.length > 0 ||
+    checks.length > 0;
   const lastActivityId = activities.at(-1)?.id ?? session.lastActivityId;
 
   if (hasNews) {
@@ -118,6 +128,11 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
       );
       parts.push(
         `<deadline question_id="${question.id}">The answer time ran out. No answer from: ${names.join(", ")}.</deadline>`,
+      );
+    }
+    for (const check of checks) {
+      parts.push(
+        `<check every_minutes="${check.intervalMinutes}" reason="${escapeText(check.reason ?? "")}">Your scheduled check. Go through the success criteria and subproblems: mark what is met, move what is stuck, or end the turn without posting.</check>`,
       );
     }
     parts.push("</events>");
