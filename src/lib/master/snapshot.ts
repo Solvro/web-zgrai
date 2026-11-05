@@ -64,7 +64,9 @@ async function proposalsBlock(spaceId: string) {
 // Everything the Master needs to know about the space, read fresh from the
 // database before every model call. Decisions live here, not in the model's
 // history, so a compaction can never make the Master forget one.
-export async function buildMasterSnapshot(spaceId: string) {
+// `now` comes from the caller (eve's ctx.now), so the same events always
+// produce the same snapshot.
+export async function buildMasterSnapshot(spaceId: string, now: Date) {
   const context = await getMasterContext(spaceId, await recentWindowStart(spaceId));
   const { space } = context;
   const plan = await getPlan(spaceId);
@@ -94,7 +96,7 @@ export async function buildMasterSnapshot(spaceId: string) {
     .join("\n");
 
   return [
-    `<space id="${space.id}" status="${space.status}" now="${new Date().toISOString()}">`,
+    `<space id="${space.id}" status="${space.status}" now="${now.toISOString()}">`,
     `<title>${esc(space.title)}</title>`,
     `<goal>${esc(space.goal || "(not set yet)")}</goal>`,
     space.description ? `<description>${esc(space.description)}</description>` : "",

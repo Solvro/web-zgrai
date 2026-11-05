@@ -35,7 +35,7 @@ export default defineDynamic(async (ctx) => {
   if (!spaceId) return null;
   const space = await getSpaceOrThrow(spaceId);
   const stage = space.status === "draft" ? DRAFT_STAGE : OPEN_STAGE;
-  const snapshot = await buildMasterSnapshot(spaceId);
+  const snapshot = await buildMasterSnapshot(spaceId, ctx.now);
   return defineInstructions({
     content: `${stage}\n\n## The space right now\n\n${snapshot}`,
   });
