@@ -29,6 +29,13 @@
       "when": 1793903847690,
       "tag": "0003_master_cursors",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793905800731,
+      "tag": "0004_master_criteria_checks_budget",
+      "breakpoints": true
     }
   ]
 }

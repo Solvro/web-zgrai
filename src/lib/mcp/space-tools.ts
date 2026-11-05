@@ -23,6 +23,7 @@ import {
   vote,
   waitForUpdates,
 } from "@/lib/spaces/service";
+import { continueMaster } from "@/lib/master/budget";
 import { createStreamToken } from "@/lib/spaces/stream-token";
 import { eventStreamUrl } from "@/lib/spaces/urls";
 import { UNTRUSTED_NOTICE } from "./instructions";
@@ -646,6 +647,26 @@ export function registerSpaceTools(server: McpServer) {
         return {
           closed: true,
           next_step: "Tell your user the space is closed.",
+        };
+      }),
+  );
+
+  server.registerTool(
+    "continue_master",
+    {
+      title: "Let the Master continue",
+      description:
+        "Initiator only. When the Master used up its token budget it pauses, and a system message says so. This gives it a new budget so it keeps working. Ask your user first; the alternative is close_space.",
+      inputSchema: z.object({ space_id: spaceId }),
+      annotations: write,
+    },
+    (input, ctx) =>
+      run(ctx, async (userId) => {
+        await continueMaster({ spaceId: input.space_id, userId });
+        return {
+          continued: true,
+          next_step:
+            "Tell your user the Master is working again. Keep following with wait_for_updates.",
         };
       }),
   );

@@ -11,7 +11,7 @@ import {
   SpaceError,
   truncate,
 } from "@/lib/spaces/service";
-import { setConstraints, setSubproblems } from "./plan";
+import { getPlan, setConstraints, setCriteria, setSubproblems } from "./plan";
 
 // Stage 1: the initiator shapes the problem with the Master on the dashboard.
 // A draft space has no invite and no other participants until it's confirmed.
@@ -65,13 +65,11 @@ export async function createDraftSpace(input: {
         harness: "dashboard",
       })
       .returning();
-    await tx
-      .insert(message)
-      .values({
-        spaceId: row.id,
-        authorParticipantId: me.id,
-        content: input.description,
-      });
+    await tx.insert(message).values({
+      spaceId: row.id,
+      authorParticipantId: me.id,
+      content: input.description,
+    });
     await recordActivity(tx, {
       spaceId: row.id,
       actorParticipantId: me.id,
@@ -121,15 +119,17 @@ export async function updateDraft(
     deadline?: Date | null;
     subproblems?: string[];
     constraints?: string[];
+    criteria?: string[];
   },
 ) {
   await requireDraft(spaceId);
-  const { subproblems, constraints, ...fields } = patch;
+  const { subproblems, constraints, criteria, ...fields } = patch;
   if (Object.keys(fields).length > 0) {
     await db.update(space).set(fields).where(eq(space.id, spaceId));
   }
   if (subproblems) await setSubproblems(spaceId, subproblems);
   if (constraints) await setConstraints(spaceId, constraints);
+  if (criteria) await setCriteria(spaceId, criteria);
 }
 
 // The initiator confirms the draft: the space opens and gets its first invite.
@@ -138,6 +138,12 @@ export async function confirmDraft(input: { spaceId: string; userId: string }) {
   const row = await getSpaceOrThrow(input.spaceId);
   if (!row.goal.trim())
     throw new SpaceError("The draft needs a goal before it can open.");
+  const plan = await getPlan(input.spaceId);
+  if (plan.criteria.length === 0) {
+    throw new SpaceError(
+      "The draft needs success criteria before it can open. Ask the Master to define them.",
+    );
+  }
 
   await db.transaction(async (tx) => {
     await tx

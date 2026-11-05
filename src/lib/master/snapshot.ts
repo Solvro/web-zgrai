@@ -2,8 +2,9 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { message, participant, proposalVote } from "@/db/schema";
 import { getBoard, getMasterContext } from "@/lib/spaces/master";
+import { finalPlanApproval } from "./final-plan";
 import { getPlan } from "./plan";
-import { pendingDeadlines } from "./wake";
+import { activeCheck, pendingDeadlines } from "./wake";
 
 const RECENT_MESSAGES = 30;
 const RECENT_PROPOSALS = 10;
@@ -78,6 +79,22 @@ export async function buildMasterSnapshot(spaceId: string, now: Date) {
   );
   const { space } = context;
   const plan = await getPlan(spaceId);
+  const check = await activeCheck(spaceId);
+  const approval = await finalPlanApproval(spaceId);
+  const criteria = plan.criteria
+    .map(
+      (c) =>
+        `  <criterion id="${c.id}" met="${c.met}"${c.evidence ? ` evidence="${esc(c.evidence)}"` : ""}>${esc(c.text)}</criterion>`,
+    )
+    .join("\n");
+  const checkLine = check
+    ? `<scheduled_check every_minutes="${check.everyMinutes}" next="${check.dueAt.toISOString()}">${esc(check.reason ?? "")}</scheduled_check>`
+    : "<scheduled_check/>";
+  const people = (list: { id: string; represents: string }[]) =>
+    list.map((p) => `participant:${p.id} (${esc(p.represents)})`).join(", ");
+  const finalPlan = approval
+    ? `<final_plan proposal_id="${approval.proposal.id}" approved_by="${people(approval.approvedBy)}" waiting_for="${people(approval.waitingFor)}" not_approving="${people(approval.notApproving)}"/>`
+    : "<final_plan/>";
   const board = await getBoard(spaceId);
   const deadlines = await pendingDeadlines(spaceId);
 
@@ -124,6 +141,9 @@ export async function buildMasterSnapshot(spaceId: string, now: Date) {
     `<participants>\n${participants}\n</participants>`,
     `<subproblems>\n${subproblems}\n</subproblems>`,
     `<constraints>\n${constraints}\n</constraints>`,
+    `<success_criteria>\n${criteria}\n</success_criteria>`,
+    finalPlan,
+    checkLine,
     `<notes>${esc(notes?.content ?? "")}</notes>`,
     `<pins>\n${pins}\n</pins>`,
     await proposalsBlock(spaceId),

@@ -1,5 +1,11 @@
 import { eq } from "drizzle-orm";
 import { Client } from "eve/client";
+import {
+  APPROVE_OPTION_ID,
+  emptySessionView,
+  foldEvents,
+  openInteractions,
+} from "eve/events";
 import { db } from "@/db";
 import { masterSession } from "@/db/schema";
 import { masterInternalToken } from "./internal-auth";
@@ -57,4 +63,21 @@ export async function markMasterSessionEnded(spaceId: string) {
     .update(masterSession)
     .set({ endedAt: new Date() })
     .where(eq(masterSession.spaceId, spaceId));
+}
+
+// The budget prompt eve opens when the session hits limits.sessionUsage, if
+// one is waiting for an answer.
+export async function openBudgetPrompt(sessionId: string) {
+  const snapshot = await masterClient().sessions.attach(sessionId).snapshot();
+  const view = foldEvents(
+    emptySessionView(),
+    snapshot.events as Parameters<typeof foldEvents>[1],
+  );
+  return openInteractions(view, { kind: "budget" })[0] ?? null;
+}
+
+export async function approveBudget(sessionId: string, interactionId: string) {
+  await masterClient()
+    .sessions.attach(sessionId)
+    .respond([{ interactionId, optionId: APPROVE_OPTION_ID }]);
 }
