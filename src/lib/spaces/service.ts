@@ -949,3 +949,40 @@ export async function closeSpaceAsInitiator(input: {
   const me = await requireInitiator(input.spaceId, input.userId);
   await closeSpace({ spaceId: input.spaceId, actorParticipantId: me.id, summary: input.summary });
 }
+
+export async function getParticipantById(participantId: string) {
+  const [row] = await db
+    .select()
+    .from(participant)
+    .where(and(eq(participant.id, participantId), isNull(participant.leftAt)));
+  return row ?? null;
+}
+
+export async function getActiveParticipant(spaceId: string, userId: string) {
+  const [row] = await db
+    .select()
+    .from(participant)
+    .where(
+      and(
+        eq(participant.spaceId, spaceId),
+        eq(participant.userId, userId),
+        isNull(participant.leftAt),
+      ),
+    );
+  return row ?? null;
+}
+
+export async function peekMessages(me: Participant, afterId: number) {
+  const rows = await db
+    .select()
+    .from(message)
+    .where(
+      and(eq(message.spaceId, me.spaceId), visibleTo(me.id), gt(message.id, afterId)),
+    )
+    .orderBy(asc(message.id))
+    .limit(PAGE_SIZE);
+  const people = await participantsById([me.spaceId]);
+  return rows.map((row) => formatForAgent(row, people, me.id));
+}
+
+export { latestMessageId };
