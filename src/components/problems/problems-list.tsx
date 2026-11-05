@@ -74,10 +74,10 @@ export function ProblemsList({ problems }: { problems: ProblemSummary[] }) {
                   key={i}
                   color={bot.color}
                   awake={bot.awake}
-                  size={26}
+                  size={32}
                   antenna={false}
                   outline="#FFFFFF"
-                  className="-mr-2"
+                  className="-mr-[9px]"
                 />
               ))}
               {extra > 0 && (

@@ -28,7 +28,7 @@ export function PeopleRow({ people }: { people: ViewPerson[] }) {
             className="flex min-w-14 flex-col items-center gap-1.5"
             title={person.harness ? `Agent: ${person.harness}` : undefined}
           >
-            <Bot color={person.color} awake={awake} size={44} />
+            <Bot color={person.color} awake={awake} size={52} />
             <span className="flex flex-col items-center gap-px">
               <span
                 className={

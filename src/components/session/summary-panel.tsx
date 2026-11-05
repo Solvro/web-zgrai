@@ -10,6 +10,7 @@ import {
   type ViewStep,
 } from "@/lib/dashboard/view";
 import { cn } from "@/lib/utils";
+import { CriteriaSection } from "./criteria-section";
 
 function StepIcon({ step }: { step: ViewStep }) {
   if (step.status === "done") {
@@ -65,7 +66,7 @@ export function SummaryPanel({ view }: { view: SessionView }) {
       className="flex w-full max-w-full min-w-0 flex-[1_1_380px] flex-col gap-2 rounded-[28px] bg-panel p-[22px] lg:sticky lg:top-6"
     >
       <div className="flex items-center gap-3 px-1 pt-0.5 pb-3">
-        <Bot color={MASTER_COLOR} size={36} />
+        <Bot color={MASTER_COLOR} size={42} />
         <div className="flex flex-1 flex-col gap-px">
           <h2
             id="summary-title"
@@ -165,7 +166,7 @@ export function SummaryPanel({ view }: { view: SessionView }) {
                         <Bot
                           color={person.color}
                           awake={Boolean(text)}
-                          size={24}
+                          size={30}
                           antenna={false}
                           className="mt-0.5"
                         />
@@ -191,6 +192,8 @@ export function SummaryPanel({ view }: { view: SessionView }) {
           </div>
         );
       })}
+
+      <CriteriaSection view={view} />
     </aside>
   );
 }

@@ -39,10 +39,12 @@ function MasterBubble({
   message,
   step,
   side,
+  speaking,
 }: {
   message: ViewMessage;
   step?: ViewStep;
   side: "left" | "right";
+  speaking: boolean;
 }) {
   const labels = [
     "Master",
@@ -58,7 +60,7 @@ function MasterBubble({
         side === "right" && "flex-row-reverse",
       )}
     >
-      <Bot color={MASTER_COLOR} size={34} />
+      <Bot color={MASTER_COLOR} size={38} speaking={speaking} />
       <div
         className={cn(
           "flex max-w-[520px] min-w-0 flex-col gap-1.5 bg-ink px-[18px] pt-3.5 pb-4 text-white",
@@ -102,10 +104,12 @@ function AgentMessage({
   message,
   author,
   mine,
+  speaking,
 }: {
   message: ViewMessage;
   author?: ViewPerson;
   mine: "left" | "right" | false;
+  speaking: boolean;
 }) {
   const color = author?.color ?? "#A3A3A3";
   const name = author?.name ?? "Someone";
@@ -133,14 +137,14 @@ function AgentMessage({
             {message.text}
           </div>
         </div>
-        <Bot color={color} size={34} />
+        <Bot color={color} size={38} speaking={speaking} />
       </div>
     );
   }
 
   return (
     <div className="flex items-start gap-3.5">
-      <Bot color={color} size={34} />
+      <Bot color={color} size={38} speaking={speaking} />
       <div className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5">
         <div className="flex flex-wrap items-baseline gap-2">
           <span className="text-sm font-semibold">{label}</span>
@@ -220,6 +224,11 @@ export function Chat({
   const personById = new Map(people.map((p) => [p.id, p]));
   const stepById = new Map(steps.map((s) => [s.id, s]));
   const admin = viewer.role === "initiator";
+  // The bot of the latest message talks, as in the design.
+  const speakingId = messages.findLast(
+    (m) =>
+      m.author.type !== "system" && m.kind !== "decision" && !m.viaDashboard,
+  )?.id;
 
   if (messages.length === 0) {
     return (
@@ -262,6 +271,7 @@ export function Chat({
               message={message}
               step={message.stepId ? stepById.get(message.stepId) : undefined}
               side={admin ? "right" : "left"}
+              speaking={message.id === speakingId}
             />
           );
         }
@@ -283,6 +293,7 @@ export function Chat({
             message={message}
             author={author}
             mine={isMine ? (admin ? "left" : "right") : false}
+            speaking={message.id === speakingId}
           />
         );
       })}

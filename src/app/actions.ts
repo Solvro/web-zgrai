@@ -1,6 +1,7 @@
 "use server";
 
 import { getSession } from "@/lib/session";
+import { continueMaster } from "@/lib/master/budget";
 import { startSpace } from "@/lib/master/start";
 import { sendDashboardMessage } from "@/lib/spaces/dashboard";
 import { createInvite, SpaceError } from "@/lib/spaces/service";
@@ -38,5 +39,12 @@ export async function messageMasterAction(spaceId: string, text: string) {
   return run(async (userId) => {
     const row = await sendDashboardMessage({ spaceId, userId, text });
     return { id: row.id };
+  });
+}
+
+export async function continueMasterAction(spaceId: string) {
+  return run(async (userId) => {
+    await continueMaster({ spaceId, userId });
+    return { continued: true };
   });
 }

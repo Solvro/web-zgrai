@@ -30,7 +30,7 @@ export function MasterInput({
           onSent();
         });
       }}
-      className="sticky bottom-4 z-10 mt-2.5 flex items-center gap-2 rounded-full border border-[#E5E5E5] bg-white py-1.5 pr-1.5 pl-[18px] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.05)]"
+      className="mt-2.5 flex items-center gap-2 rounded-full border border-[#E5E5E5] bg-white py-1.5 pr-1.5 pl-[18px] shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.05)]"
     >
       <label htmlFor="master-input" className="sr-only">
         Message the Master
