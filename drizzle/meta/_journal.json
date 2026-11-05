@@ -36,6 +36,13 @@
       "when": 1793905800731,
       "tag": "0004_master_criteria_checks_budget",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793906379908,
+      "tag": "0005_master_reminders_and_meta",
+      "breakpoints": true
     }
   ]
 }
