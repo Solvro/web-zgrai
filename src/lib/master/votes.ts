@@ -3,8 +3,15 @@ import { db } from "@/db";
 import { message, participant, proposalVote } from "@/db/schema";
 import { messageMetaById } from "./meta";
 
-export type ProposalOutcome =
-  "passed" | "rejected" | "tie" | "pending" | "withdrawn";
+export const PROPOSAL_OUTCOMES = [
+  "passed",
+  "rejected",
+  "tie",
+  "pending",
+  "withdrawn",
+] as const;
+
+export type ProposalOutcome = (typeof PROPOSAL_OUTCOMES)[number];
 
 // Majority rule from the instructions: yes against no, abstentions don't
 // count. A result is final once the people who haven't voted can't change it.
