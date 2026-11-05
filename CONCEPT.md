@@ -129,23 +129,21 @@ sequenceDiagram
   Master can ask precise follow-up questions so that answers are comparable
   (see open questions).
 
-### Keeping the connection
+### Master on Eve (option)
 
-The key problem: an MCP call is a one-off tool call. The agent sends a
-message, gets "sent" back and that's it, while the Master may need more
-information only some time later.
+If the Master is built with [Eve](https://vercel.com/docs/mcp/integrations/eve)
+(Vercel's agent framework, beta):
 
-- **Default: polling.** The skill tells the agent to ask "any new messages?"
-  every 5-10 s. It has to work in every harness: in Claude Code through
-  scripts or monitors, in Grokbot through crons, etc.
-- **To check:** whether MCP offers any kind of push (notifications, webhooks,
-  websockets) and whether harnesses can use it to wake the model up.
-- **Alternative:** the skill downloads a simple Python script that holds a
-  websocket, or we build our own websocket layer. Careful not to end up
-  inventing a new protocol.
-- The session on the server lasts until the goal is reached. Sessions in
-  cloud harnesses don't disappear either: when the human goes to eat, their
-  agent keeps negotiating on their behalf.
+- `/api/mcp` with Better Auth stays the only entry point for stakeholder
+  agents. Eve has no OAuth authorization server of its own: its MCP channel
+  only acts as a resource server that validates tokens issued elsewhere.
+- Eve's MCP channel exposes generic task tools (`agent_start`, `agent_get`,
+  `agent_update`, `agent_cancel`), not our space tools, so it doesn't replace
+  `/api/mcp`.
+- Eve runs the Master loop. The Master reads and writes the same database
+  through its internal tools.
+- To check: whether Eve can validate Better Auth tokens, if we ever want to
+  expose the Master directly.
 
 ## MCP server
 
@@ -321,6 +319,125 @@ the event stream all return everything after it.
 - Absent agents: every question has a deadline. When it passes, the Master
   moves on and notes who didn't answer.
 
+## Keeping agents in the loop
+
+### The problem
+
+- An MCP tool call is request/response. The agent sends a message, gets
+  "sent" back and its turn ends. A harness only runs the model when the user
+  writes or a tool returns, so when the Master asks something new later,
+  nothing wakes the stakeholder agent up.
+- The server can't open a connection to a user's computer (NAT, firewalls).
+  Every connection has to be opened by the client.
+- MCP does have a server-to-client direction: over Streamable HTTP the server
+  can send notifications (`notifications/resources/updated` after
+  `resources/subscribe`, `notifications/message`, `notifications/progress`,
+  `list_changed`). Harnesses treat them as metadata and don't start a new
+  model turn. So "MCP over websockets" wouldn't help: the gap is in the
+  harness, not in the transport.
+- The space on the server lives until the goal is reached, independently of
+  any client session.
+
+### Why naive polling is expensive
+
+When the agent polls by itself, every check is a full model turn with the
+whole conversation as input. Every 10 s for an hour is 360 turns per
+participant, most of them answering "nothing new", and the context fills up
+with empty checks. Waiting has to be cheap, and the model should only wake up
+when something actually happened. Polling the database is cheap. Polling with
+the model is not.
+
+### Layers
+
+| Layer                     | For                                                     | How                                                                                               | When the model runs                              |
+| ------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| **1. Pull** (baseline)    | every harness                                           | `get_updates` after every action and when the user returns, `list_my_spaces` as the entry point | only when the user or the agent acts anyway      |
+| **2. Long-poll**          | every harness whose tool timeout allows it              | `wait_for_updates(cursor, timeout_s≈50)` in a loop                                                | once per new event or timeout                    |
+| **3. Watcher + Monitor**  | Claude Code (interactive)                               | a script listens to the event stream, Claude Code's Monitor tool wakes the model on each line     | only on real events                              |
+| **4. Channels**           | Claude Code (interactive)                               | a local channel server pushes events into the running session                                     | only on real events, in the user's live session |
+| **5. Local daemon**       | local CLIs: Codex, Gemini CLI, OpenCode, Cursor, Copilot | a daemon holds the event stream and drives the agent through ACP or headless mode                | only on real events, in a new agent session     |
+
+#### 1. Pull
+
+Works everywhere, including ChatGPT and other cloud chats. The latency is
+"until the user talks to their agent again", which is fine for "my agent
+catches up when I come back".
+
+#### 2. Long-poll with `wait_for_updates`
+
+- The server holds the request open until a new message for this participant
+  arrives or the timeout passes, then returns.
+- Keep the timeout below client and hosting limits (about 50 s) and send MCP
+  progress notifications while waiting, so clients that reset their timeout
+  on progress keep the call alive.
+- The agent loops: `wait_for_updates`, react, `wait_for_updates` again. The
+  loop lives in the model, so it costs one turn per event or timeout (5-10x
+  fewer than polling every 5-10 s), and the agent may stop looping on its own.
+  The skill and the `next_step` hints keep nudging it.
+- Server side: inside the handler, wake up on Postgres `LISTEN/NOTIFY`, or
+  simply re-query every second.
+
+#### 3. Watcher + Monitor (Claude Code)
+
+- An event stream outside MCP: `GET /api/spaces/[id]/events` as Server-Sent
+  Events, authorised with the same token and resumable with `Last-Event-ID`
+  set to the last `message.id`. Next.js route handlers can stream SSE but
+  can't serve WebSockets, so it's SSE.
+- The skill tells Claude Code to start its Monitor tool with a tiny script
+  (e.g. `curl -N` on the event stream, printing one line per event). Each
+  line wakes the model.
+- Costs nothing while idle. A monitor expires after at most 30 minutes and
+  has to be re-armed, which is one cheap turn per 30 minutes.
+- Only works while the session is open.
+
+#### 4. Claude Code Channels
+
+- A small local MCP server (e.g. a `grokownik-channel` npm package) declares
+  the `claude/channel` capability, subscribes to the event stream and turns
+  every event into a `notifications/claude/channel` notification. Claude
+  reacts straight away in the running session. Replies go through the normal
+  `/api/mcp` tools.
+- It has to be a local stdio server, so it's a separate package, not
+  `/api/mcp` itself.
+- Limits: research preview. A custom channel needs
+  `claude --dangerously-load-development-channels server:grokownik-channel`.
+  Interactive sessions only (not `claude -p` or the Agent SDK). No delivery
+  acknowledgements: events queue up while Claude is busy. On Team and
+  Enterprise plans an admin has to enable channels.
+- The only option that pushes into the conversation the user is actually
+  having, with all of its context.
+
+#### 5. Local daemon (ACP or headless)
+
+- A small Node/Bun process on the user's machine holds the event stream and
+  runs the user's agent on every event:
+  - through ACP (Agent Client Protocol, JSON-RPC over stdio). About 55 agents
+    support it, including Gemini CLI, Cursor, GitHub Copilot, OpenCode, Goose
+    and Cline. Claude Code and Codex work through adapters. Grok isn't
+    listed.
+  - or headless: `claude -p`, `codex exec`, `gemini -p`.
+- The agent runs in a fresh session. It has the user's files, notes, MCP
+  connectors and subscription, but not their current conversation.
+- Permission prompts from the agent are forwarded to the user instead of
+  being auto-approved.
+
+### Per harness
+
+| Harness                                               | Baseline                                       | Best push option                                                   |
+| ----------------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------ |
+| Claude Code (interactive)                             | pull + long-poll                               | Channels, or the Monitor watcher                                   |
+| Claude Code headless, Agent SDK                       | none                                           | local daemon                                                       |
+| Codex CLI, Gemini CLI, OpenCode, Cursor, Copilot CLI | pull + long-poll                               | local daemon (ACP)                                                 |
+| ChatGPT, Grok and other cloud chats                   | pull, plus long-poll if the tool timeout allows | none. To check: whether their scheduled tasks can call connectors |
+
+### Hackathon plan
+
+1. Layers 1 and 2 first. They cover every harness and need nothing but the
+   MCP tools.
+2. The SSE event stream and the Monitor recipe in the skill. Cheap to build,
+   and a great demo in Claude Code.
+3. Channels if time allows, the local daemon last.
+
 ## Initialisation
 
 | Variant           | How it works                                                                                                                                                        | Status                                         |
@@ -346,24 +463,32 @@ Eventually both variants can work side by side.
 - A GUI plugin in the harness (like the OpenCode plugins from the previous
   hackathon, or a Grokbot plugin): a "create a session and invite friends"
   button instead of pasting text.
-- A websocket layer instead of polling.
+- Push layers on top of pull: the Monitor watcher, a Claude Code channel and
+  the local daemon (see [Keeping agents in the loop](#keeping-agents-in-the-loop)).
 
 ## Open questions
 
 - **Name and domain:** Grokownik? Which domain? What exactly is behind
   "Grokbot" in the transcript?
 - **Master model:** Grokbot via API, or Opus straight away?
-- **Account or code:** the current `/api/mcp` requires OAuth (account, login,
-  consent). Does a participant need an account, or is the invite code
-  enough?
-- **Push vs polling:** can any harness handle notifications from the server?
-  What polling interval is reasonable cost-wise?
-- **Harnesses without skills:** how do we deliver instructions to agents that
-  don't support skills (e.g. ChatGPT)? Is a full instruction inside the
-  invite enough?
-- **Box structure:** free text, or normalised fields created by the Master?
-  What exactly can be pulled back from a box, and who can do it?
-- **Roles in the model:** a custom role per participant, or signed messages?
+- **Account or code:** proposal in
+  [Authentication and joining](#authentication-and-joining): OAuth plus an
+  invite code now, guest sign-in later. Still open: do we want guests at all?
+- **Push vs polling:** answered in
+  [Keeping agents in the loop](#keeping-agents-in-the-loop). Still open: which
+  push layers we build during the hackathon.
+- **Harnesses without skills:** answered in
+  [Instructions without skills](#instructions-without-skills). Still open:
+  test what ChatGPT actually does with server instructions.
+- **Box structure:** proposal: free-text items with a topic (`box_item`),
+  readable and retractable by their owner through `get_my_box` and
+  `retract_context`. Still open: should the Master define the topics up
+  front?
+- **Roles in the model:** answered: signed messages (see
+  [How the Master sees participants](#how-the-master-sees-participants)).
+- **Master framework:** Eve, or a plain loop on the model API?
 - **Group decisions:** when does the Master go with the majority, and when
   does it look for a compromise? Who confirms that the goal has been reached?
-- **Absent agents:** what if someone's agent doesn't respond for a long time?
+- **Absent agents:** proposal: every Master question has a deadline, after
+  which the Master moves on (see [Master loop](#master-loop)). Still open:
+  how long the deadlines are.
