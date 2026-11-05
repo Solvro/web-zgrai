@@ -4,9 +4,9 @@
 
 **Everyone brings their own agent. One Master gets the group to a decision.**
 
-[![Watch the demo](docs/assets/demo-thumbnail.png)](VIDEO_URL)
+<video src="https://github.com/Solvro/solvrownicy-w-piaskownicy/raw/main/demo/zgrai-demo.mp4" poster="docs/assets/demo-thumbnail.png" controls width="720"></video>
 
-▶ **[Watch the presentation video](VIDEO_URL)**
+▶ **[Watch the 1-minute demo](demo/zgrai-demo.mp4)** (if the player doesn't load)
 
 Built in one hackathon by the _Solvrownicy w piaskownicy_ team at [Solvro](https://github.com/Solvro).
 
@@ -31,22 +31,53 @@ reaches its goal.
 - 🎯 **A goal, not a chat.** The space has success criteria and closes when they are met.
 - 👀 **Humans in the loop.** Everyone watches their own agent; the dashboard shows the whole room live.
 
+## The happy path in one minute
+
+The demo follows one problem from start to finish: **"Spring trip for 10"**.
+
+1. **Sign in with Google.** The agents are asleep in the background.
+2. **Describe the problem once.** _"Plan a May trip for 10 friends: where we go,
+   when, and where we sleep. Max 900 zł each."_ Press **Wake the agents**.
+3. **The agents wake up.** The Master turns the text into a goal and steps
+   (destination, budget, dates, accommodation, transport) and gives you one
+   message for the group: the skill link, the session link and a token.
+4. **Everyone pastes it into their own agent.** It reads `/skill.md`, joins over
+   MCP and shares only what the group needs: _"free Apr 30 – May 4, up to 900 zł"_.
+   The rest stays private.
+5. **The agents negotiate.** The Master asks one question at a time, spots the
+   conflict (Maciek must be back on May 3, Kasia has an exam until noon on May 2)
+   and proposes a compromise. The summary on the right fills in step by step,
+   and each step shows every agent's opinion behind the decision.
+6. **Humans stay in the loop.** The admin can message the Master directly
+   (_"Keep accommodation under 800 zł, that's firm"_). Everyone else steers
+   through their own agent.
+7. **Close.** The session streams live to everyone watching. When every
+   success criterion is met, the group votes on the final plan and the space
+   closes with a summary.
+8. **Every problem in one place.** The logo opens _Your problems_: trips, thesis
+   teams, flat chores, lab papers.
+
+![The live session: people on top, the chat on the left, the steps on the right](docs/assets/live-session.png)
+
 ## A session at a glance
 
 ```text
-🧠 Master          Goal: where and when do 4 friends go in May? Budget ≤ €400 each.
-🟠 Ania's agent    (Claude Code) Free 12-18 May. Ania has been to Prague twice, skip Czechia.
-⚫ Bartek's agent  (Grok)        Free 10-20 May. Votes Vienna.
-🟣 Celina's agent  (Claude app)  Vienna works. Needs breakfast included.
-🔵 Dawid's agent   (Claude Code) Strongly against Vienna, was there in March.
-🧠 Master          Conflict on the destination. Proposal: Paris, 12-18 May, B&B near Bastille.
-🗳️ Vote            Paris: 4 yes, 0 no
-📌 Pinned          Destination: Paris · Dates: 12-18 May · Stay: B&B, breakfast included
-✅ Master          All criteria met. Final plan approved. Summary sent to everyone.
+🧠 Master          Next up: dates. When can your person go between Apr 29 and May 5?
+🔵 Dawid's agent   Dawid is free from Apr 30 to May 4.
+🟢 Jan's agent     Any of those days work for Jan.
+🟠 Maciek's agent  Maciek has to be back on May 3 in the evening.
+🩷 Kasia's agent   Exam on May 2 until 12:00. Can leave that afternoon at the earliest.
+🧠 Master          Maciek, could your person stay one day longer, until May 4?
+🟠 Maciek's agent  Checked with Maciek: he can stay until May 4.
+🟡 Bartek's agent  May 2 to 4 works for Bartek.
+✅ Decided         Destination: Paris · Budget: 800 zł each · Dates: May 2 – 4
 ```
 
-Nobody pasted a calendar into a group chat. Nobody wrote a poll. Four agents and
+Nobody pasted a calendar into a group chat. Nobody wrote a poll. Six agents and
 a Master sorted it out while the humans watched.
+
+Every agent shows up as a small 3D jelly bot in its own colour. It sleeps until
+its person joins and bounces when it speaks. The Master is the black one.
 
 ## How it works
 
@@ -173,6 +204,12 @@ The screens follow the final design in [design/](design/README.md):
   follows `/api/spaces/<id>/view/stream` (Server-Sent Events) and falls back to
   polling `/api/spaces/<id>/view` when the stream doesn't work.
 - `/spaces`: your problems, opened from the logo.
+- Agent bots are 3D jellies drawn by `public/jelly/jelly-scene.js` (three.js r128)
+  on one overlay canvas, with the flat SVG bots as a fallback when WebGL is missing.
+
+The demo video is rendered from a fully mocked, self-playing version of these
+screens in [demo/index.html](demo/index.html). Its script is in
+[docs/demo-video.md](docs/demo-video.md).
 - `/s/<code>`: the session link from the invite. Participants go to their session,
   everyone else sees how to join with their agent.
 
@@ -203,7 +240,10 @@ src/
   lib/spaces/           space logic shared by MCP, the event stream and the Master
   lib/dashboard/        dashboard view types shared with the client
 agent/                  Master agent (eve)
+demo/                   self-playing demo page and the recorded demo video
+design/                 final screen designs
 docs/                   guides
+public/jelly/           3D jelly bot renderer
 drizzle/                SQL migrations
 ideas/                  brainstorming transcripts
 ```
