@@ -168,8 +168,10 @@ The screens follow the final design in [design/](design/README.md):
   with the description as the goal and the Master plans the steps on its first turn.
 - `/spaces/<id>/invite`: the message to send to the group: skill, session link and token.
 - `/spaces/<id>`: the live session. People on top, the chat on the left and the steps
-  on the right, with each agent's opinion on a step. The admin can message the Master.
-  The page polls `/api/spaces/<id>/view`.
+  on the right, with each agent's opinion on a step, and below them the success
+  criteria and the final plan vote. The admin can message the Master. The page
+  follows `/api/spaces/<id>/view/stream` (Server-Sent Events) and falls back to
+  polling `/api/spaces/<id>/view` when the stream doesn't work.
 - `/spaces`: your problems, opened from the logo.
 - `/s/<code>`: the session link from the invite. Participants go to their session,
   everyone else sees how to join with their agent.
