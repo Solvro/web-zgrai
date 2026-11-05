@@ -158,22 +158,25 @@ tool handlers as `ctx.http?.authInfo?.extra?.userId`.
 
 ### Dashboard
 
-The dashboard lives at `http://localhost:3000/spaces`. It covers both stages from
-[CONCEPT.md](CONCEPT.md#dashboard): creating and shaping a problem with the Master
-(`/spaces/new`), the invite step and the public invite page (`/join/<code>`), and
-following a space live (chat, agents, pins, progress and notes).
+The screens follow the final design in [design/](design/README.md):
 
-For now it runs on mock data, without auth or a database:
+- `/`: sign in with Google (email stays behind "Use email instead"), then describe
+  what the group needs to decide. "Wake the agents" calls `startSpace`
+  (`src/lib/master/start.ts`): one Grok call shapes the title, goal, steps and
+  success criteria, and the space opens right away. Without `XAI_API_KEY` it opens
+  with the description as the goal and the Master plans the steps on its first turn.
+- `/spaces/<id>/invite`: the message to send to the group: skill, session link and token.
+- `/spaces/<id>`: the live session. People on top, the chat on the left and the steps
+  on the right, with each agent's opinion on a step. The admin can message the Master.
+  The page polls `/api/spaces/<id>/view`.
+- `/spaces`: your problems, opened from the logo.
+- `/s/<code>`: the session link from the invite. Participants go to their session,
+  everyone else sees how to join with their agent.
 
-- `src/lib/dashboard/store.ts` is an in-memory store in the browser. A reload resets it,
-  and a space created in one tab doesn't exist in another.
-- `src/lib/dashboard/shaping.ts` is a scripted stand-in for the Master in stage 1.
-- `src/lib/dashboard/simulation.ts` and `scenarios.ts` play agents and the Master in
-  stage 2. The "Demo" menu in the header changes the speed and switches to the
-  read-only participant view.
-- `src/lib/dashboard/actions.ts` lists everything the dashboard can do. Wiring it to the
-  backend means replacing these functions with server calls and the store with data
-  from the server.
+The read models live in `src/lib/spaces/dashboard.ts`, the server actions in
+`src/app/actions.ts`. Google sign-in needs `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET`, with `<BETTER_AUTH_URL>/api/auth/callback/google` as the
+redirect URI.
 
 ### Project layout
 
@@ -185,17 +188,17 @@ src/
     api/mcp/            MCP server
     api/spaces/         space event stream (SSE)
     skill.md/           self-setup skill for agents
-    login/ signup/      auth pages (shadcn login-01 / signup-01 blocks)
+    login/ signup/      auth pages
     consent/            OAuth consent page
-    (dashboard)/        dashboard: /spaces, /spaces/new, /spaces/[id], /join/[code]
-  components/dashboard/ dashboard components
+    spaces/ s/          dashboard: /spaces, /spaces/[id], /spaces/[id]/invite, /s/[code]
+  components/           brand, start, session and problems components
   components/ui/        shadcn/ui components
   db/                   drizzle client and schema
   lib/auth.ts           Better Auth server config
   lib/auth-client.ts    Better Auth React client
   lib/mcp/              MCP tools and server instructions
   lib/spaces/           space logic shared by MCP, the event stream and the Master
-  lib/dashboard/        dashboard types, mock store, simulation and actions
+  lib/dashboard/        dashboard view types shared with the client
 agent/                  Master agent (eve)
 docs/                   guides
 drizzle/                SQL migrations
