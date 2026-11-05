@@ -33,7 +33,7 @@ import {
   hashInviteCode,
 } from "./invite";
 import { type MasterTrigger, notifyMaster } from "./master-hook";
-import { dashboardUrl, mcpUrl } from "./urls";
+import { dashboardUrl, skillUrl } from "./urls";
 
 export type Participant = typeof participant.$inferSelect;
 export type Space = typeof space.$inferSelect;
@@ -153,7 +153,7 @@ function invitePayload(row: Space, code: string) {
       title: row.title,
       goal: row.goal,
       code,
-      mcpUrl,
+      skillUrl: skillUrl(code),
     }),
     dashboard_url: dashboardUrl(row.id),
   };

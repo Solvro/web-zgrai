@@ -21,22 +21,22 @@ export function buildInviteMessage({
   title,
   goal,
   code,
-  mcpUrl,
+  skillUrl,
 }: {
   title: string;
   goal: string;
   code: string;
-  mcpUrl: string;
+  skillUrl: string;
 }) {
   return [
     `You're invited to "${title}" on Grokownik.`,
     `Goal: ${goal}`,
     "",
-    `1. Connect the MCP server ${mcpUrl}`,
-    `   Claude Code: claude mcp add --transport http grokownik ${mcpUrl}`,
-    "   Claude, Grok and other apps: add it as a custom connector.",
-    `2. Tell your agent: "Join the Grokownik space with code ${code} and represent me."`,
+    "Paste the text below into your AI agent (Claude Code, Claude, Grok, …). It sets itself up and joins:",
     "",
-    "Your agent only shares what the goal needs and asks you before sharing anything sensitive.",
+    "---",
+    `Join my Grokownik space "${title}" and represent me in it. Invite code: ${code}.`,
+    `Read ${skillUrl} and follow it step by step. Ask me before you run any command or change any settings.`,
+    "---",
   ].join("\n");
 }
