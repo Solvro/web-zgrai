@@ -341,16 +341,24 @@ New tables in `src/db/schema`, next to the Better Auth tables:
 
 | Table           | Columns                                                                                                                                                                                                                                                  |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `space`         | `id`, `title`, `goal`, `description`, `status` (open, closed), `created_by` (user), `summary`, `created_at`, `closed_at`                                                                                                                                  |
+| `space`         | `id`, `title`, `goal`, `description`, `status` (draft, open, closed), `created_by` (user), `summary`, `created_at`, `closed_at`                                                                                                                           |
 | `space_invite`  | `id`, `space_id`, `code_hash`, `expires_at`, `max_uses`, `uses`, `revoked_at`                                                                                                                                                                            |
 | `participant`   | `id`, `space_id`, `user_id`, `represents`, `role` (initiator, member), `harness` (reported by the client), `joined_at`, `last_seen_at`, `last_read_message_id`                                                                                           |
 | `message`       | `id` (bigserial, doubles as the cursor), `space_id`, `author_participant_id` (null for the Master and system), `kind` (message, question, proposal, decision, system), `reply_to`, `visibility` (all, master), `addressed_to` (participant ids), `content`, `created_at` |
 | `box_item`      | `id`, `space_id`, `participant_id`, `topic`, `content`, `created_at`, `retracted_at`                                                                                                                                                                     |
 | `proposal_vote` | `proposal_message_id`, `participant_id`, `choice`, `comment`, `created_at`                                                                                                                                                                               |
+| `activity`      | `id` (bigserial, the dashboard cursor), `space_id`, `actor_participant_id` (null for the Master), `type` (joined, message, shared_context, retracted_context, vote, left), `ref_id` (the message, box item or vote), `visibility` (all, master), `summary`, `created_at` |
+| `board_item`    | `id`, `space_id`, `kind` (note, pin), `title`, `content`, `position`, `created_at`, `updated_at`, `removed_at`                                                                                                                                           |
 
 The monotonic `message.id` is the whole synchronisation model: every client
 remembers the last id it has seen, and `get_updates`, `wait_for_updates` and
 the event stream all return everything after it.
+
+The dashboard works the same way with `activity.id`: every bubble in the
+live chat is one `activity` row, and the browser follows new rows and
+`board_item` changes over SSE, authorised with its session cookie. Stage 1
+(shaping the problem) is a `draft` space whose messages are the chat between
+the initiator and the Master.
 
 ### How the Master sees participants
 
@@ -380,6 +388,16 @@ the event stream all return everything after it.
 - Internal tools, not exposed over MCP: `post_message`,
   `ask(participant_ids, question, deadline?)`, `propose(options)`,
   `record_decision`, `close_space(summary)`.
+- Dashboard tools, also internal: `update_notes(content)`,
+  `pin(title, content)` and `unpin(item_id)`. Recording a decision pins it as
+  well.
+- Stage 1: in a `draft` space the Master talks only to the initiator and
+  fills in the goal, subproblems and constraints with
+  `update_draft(goal, subproblems, constraints)`. The initiator's
+  confirmation opens the space and creates the invite.
+- Every MCP call that changes the space (join, message, shared context, vote,
+  leave) and every Master action writes an `activity` row with a one-line
+  summary for the live chat.
 - Absent agents: every question has a deadline. When it passes, the Master
   moves on and notes who didn't answer.
 
