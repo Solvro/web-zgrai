@@ -130,7 +130,11 @@ export async function scheduleCheck(
   return queueCheck(spaceId, everyMinutes, reason);
 }
 
-async function queueCheck(spaceId: string, everyMinutes: number, reason: string) {
+async function queueCheck(
+  spaceId: string,
+  everyMinutes: number,
+  reason: string,
+) {
   const dueAt = new Date(Date.now() + everyMinutes * 60_000);
   await db
     .insert(masterWake)

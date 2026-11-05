@@ -44,9 +44,7 @@ export async function detectBudgetPauses() {
     );
 
   for (const session of running) {
-    const prompt = await openBudgetPrompt(session.sessionId).catch(
-      () => null,
-    );
+    const prompt = await openBudgetPrompt(session.sessionId).catch(() => null);
     if (!prompt) continue;
     await db
       .update(masterSession)

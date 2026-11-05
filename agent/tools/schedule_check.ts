@@ -18,7 +18,9 @@ export default defineTool({
     reason: z
       .string()
       .min(1)
-      .describe("What you want to check, e.g. 'see if everyone voted on dates'."),
+      .describe(
+        "What you want to check, e.g. 'see if everyone voted on dates'.",
+      ),
   }),
   async execute({ every_minutes, reason }, ctx) {
     const space = await toolSpace(ctx);

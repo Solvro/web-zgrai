@@ -11,12 +11,7 @@ import {
   SpaceError,
   truncate,
 } from "@/lib/spaces/service";
-import {
-  getPlan,
-  setConstraints,
-  setCriteria,
-  setSubproblems,
-} from "./plan";
+import { getPlan, setConstraints, setCriteria, setSubproblems } from "./plan";
 
 // Stage 1: the initiator shapes the problem with the Master on the dashboard.
 // A draft space has no invite and no other participants until it's confirmed.
@@ -70,13 +65,11 @@ export async function createDraftSpace(input: {
         harness: "dashboard",
       })
       .returning();
-    await tx
-      .insert(message)
-      .values({
-        spaceId: row.id,
-        authorParticipantId: me.id,
-        content: input.description,
-      });
+    await tx.insert(message).values({
+      spaceId: row.id,
+      authorParticipantId: me.id,
+      content: input.description,
+    });
     await recordActivity(tx, {
       spaceId: row.id,
       actorParticipantId: me.id,
