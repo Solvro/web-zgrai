@@ -62,6 +62,7 @@ export type ViewMessage = {
   author: ViewAuthor;
   text: string;
   stepId: string | null;
+  withdrawn: boolean;
   private: boolean;
   viaDashboard: boolean;
   createdAt: string;

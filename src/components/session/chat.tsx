@@ -48,6 +48,7 @@ function MasterBubble({
     "Master",
     step?.title,
     KIND_LABEL[message.kind],
+    message.withdrawn ? "withdrawn" : undefined,
     message.private ? "only you" : undefined,
   ].filter(Boolean);
   return (

@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  masterMessageMeta,
   message,
   participant,
   space,
@@ -25,12 +26,8 @@ import type {
   ViewStep,
 } from "@/lib/dashboard/view";
 import { agentColor } from "@/lib/dashboard/view";
-import {
-  currentStep,
-  currentStepId,
-  getPlan,
-  type Plan,
-} from "@/lib/master/plan";
+import { messageMetaById, tagWithCurrentStep } from "@/lib/master/meta";
+import { currentStep, getPlan, type Plan } from "@/lib/master/plan";
 import { hashInviteCode } from "./invite";
 import { notifyMaster } from "./master-hook";
 import {
@@ -80,24 +77,28 @@ function viewPeople(rows: Participant[], meId: string): ViewPerson[] {
 // the Master hasn't recorded yet.
 async function latestAnswers(spaceId: string) {
   const rows = await db
-    .selectDistinctOn([message.subproblemId, message.authorParticipantId], {
-      stepId: message.subproblemId,
-      participantId: message.authorParticipantId,
-      content: message.content,
-    })
+    .selectDistinctOn(
+      [masterMessageMeta.subproblemId, message.authorParticipantId],
+      {
+        stepId: masterMessageMeta.subproblemId,
+        participantId: message.authorParticipantId,
+        content: message.content,
+      },
+    )
     .from(message)
+    .innerJoin(masterMessageMeta, eq(masterMessageMeta.messageId, message.id))
     .where(
       and(
         eq(message.spaceId, spaceId),
         eq(message.kind, "message"),
         eq(message.visibility, "all"),
         isNull(message.via),
-        isNotNull(message.subproblemId),
+        isNotNull(masterMessageMeta.subproblemId),
         isNotNull(message.authorParticipantId),
       ),
     )
     .orderBy(
-      message.subproblemId,
+      masterMessageMeta.subproblemId,
       message.authorParticipantId,
       desc(message.id),
     );
@@ -134,6 +135,7 @@ function viewSteps(
 }
 
 async function viewMessages(rows: Message[]): Promise<ViewMessage[]> {
+  const meta = await messageMetaById(rows.map((row) => row.id));
   return Promise.all(
     rows.map(async (row) => ({
       id: row.id,
@@ -148,7 +150,8 @@ async function viewMessages(rows: Message[]): Promise<ViewMessage[]> {
               }
             : { type: "master" as const },
       text: row.content,
-      stepId: row.subproblemId,
+      stepId: meta.get(row.id)?.subproblemId ?? null,
+      withdrawn: meta.get(row.id)?.withdrawnAt != null,
       private: row.visibility === "private",
       viaDashboard: row.via === "dashboard",
       createdAt: row.createdAt.toISOString(),
@@ -294,7 +297,6 @@ export async function sendDashboardMessage(input: {
         authorParticipantId: me.id,
         content: text,
         via: "dashboard",
-        subproblemId: await currentStepId(input.spaceId),
       })
       .returning();
     await recordActivity(tx, {
@@ -306,6 +308,7 @@ export async function sendDashboardMessage(input: {
     });
     return inserted;
   });
+  await tagWithCurrentStep(input.spaceId, created.id);
   notifyMaster(input.spaceId, "message");
   return created;
 }
