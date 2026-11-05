@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <title>zgrai.pl new problem</title>
 <script src="./support.js"></script>
+<script src="/_blob/1b08621c783843424178ab6c6f02b059"></script>
+<script src="/_blob/125719f3204e73f78d270569f9224f01"></script>
 </head>
 <body>
 <x-dc>
@@ -12,45 +14,24 @@
 <style>
 body{margin:0}
 a{color:#0A0A0A}a:hover{color:#404040}
-@keyframes doze{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(5px) rotate(-2deg)}}
-@keyframes zzz{0%{opacity:0;transform:translate(0,0) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translate(12px,-26px) scale(1.15)}}
-@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-9px)}60%{transform:translateY(-9px)}}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}100%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
 @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
 </style>
 </helmet>
-<div style="position: relative; min-height: 900px; overflow: hidden; background: #FFFFFF; font-family: 'Geist', system-ui, sans-serif; color: #0A0A0A; display: flex; flex-direction: column">
+<div ref="{{refRt}}" style="position: relative; min-height: 900px; overflow: hidden; background: #FFFFFF; font-family: 'Geist', system-ui, sans-serif; color: #0A0A0A; display: flex; flex-direction: column">
 
-  <div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none">
-    <sc-for list="{{agents}}" as="a" hint-placeholder-count="10">
-      <div style="position: absolute; left: {{a.left}}; top: {{a.top}}; width: {{a.size}}; animation: {{a.anim}}">
-        <svg viewBox="0 0 56 56" width="100%" fill="none" style="display: block; overflow: visible">
-          <circle cx="28" cy="6" r="3.2" style="fill: {{a.fill}}; transition: fill 0.7s ease {{a.delay}}"></circle>
-          <rect x="26.6" y="7" width="2.8" height="7" rx="1.4" style="fill: {{a.fill}}; transition: fill 0.7s ease {{a.delay}}"></rect>
-          <rect x="7" y="13" width="42" height="36" rx="14" style="fill: {{a.fill}}; transition: fill 0.7s ease {{a.delay}}"></rect>
-          <path d="M16 30q4.5 3.5 9 0M31 30q4.5 3.5 9 0" stroke="#B5B5B5" stroke-width="2.6" stroke-linecap="round" style="opacity: {{a.closed}}; transition: opacity 0.25s ease {{a.delay}}"></path>
-          <circle cx="20.5" cy="30" r="3.6" fill="#FFFFFF" style="opacity: {{a.open}}; transition: opacity 0.25s ease {{a.delay}}"></circle>
-          <circle cx="35.5" cy="30" r="3.6" fill="#FFFFFF" style="opacity: {{a.open}}; transition: opacity 0.25s ease {{a.delay}}"></circle>
-        </svg>
-        <span style="position: absolute; right: -8px; top: -12px; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 15px; font-weight: 500; color: #A3A3A3; opacity: {{a.z}}; animation: {{a.zAnim}}">z</span>
-        <span style="position: absolute; left: 50%; top: 100%; margin-top: 10px; transform: translateX(-50%); white-space: nowrap; padding: 5px 10px; border-radius: 999px; background: #FFFFFF; border: 1px solid #E5E5E5; box-shadow: 0 2px 8px rgba(0,0,0,0.06); font-size: 12px; color: #404040; opacity: {{a.open}}; transition: opacity 0.4s ease {{a.delay}}">{{a.task}}</span>
-      </div>
-    </sc-for>
-  </div>
+  <canvas ref="{{refCv}}" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2"></canvas>
 
   <header style="position: relative; z-index: 1; padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px">
-    <span style="display: inline-flex; align-items: baseline; font-size: 24px; font-weight: 700; letter-spacing: -0.04em">zgr<span style="margin-left: 2px; padding: 0 7px 2px; border-radius: 9px; background: #0A0A0A; color: #FFFFFF; letter-spacing: -0.02em">ai</span><span style="margin-left: 1px; color: #A3A3A3; font-weight: 500">.pl</span></span>
-    <button type="button" aria-label="Account: Dawid" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #E5E5E5; background: #F5F5F5; color: #0A0A0A; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">D</button>
+    <a href="V2Problems.dc.html" data-jelly-clear style="display: inline-flex; align-items: baseline; text-decoration: none; color: #0A0A0A; font-size: 24px; font-weight: 700; letter-spacing: -0.04em">zgr<span style="margin-left: 2px; padding: 0 7px 2px; border-radius: 9px; background: #0A0A0A; color: #FFFFFF; letter-spacing: -0.02em">ai</span><span style="margin-left: 1px; color: #A3A3A3; font-weight: 500">.pl</span></a>
+    <button type="button" data-jelly-clear aria-label="Account: Dawid" style="width: 40px; height: 40px; border-radius: 999px; border: 1px solid #E5E5E5; background: #F5F5F5; color: #0A0A0A; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">D</button>
   </header>
 
   <main style="position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px 24px 80px">
 
     <sc-if value="{{sleeping}}" hint-placeholder-val="{{ true }}">
-      <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
-        <div style="display: flex; flex-direction: column; gap: 12px; align-items: center">
-          <h1 style="margin: 0; font-size: 48px; line-height: 1.05; letter-spacing: -0.04em; font-weight: 600">What does your group<br>need to decide?</h1>
-          
-        </div>
+      <div data-jelly-clear style="width: 100%; max-width: 640px; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center">
+        <h1 style="margin: 0; font-size: 48px; line-height: 1.05; letter-spacing: -0.04em; font-weight: 600">What does your group<br>need to decide?</h1>
         <div style="width: 100%; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E5E5E5; border-radius: 22px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 16px 40px rgba(0,0,0,0.07); padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 10px; text-align: left">
           <label for="v2-problem" style="font-size: 13px; font-weight: 500; color: #6B6B6B">The problem</label>
           <textarea id="v2-problem" rows="3" style="border: none; outline: none; resize: none; padding: 0; font-family: inherit; font-size: 18px; line-height: 1.5; color: #0A0A0A; background: transparent">Plan a May trip for 10 friends: where we go, when, and where we sleep. Max 900 zł each.</textarea>
@@ -71,7 +52,7 @@ a{color:#0A0A0A}a:hover{color:#404040}
     </sc-if>
 
     <sc-if value="{{awake}}" hint-placeholder-val="{{ false }}">
-      <div style="width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center">
+      <div data-jelly-clear style="width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center">
         <span style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: #F0FDF4; color: #166534; font-size: 13px; font-weight: 500"><span style="width: 8px; height: 8px; border-radius: 999px; background: #22C55E; animation: pulse 1.6s ease-out infinite"></span>Session live · agents at work</span>
         <div style="display: flex; flex-direction: column; gap: 10px; align-items: center">
           <h1 style="margin: 0; font-size: 44px; line-height: 1.05; letter-spacing: -0.04em; font-weight: 600">Spring trip for 10</h1>
@@ -89,7 +70,7 @@ a{color:#0A0A0A}a:hover{color:#404040}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
               Copy message
             </button>
-            <a href="V2Dashboard.dc.html" style="flex: 1 1 200px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 14px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600">
+            <a href="V2FinalAdmin.dc.html" style="flex: 1 1 200px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: 14px; background: {{accent}}; color: #FFFFFF; text-decoration: none; font-size: 15px; font-weight: 600">
               Open dashboard
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
             </a>
@@ -105,37 +86,43 @@ a{color:#0A0A0A}a:hover{color:#404040}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"stage":{"editor":"enum","options":["sleeping","awake"],"default":"sleeping"},"accent":{"editor":"color","default":"#0A0A0A","options":["#0A0A0A","#2563EB","#7C3AED","#EA580C"]},"$preview":{"width":1440,"height":900}}'>
 class Component extends DCLogic {
+  stage() { return (this.state && this.state.stage) || this.props.stage || 'sleeping'; }
+  componentDidMount() { this.tryMount(0); }
+  componentDidUpdate(prevProps) {
+    if (prevProps.stage !== this.props.stage && !(this.state && this.state.stage) && this.jelly) {
+      if (this.props.stage === 'awake') this.jelly.wake(); else this.jelly.sleep();
+    }
+  }
+  componentWillUnmount() {
+    clearTimeout(this.retryT);
+    if (this.jelly) { this.jelly.dispose(); this.jelly = null; }
+  }
+  tryMount(n) {
+    if (this.jelly) return;
+    const J = window.ZgraiJelly;
+    if (!J || !this.cv || !this.rt) {
+      if (n < 60) this.retryT = setTimeout(() => this.tryMount(n + 1), 100);
+      return;
+    }
+    const colors = ['#2563EB', '#F97316', '#14B8A6', '#8B5CF6', '#EC4899', '#EAB308', '#0EA5E9', '#6366F1', '#22C55E', '#EF4444'];
+    this.jelly = J.mountOverlay(this.cv, this.rt, {
+      field: { bots: colors.map((c) => ({ color: c, shape: 'auto' })), master: true, state: this.stage() === 'awake' ? 'awake' : 'asleep' }
+    });
+  }
   renderVals() {
-    const stage = (this.state && this.state.stage) || this.props.stage || 'sleeping';
-    const awake = stage === 'awake';
-    const list = [
-      { l: '7%', t: '15%', s: '76px', c: '#2563EB', task: 'creating the session' },
-      { l: '18%', t: '47%', s: '56px', c: '#F97316', task: 'writing the skill' },
-      { l: '8%', t: '74%', s: '66px', c: '#14B8A6', task: 'drafting the invite' },
-      { l: '27%', t: '84%', s: '48px', c: '#8B5CF6', task: 'splitting into stages' },
-      { l: '29%', t: '9%', s: '46px', c: '#EC4899', task: 'reading your goal' },
-      { l: '66%', t: '8%', s: '54px', c: '#EAB308', task: 'opening the chat' },
-      { l: '83%', t: '18%', s: '72px', c: '#0EA5E9', task: 'briefing the Master' },
-      { l: '89%', t: '50%', s: '54px', c: '#6366F1', task: 'waiting for friends' },
-      { l: '77%', t: '72%', s: '66px', c: '#22C55E', task: 'noting the budget' },
-      { l: '62%', t: '86%', s: '46px', c: '#EF4444', task: 'minting the token' }
-    ];
+    if (!this.refCv) {
+      this.refCv = (el) => { this.cv = el; };
+      this.refRt = (el) => { this.rt = el; };
+    }
+    const awake = this.stage() === 'awake';
     return {
+      refCv: this.refCv,
+      refRt: this.refRt,
       accent: this.props.accent ?? '#0A0A0A',
       sleeping: !awake,
       awake: awake,
-      wake: () => this.setState({ stage: 'awake' }),
-      reset: () => this.setState({ stage: 'sleeping' }),
-      agents: list.map((a, i) => ({
-        left: a.l, top: a.t, size: a.s, task: a.task,
-        fill: awake ? a.c : '#ECECEC',
-        closed: awake ? 0 : 1,
-        open: awake ? 1 : 0,
-        delay: (awake ? i * 0.12 : 0) + 's',
-        z: awake ? 0 : (i % 3 === 0 ? 1 : 0),
-        anim: awake ? ('hop 1.3s ease-in-out ' + (i * 0.12) + 's infinite') : ('doze 5s ease-in-out -' + (i * 0.7) + 's infinite'),
-        zAnim: 'zzz 3.4s ease-out -' + (i * 0.5) + 's infinite'
-      }))
+      wake: () => { this.setState({ stage: 'awake' }); if (this.jelly) this.jelly.wake(); },
+      reset: () => { this.setState({ stage: 'sleeping' }); if (this.jelly) this.jelly.sleep(); }
     };
   }
 }
