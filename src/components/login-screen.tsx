@@ -80,7 +80,10 @@ export function LoginScreen({
       <SleepyBots tasks={false} />
       <EntryHeader />
       <main className="relative z-10 flex flex-1 items-center justify-center px-4 pt-6 pb-24 sm:px-6">
-        <div className="flex w-full max-w-[520px] flex-col items-center gap-7 text-center">
+        <div
+          data-jelly-clear
+          className="flex w-full max-w-[520px] flex-col items-center gap-7 text-center"
+        >
           <div className="flex flex-col items-center gap-4">
             <h1 className="text-[44px] leading-none font-semibold tracking-[-0.045em] sm:text-6xl">
               Let the agents
