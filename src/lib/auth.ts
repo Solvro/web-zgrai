@@ -26,6 +26,7 @@ export const auth = betterAuth({
       resource: mcpResource,
       allowDynamicClientRegistration: true,
       allowUnauthenticatedClientRegistration: true,
+      clientRegistrationDefaultApplicationType: "infer",
     }),
     nextCookies(),
   ],
