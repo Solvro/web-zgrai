@@ -57,8 +57,12 @@ function repliesTo(space: Space, activityId: number) {
 }
 
 export function questionStatus(space: Space, question: Activity) {
+  // "Everyone" means everyone who was in the space when the Master asked.
   const addressed =
-    question.addressedTo ?? activeParticipants(space).map((p) => p.id);
+    question.addressedTo ??
+    space.participants
+      .filter((p) => p.joinedAt <= question.createdAt)
+      .map((p) => p.id);
   const answered = new Set(
     repliesTo(space, question.id).flatMap((a) =>
       a.actor.kind === "participant" ? [a.actor.participantId] : [],
@@ -82,8 +86,6 @@ export function pendingQuestions(space: Space, participantId: string) {
   return space.activities.filter(
     (a) =>
       a.type === "question" &&
-      (a.addressedTo?.includes(participantId) ?? true) &&
-      a.createdAt >= (findParticipant(space, participantId)?.joinedAt ?? 0) &&
       questionStatus(space, a).waitingFor.includes(participantId),
   );
 }
@@ -134,4 +136,10 @@ export function openQuestions(space: Space) {
 
 export function lastActivity(space: Space) {
   return space.activities.at(-1);
+}
+
+export function findActivity(space: Space, id: number | undefined) {
+  return id === undefined
+    ? undefined
+    : space.activities.find((a) => a.id === id);
 }
