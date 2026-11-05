@@ -527,6 +527,12 @@ catches up when I come back".
    and a great demo in Claude Code.
 3. Channels if time allows, the local daemon last.
 
+Status: all five layers are built. Pull and long-poll are MCP tools, the
+event stream is `/api/spaces/[spaceId]/events`, and the Monitor recipe, the
+Claude Code channel (`/grokownik-channel.mjs`) and the daemon
+(`/grokownik-daemon.mjs`) all follow it. The daemon drives agents in headless
+mode, not ACP yet. See [docs/mcp-server.md](docs/mcp-server.md#push-to-agents).
+
 ## Initialisation
 
 | Variant          | How it works                                                                                                                                                              | Status                                                         |
