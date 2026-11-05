@@ -26,6 +26,7 @@ import type {
   ViewStep,
 } from "@/lib/dashboard/view";
 import { agentColor } from "@/lib/dashboard/view";
+import { isMasterPaused } from "@/lib/master/budget";
 import { finalPlanApproval } from "@/lib/master/final-plan";
 import { messageMetaById, tagWithCurrentStep } from "@/lib/master/meta";
 import { currentStep, getPlan, type Plan } from "@/lib/master/plan";
@@ -232,6 +233,7 @@ export async function getSessionView(
       evidence,
     })),
     finalPlan: await viewFinalPlan(spaceId),
+    masterPaused: await isMasterPaused(spaceId),
     messages: await viewMessages(rows),
     cursor: rows.at(-1)?.id ?? after,
   };

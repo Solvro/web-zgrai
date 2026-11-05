@@ -99,6 +99,8 @@ export type SessionView = {
   steps: ViewStep[];
   criteria: ViewCriterion[];
   finalPlan: ViewFinalPlan | null;
+  // The Master hit its token budget and waits for the initiator.
+  masterPaused: boolean;
   messages: ViewMessage[];
   cursor: number;
 };
