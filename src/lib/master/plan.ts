@@ -77,13 +77,15 @@ export async function requireSubproblem(spaceId: string, id: string) {
 export async function updateSubproblem(
   spaceId: string,
   id: string,
-  patch: { status?: SubproblemStatus; decision?: string },
+  patch: { title?: string; status?: SubproblemStatus; decision?: string },
 ) {
+  await requireSubproblem(spaceId, id);
   const plan = await getPlan(spaceId);
-  const target = plan.subproblems.find((s) => s.id === id);
-  if (!target) throw new Error(`Subproblem ${id} not found.`);
+  const changes = Object.fromEntries(
+    Object.entries(patch).filter(([, value]) => value !== undefined),
+  );
   const subproblems = plan.subproblems.map((s) =>
-    s.id === id ? { ...s, ...patch } : s,
+    s.id === id ? { ...s, ...changes } : s,
   );
   await savePlan(spaceId, { ...plan, subproblems });
   return subproblems.find((s) => s.id === id)!;
@@ -124,4 +126,63 @@ export function unmetCriteria(plan: Plan) {
 export async function setFinalProposal(spaceId: string, proposalId: number) {
   const plan = await getPlan(spaceId);
   return savePlan(spaceId, { ...plan, finalProposalId: proposalId });
+}
+
+export async function addSubproblem(
+  spaceId: string,
+  title: string,
+  beforeId?: string,
+) {
+  const plan = await getPlan(spaceId);
+  const duplicate = plan.subproblems.find(
+    (s) => s.title.toLowerCase() === title.toLowerCase(),
+  );
+  if (duplicate) {
+    throw new Error(`Subproblem "${title}" already exists: ${duplicate.id}.`);
+  }
+  if (beforeId) await requireSubproblem(spaceId, beforeId);
+  const index = beforeId
+    ? plan.subproblems.findIndex((s) => s.id === beforeId)
+    : plan.subproblems.length;
+  const created: Subproblem = { id: randomUUID(), title, status: "open" };
+  const subproblems = plan.subproblems.toSpliced(index, 0, created);
+  await savePlan(spaceId, { ...plan, subproblems });
+  return created;
+}
+
+export async function removeSubproblem(spaceId: string, id: string) {
+  const target = await requireSubproblem(spaceId, id);
+  const plan = await getPlan(spaceId);
+  const subproblems = plan.subproblems.filter((s) => s.id !== id);
+  await savePlan(spaceId, { ...plan, subproblems });
+  return target;
+}
+
+function sameConstraint(a: string, b: string) {
+  const norm = (text: string) => text.toLowerCase().replace(/\s+/g, " ").trim();
+  return norm(a) === norm(b);
+}
+
+export async function addConstraint(spaceId: string, constraint: string) {
+  const plan = await getPlan(spaceId);
+  if (plan.constraints.some((c) => sameConstraint(c, constraint))) {
+    return plan.constraints;
+  }
+  const constraints = [...plan.constraints, constraint];
+  await savePlan(spaceId, { ...plan, constraints });
+  return constraints;
+}
+
+export async function removeConstraint(spaceId: string, constraint: string) {
+  const plan = await getPlan(spaceId);
+  const constraints = plan.constraints.filter(
+    (c) => !sameConstraint(c, constraint),
+  );
+  if (constraints.length === plan.constraints.length) {
+    throw new Error(
+      `No constraint "${constraint}". Current: ${plan.constraints.map((c) => `"${c}"`).join(", ") || "none"}.`,
+    );
+  }
+  await savePlan(spaceId, { ...plan, constraints });
+  return constraints;
 }
