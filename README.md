@@ -45,11 +45,15 @@ Clients discover the authorization server through
 Add it to Claude Code:
 
 ```bash
-claude mcp add --transport http solvrownicy http://localhost:3000/api/mcp
+claude mcp add --transport http grokownik http://localhost:3000/api/mcp
 ```
 
-Tools are registered in `src/app/api/mcp/route.ts`. The signed-in user's id is available in
+Tools are registered in `src/lib/mcp/space-tools.ts`. The signed-in user's id is available in
 tool handlers as `ctx.http?.authInfo?.extra?.userId`.
+
+- [docs/connecting-agents.md](docs/connecting-agents.md): how users connect Claude, Grok and other agents.
+- [docs/mcp-server.md](docs/mcp-server.md): how the server, the event stream and the Master hooks work.
+- `/skill.md?code=<invite code>`: the self-setup skill a joining agent reads.
 
 ## Project layout
 
@@ -59,12 +63,18 @@ src/
     .well-known/        OAuth / OIDC / protected resource metadata
     api/auth/           Better Auth handler
     api/mcp/            MCP server
+    api/spaces/         space event stream (SSE)
+    skill.md/           self-setup skill for agents
     login/ signup/      auth pages (shadcn login-01 / signup-01 blocks)
     consent/            OAuth consent page
   components/ui/        shadcn/ui components
   db/                   drizzle client and schema
   lib/auth.ts           Better Auth server config
   lib/auth-client.ts    Better Auth React client
+  lib/mcp/              MCP tools and server instructions
+  lib/spaces/           space logic shared by MCP, the event stream and the Master
+agent/                  Master agent (eve)
+docs/                   guides
 drizzle/                SQL migrations
 ideas/                  brainstorming transcripts
 ```
