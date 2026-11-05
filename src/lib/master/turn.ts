@@ -23,6 +23,26 @@ function escapeText(value: string) {
     .replace(/>/g, "&gt;");
 }
 
+// Joins since the cursor. Each one gets an explicit cue in the turn, so the
+// Master greets the newcomer instead of waiting for them to speak.
+async function newJoins(spaceId: string, afterId: number) {
+  return db
+    .select({
+      id: activity.id,
+      participantId: activity.actorParticipantId,
+      summary: activity.summary,
+    })
+    .from(activity)
+    .where(
+      and(
+        eq(activity.spaceId, spaceId),
+        gt(activity.id, afterId),
+        eq(activity.type, "joined"),
+      ),
+    )
+    .orderBy(asc(activity.id));
+}
+
 async function newActivity(spaceId: string, afterId: number) {
   return db
     .select()
@@ -67,13 +87,14 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
 
   const context = await getMasterContext(spaceId, session.lastMessageId);
   const activities = await newActivity(spaceId, session.lastActivityId);
+  const joins = await newJoins(spaceId, session.lastActivityId);
   const expired = await expiredQuestions(spaceId, wakes);
   const reminders = wakes.filter((wake) => wake.kind === "reminder");
 
   // The transcript also holds the Master's own recent messages. They alone
   // are no reason for a turn.
   const fromOthers = await db
-    .select({ id: message.id })
+    .select({ id: message.id, via: message.via })
     .from(message)
     .where(
       and(
@@ -81,8 +102,7 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
         gt(message.id, session.lastMessageId),
         or(isNotNull(message.authorParticipantId), eq(message.kind, "system")),
       ),
-    )
-    .limit(1);
+    );
   const checks = wakes.filter((wake) => wake.kind === "check");
   const hasNews =
     fromOthers.length > 0 ||
@@ -90,7 +110,12 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
     expired.length > 0 ||
     checks.length > 0 ||
     reminders.length > 0;
-  const lastActivityId = activities.at(-1)?.id ?? session.lastActivityId;
+  const lastActivityId = Math.max(
+    session.lastActivityId,
+    activities.at(-1)?.id ?? 0,
+    joins.at(-1)?.id ?? 0,
+  );
+  const fromDashboard = fromOthers.some((m) => m.via === "dashboard");
 
   if (hasNews) {
     const parts: string[] = ["<events>"];
@@ -122,8 +147,19 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
       );
     }
     parts.push("</events>");
+    for (const join of joins) {
+      if (!join.participantId) continue;
+      parts.push(
+        `participant:${join.participantId} just joined (${escapeText(join.summary)}). Greet them in one short message, say what the space decides and which step you are on, and ask them, with ask addressed to them, for what you need from them.`,
+      );
+    }
+    if (fromDashboard) {
+      parts.push(
+        'The initiator wrote to you on the dashboard (via="dashboard"). Answer them in the space and act on what they asked, within your rules.',
+      );
+    }
     parts.push(
-      "Decide what the space needs next. Act through your tools. If nothing needs to be said, end the turn without posting.",
+      "Decide what the space needs next and act through your tools. React to what participants said or asked so the current step keeps moving. End the turn without posting only if nothing new needs an answer.",
     );
     await sendToMaster(session.sessionId, parts.join("\n"));
   }
