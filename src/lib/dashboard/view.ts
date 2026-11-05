@@ -69,6 +69,23 @@ export type ViewMessage = {
   tally?: { yes: number; no: number; abstain: number };
 };
 
+export type ViewCriterion = {
+  id: string;
+  text: string;
+  met: boolean;
+  evidence?: string;
+};
+
+// The final plan everyone votes on once all criteria are met. The space ends
+// when every active participant approved it.
+export type ViewFinalPlan = {
+  proposalId: number;
+  text: string;
+  approvedBy: string[];
+  waitingFor: string[];
+  notApproving: string[];
+};
+
 export type SessionView = {
   space: {
     id: string;
@@ -80,6 +97,8 @@ export type SessionView = {
   me: { participantId: string; role: "initiator" | "member" };
   people: ViewPerson[];
   steps: ViewStep[];
+  criteria: ViewCriterion[];
+  finalPlan: ViewFinalPlan | null;
   messages: ViewMessage[];
   cursor: number;
 };

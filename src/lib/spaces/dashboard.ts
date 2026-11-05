@@ -26,6 +26,7 @@ import type {
   ViewStep,
 } from "@/lib/dashboard/view";
 import { agentColor } from "@/lib/dashboard/view";
+import { finalPlanApproval } from "@/lib/master/final-plan";
 import { messageMetaById, tagWithCurrentStep } from "@/lib/master/meta";
 import { currentStep, getPlan, type Plan } from "@/lib/master/plan";
 import { hashInviteCode } from "./invite";
@@ -184,6 +185,19 @@ async function messagesFor(me: Participant, after: number) {
   return rows.reverse();
 }
 
+async function viewFinalPlan(spaceId: string) {
+  const approval = await finalPlanApproval(spaceId);
+  if (!approval) return null;
+  const ids = (list: { id: string }[]) => list.map((p) => p.id);
+  return {
+    proposalId: approval.proposal.id,
+    text: approval.proposal.content,
+    approvedBy: ids(approval.approvedBy),
+    waitingFor: ids(approval.waitingFor),
+    notApproving: ids(approval.notApproving),
+  };
+}
+
 export async function getSessionView(
   spaceId: string,
   userId: string,
@@ -211,6 +225,13 @@ export async function getSessionView(
     me: { participantId: me.id, role: me.role },
     people,
     steps: viewSteps(plan, people, await latestAnswers(spaceId)),
+    criteria: plan.criteria.map(({ id, text, met, evidence }) => ({
+      id,
+      text,
+      met,
+      evidence,
+    })),
+    finalPlan: await viewFinalPlan(spaceId),
     messages: await viewMessages(rows),
     cursor: rows.at(-1)?.id ?? after,
   };
