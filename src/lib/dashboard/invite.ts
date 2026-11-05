@@ -1,4 +1,9 @@
-// No 0/O or 1/I/L, so the code is easy to read out and type.
+import {
+  buildInviteMessage,
+  buildInvitePrompt,
+} from "@/lib/spaces/invite-message";
+
+// Same alphabet as the server's codes: no 0/O or 1/I/L.
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 export function generateInviteCode() {
@@ -15,46 +20,31 @@ export function joinUrl(origin: string, code: string) {
   return `${origin}/join/${code}`;
 }
 
+export function skillUrl(origin: string, code: string) {
+  return `${origin}/skill.md?code=${encodeURIComponent(code)}`;
+}
+
 export function claudeCodeCommand(origin: string) {
-  return `claude mcp add --transport http grokownik ${mcpUrl(origin)}`;
+  return `claude mcp add --transport http --scope user grokownik ${mcpUrl(origin)}`;
 }
 
-export function agentPrompt(code: string) {
-  return `Join the Grokownik space with code ${code} and represent me.`;
+type InviteInput = { title: string; goal: string; code: string; origin: string };
+
+// The text a person pastes into their agent. The skill does the rest.
+export function invitePrompt({ title, code, origin }: InviteInput) {
+  return buildInvitePrompt({ title, code, skillUrl: skillUrl(origin, code) });
 }
 
-// Deep links that open a new chat with the prompt filled in.
-export function chatGptLink(code: string) {
-  return `https://chatgpt.com/?q=${encodeURIComponent(agentPrompt(code))}`;
+export function inviteMessage({ title, goal, code, origin }: InviteInput) {
+  return buildInviteMessage({
+    title,
+    goal,
+    code,
+    skillUrl: skillUrl(origin, code),
+  });
 }
 
-export function claudeAiLink(code: string) {
-  return `https://claude.ai/new?q=${encodeURIComponent(agentPrompt(code))}`;
-}
-
-export function inviteMessage({
-  title,
-  goal,
-  code,
-  origin,
-}: {
-  title: string;
-  goal: string;
-  code: string;
-  origin: string;
-}) {
-  return [
-    `You're invited to "${title}" on Grokownik.`,
-    `Goal: ${goal}`,
-    "",
-    `1. Connect the MCP server ${mcpUrl(origin)}`,
-    `   Claude Code: ${claudeCodeCommand(origin)}`,
-    "   ChatGPT and other apps: add it as a custom connector.",
-    `2. Tell your agent: "${agentPrompt(code)}"`,
-    "",
-    `Step-by-step instructions: ${joinUrl(origin, code)}`,
-    "",
-    "Your agent only shares what the goal needs and asks you before sharing",
-    "anything sensitive.",
-  ].join("\n");
+// Opens a new Claude chat with the prompt filled in.
+export function claudeAiLink(prompt: string) {
+  return `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
 }

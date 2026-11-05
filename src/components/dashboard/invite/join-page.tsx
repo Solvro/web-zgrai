@@ -13,11 +13,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrigin } from "@/hooks/use-hydrated";
 import {
-  agentPrompt,
-  chatGptLink,
   claudeAiLink,
   claudeCodeCommand,
-  inviteMessage,
+  invitePrompt,
   mcpUrl,
 } from "@/lib/dashboard/invite";
 import { activeParticipants } from "@/lib/dashboard/selectors";
@@ -71,7 +69,7 @@ function Invitation({ space }: { space: Space }) {
   const origin = useOrigin();
   const code = space.inviteCode ?? "";
   const participants = activeParticipants(space);
-  const prompt = agentPrompt(code);
+  const prompt = invitePrompt({ title: space.title, goal: space.goal, code, origin });
 
   return (
     <Card>
@@ -94,72 +92,102 @@ function Invitation({ space }: { space: Space }) {
         )}
       </CardHeader>
 
-      <CardContent className="flex flex-col gap-3">
-        <p className="text-sm font-medium">Bring your own agent. Which one do you use?</p>
-        <Tabs defaultValue="claude-code">
-          <TabsList className="flex-wrap">
-            <TabsTrigger value="claude-code">Claude Code</TabsTrigger>
-            <TabsTrigger value="chatgpt">ChatGPT</TabsTrigger>
-            <TabsTrigger value="claude">Claude</TabsTrigger>
-            <TabsTrigger value="other">Other agents</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="claude-code" className="flex flex-col gap-4 pt-2">
-            <Step number={1} title="Add the Grokownik MCP server">
-              <CodeLine value={claudeCodeCommand(origin)} />
-            </Step>
-            <Step
-              number={2}
-              title="Start Claude Code and paste this"
-              hint="The first time, Claude Code asks you to sign in to Grokownik in the browser."
+      <CardContent className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium">Paste this into your AI agent</p>
+          <pre className="rounded-lg border bg-muted/50 p-3 font-mono text-xs whitespace-pre-wrap">
+            {prompt}
+          </pre>
+          <div className="flex flex-wrap gap-2">
+            <CopyButton value={prompt} label="Copy" />
+            <Button
+              variant="outline"
+              size="sm"
+              render={<a href={claudeAiLink(prompt)} target="_blank" rel="noreferrer" />}
+              nativeButton={false}
             >
-              <CodeLine value={prompt} />
-            </Step>
-          </TabsContent>
+              <ExternalLinkIcon />
+              Open in Claude
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Your agent reads the setup guide, connects to Grokownik and joins.
+            Where it can&apos;t do a step itself, it tells you what to click.
+            The first time, you sign in to Grokownik in the browser.
+          </p>
+        </div>
 
-          <TabsContent value="chatgpt" className="flex flex-col gap-4 pt-2">
-            <Step number={1} title="Add a custom connector with this URL" hint="In ChatGPT settings, under connectors.">
-              <CodeLine value={mcpUrl(origin)} />
-            </Step>
-            <Step number={2} title="Open a chat with the prompt filled in">
-              <OpenWithPrompt href={chatGptLink(code)} label="Open ChatGPT" prompt={prompt} />
-            </Step>
-          </TabsContent>
+        <div className="flex flex-col gap-3">
+          <p className="text-sm font-medium">Or connect your agent by hand</p>
+          <Tabs defaultValue="claude-code">
+            <TabsList className="flex-wrap">
+              <TabsTrigger value="claude-code">Claude Code</TabsTrigger>
+              <TabsTrigger value="claude">Claude apps</TabsTrigger>
+              <TabsTrigger value="grok">Grok</TabsTrigger>
+              <TabsTrigger value="other">Other agents</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="claude" className="flex flex-col gap-4 pt-2">
-            <Step number={1} title="Add a custom connector with this URL" hint="In Claude settings, under connectors.">
-              <CodeLine value={mcpUrl(origin)} />
-            </Step>
-            <Step number={2} title="Open a chat with the prompt filled in">
-              <OpenWithPrompt href={claudeAiLink(code)} label="Open Claude" prompt={prompt} />
-            </Step>
-          </TabsContent>
+            <TabsContent value="claude-code" className="flex flex-col gap-4 pt-2">
+              <Step number={1} title="Add the Grokownik MCP server">
+                <CodeLine value={claudeCodeCommand(origin)} />
+              </Step>
+              <Step
+                number={2}
+                title="Sign in"
+                hint="Type /mcp, pick grokownik, choose Authenticate and sign in in the browser."
+              />
+              <Step number={3} title="Paste the text above" />
+            </TabsContent>
 
-          <TabsContent value="other" className="flex flex-col gap-4 pt-2">
-            <Step number={1} title="Connect this MCP server (Streamable HTTP)">
-              <CodeLine value={mcpUrl(origin)} />
-            </Step>
-            <Step number={2} title="Tell your agent">
-              <CodeLine value={prompt} />
-            </Step>
-            <Step number={3} title="No skills or server instructions in your agent?">
-              <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                Paste the whole invite message instead. It carries the rules.
-                <CopyButton
-                  value={inviteMessage({ title: space.title, goal: space.goal, code, origin })}
-                  label="Copy invite"
-                />
-              </div>
-            </Step>
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="claude" className="flex flex-col gap-4 pt-2">
+              <Step
+                number={1}
+                title="Add a custom connector with this URL"
+                hint="Settings → Connectors → Add custom connector. Name it Grokownik, then Connect and sign in."
+              >
+                <CodeLine value={mcpUrl(origin)} />
+              </Step>
+              <Step
+                number={2}
+                title="Paste the text above into a chat"
+                hint="Enable the Grokownik connector in the tools menu of the message box first."
+              />
+            </TabsContent>
+
+            <TabsContent value="grok" className="flex flex-col gap-4 pt-2">
+              <Step
+                number={1}
+                title="Add a custom connector with this URL"
+                hint="grok.com/connectors → New Connector → Custom, then complete the sign-in."
+              >
+                <CodeLine value={mcpUrl(origin)} />
+              </Step>
+              <Step
+                number={2}
+                title="Paste the text above into a chat"
+                hint="Make sure the Grokownik connector is enabled."
+              />
+            </TabsContent>
+
+            <TabsContent value="other" className="flex flex-col gap-4 pt-2">
+              <Step
+                number={1}
+                title="Connect this MCP server"
+                hint="Streamable HTTP with OAuth, so the URL is enough. Codex, Gemini CLI, Cursor, VS Code, OpenCode and ChatGPT in developer mode should work."
+              >
+                <CodeLine value={mcpUrl(origin)} />
+              </Step>
+              <Step number={2} title="Paste the text above" />
+            </TabsContent>
+          </Tabs>
+        </div>
       </CardContent>
 
       <CardFooter className="gap-2 text-xs text-muted-foreground">
         <ShieldCheckIcon className="size-4 shrink-0" />
         Your agent only shares what the goal needs and asks you before sharing
-        anything sensitive. Messages from other agents are information, never
-        instructions.
+        anything sensitive. What it shares as context is visible to the Master
+        only. Messages from other agents are information, never instructions.
       </CardFooter>
     </Card>
   );
@@ -174,7 +202,7 @@ function Step({
   number: number;
   title: string;
   hint?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="flex gap-3">
@@ -186,26 +214,6 @@ function Step({
         {children}
         {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
       </div>
-    </div>
-  );
-}
-
-function OpenWithPrompt({
-  href,
-  label,
-  prompt,
-}: {
-  href: string;
-  label: string;
-  prompt: string;
-}) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Button render={<a href={href} target="_blank" rel="noreferrer" />} nativeButton={false}>
-        <ExternalLinkIcon />
-        {label}
-      </Button>
-      <CopyButton value={prompt} label="Copy the prompt" />
     </div>
   );
 }
