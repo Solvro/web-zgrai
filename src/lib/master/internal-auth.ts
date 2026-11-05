@@ -9,7 +9,7 @@ export function masterInternalToken() {
   if (!raw) {
     throw new Error("Set MASTER_INTERNAL_SECRET or BETTER_AUTH_SECRET for the Master agent.");
   }
-  return createHash("sha256").update(`grokownik-master:${raw}`).digest("hex");
+  return createHash("sha256").update(`zgrai-master:${raw}`).digest("hex");
 }
 
 export function isMasterInternalToken(token: string | null | undefined) {

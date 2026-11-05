@@ -8,8 +8,8 @@ const appServer: AuthFn<Request> = async (request) => {
   const token = extractBearerToken(request.headers.get("authorization"));
   if (!isMasterInternalToken(token)) return null;
   return {
-    authenticator: "grokownik-server",
-    principalId: "grokownik-server",
+    authenticator: "zgrai-server",
+    principalId: "zgrai-server",
     principalType: "service",
     attributes: {},
   };
