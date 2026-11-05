@@ -1,5 +1,6 @@
 export type MasterTrigger =
   | "created"
+  | "opened"
   | "joined"
   | "message"
   | "shared_context"
@@ -13,13 +14,19 @@ type Listener = (
   trigger: MasterTrigger,
 ) => void | Promise<void>;
 
-let listener: Listener | null = null;
+// Kept on globalThis: Next.js can load instrumentation.ts (where the listener
+// is registered) and the route handlers (which call notifyMaster) as separate
+// module instances, so a module-level variable wouldn't be shared.
+const store = globalThis as typeof globalThis & {
+  __masterListener?: Listener | null;
+};
 
 export function onMasterTrigger(next: Listener) {
-  listener = next;
+  store.__masterListener = next;
 }
 
 export function notifyMaster(spaceId: string, trigger: MasterTrigger) {
+  const listener = store.__masterListener;
   if (!listener) return;
   Promise.resolve(listener(spaceId, trigger)).catch((error) => {
     console.error("Master trigger failed", error);

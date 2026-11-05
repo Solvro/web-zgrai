@@ -19,6 +19,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/xai": "^5.0.38",
     "@base-ui/react": "^1.9.0",
     "@better-auth/mcp": "1.7.18",
     "@better-auth/oauth-provider": "1.7.18",

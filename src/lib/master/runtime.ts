@@ -1,0 +1,76 @@
+import { desc, eq } from "drizzle-orm";
+import { db } from "@/db";
+import { message } from "@/db/schema";
+import { type MasterTrigger, onMasterTrigger } from "@/lib/spaces/master-hook";
+import { runMasterTurn } from "./turn";
+import {
+  claimDueWakes,
+  completeWakes,
+  DEBOUNCE_MS,
+  type MasterWake,
+  scheduleDebounce,
+} from "./wake";
+
+const TICK_MS = 1_000;
+
+// Triggers that don't start a turn on their own. The Master still sees them on
+// its next turn, because its cursors cover everything after the last turn.
+const QUIET_TRIGGERS: MasterTrigger[] = ["retracted_context"];
+
+async function latestMessageIsPrivate(spaceId: string) {
+  const [latest] = await db
+    .select({ visibility: message.visibility })
+    .from(message)
+    .where(eq(message.spaceId, spaceId))
+    .orderBy(desc(message.id))
+    .limit(1);
+  return latest?.visibility === "private";
+}
+
+async function onTrigger(spaceId: string, trigger: MasterTrigger) {
+  if (QUIET_TRIGGERS.includes(trigger)) return;
+  // A private note to the Master doesn't wake it, so it can't react visibly
+  // to something meant to stay quiet.
+  if (trigger === "message" && (await latestMessageIsPrivate(spaceId))) return;
+  const immediate = trigger === "created" || trigger === "opened";
+  await scheduleDebounce(spaceId, immediate ? 0 : DEBOUNCE_MS);
+}
+
+let ticking = false;
+
+async function tick() {
+  if (ticking) return;
+  ticking = true;
+  try {
+    const wakes = await claimDueWakes();
+    const bySpace = new Map<string, MasterWake[]>();
+    for (const wake of wakes) {
+      bySpace.set(wake.spaceId, [...(bySpace.get(wake.spaceId) ?? []), wake]);
+    }
+    for (const [spaceId, group] of bySpace) {
+      try {
+        await runMasterTurn(spaceId, group);
+        await completeWakes(group.map((wake) => wake.id));
+      } catch (error) {
+        // Left claimed: claimDueWakes picks it up again after its timeout.
+        console.error(`Master turn failed for space ${spaceId}`, error);
+      }
+    }
+  } catch (error) {
+    console.error("Master tick failed", error);
+  } finally {
+    ticking = false;
+  }
+}
+
+const store = globalThis as typeof globalThis & {
+  __masterTicker?: NodeJS.Timeout;
+};
+
+// Called once per server from src/instrumentation.ts.
+export function startMaster() {
+  onMasterTrigger(onTrigger);
+  if (store.__masterTicker) return;
+  store.__masterTicker = setInterval(() => void tick(), TICK_MS);
+  console.log("Master agent: listening for space events");
+}

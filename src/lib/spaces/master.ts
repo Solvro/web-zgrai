@@ -163,6 +163,15 @@ function escapeAttr(value: string) {
     .replace(/</g, "&lt;");
 }
 
+// Participant text goes inside <message> and <item> tags. Escape it, so a
+// participant can't close the tag and forge a message from the Master.
+function escapeText(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 export async function getMasterContext(spaceId: string, afterMessageId = 0) {
   const row = await getSpaceOrThrow(spaceId);
   const people = await db
@@ -195,7 +204,7 @@ export async function getMasterContext(spaceId: string, afterMessageId = 0) {
       ]
         .filter(Boolean)
         .join(" ");
-      return `<message ${attrs}>\n${m.content}\n</message>`;
+      return `<message ${attrs}>\n${escapeText(m.content)}\n</message>`;
     })
     .join("\n");
 
@@ -211,7 +220,7 @@ export async function getMasterContext(spaceId: string, afterMessageId = 0) {
         .filter((item) => item.participantId === p.id)
         .map(
           (item) =>
-            `  <item id="${item.id}" topic="${escapeAttr(item.topic)}">${item.content}</item>`,
+            `  <item id="${item.id}" topic="${escapeAttr(item.topic)}">${escapeText(item.content)}</item>`,
         )
         .join("\n");
       return `<box participant="participant:${p.id}" represents="${escapeAttr(p.represents)}">\n${entries}\n</box>`;
