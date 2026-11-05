@@ -6,6 +6,8 @@ import { z } from "zod";
 import { db } from "@/db";
 import { user } from "@/db/schema";
 import { auth, mcpResource } from "@/lib/auth";
+import { SERVER_INSTRUCTIONS } from "@/lib/mcp/instructions";
+import { registerSpaceTools } from "@/lib/mcp/space-tools";
 
 const mcpHandler = createMcpHandler(
   (server) => {
@@ -35,8 +37,13 @@ const mcpHandler = createMcpHandler(
         };
       },
     );
+
+    registerSpaceTools(server);
   },
-  { serverInfo: { name: "solvrownicy-w-piaskownicy", version: "0.1.0" } },
+  {
+    serverInfo: { name: "grokownik", version: "0.1.0" },
+    instructions: SERVER_INSTRUCTIONS,
+  },
 );
 
 const handler = requireMcpAuth(
