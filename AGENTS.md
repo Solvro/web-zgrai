@@ -89,6 +89,9 @@ chore: set up eslint and prettier
 - Auth: Better Auth (`src/lib/auth.ts`) with the MCP plugin. After adding a
   Better Auth plugin regenerate `src/db/schema/auth.ts` with the `auth` CLI.
 - MCP tools are registered in `src/app/api/mcp/route.ts`.
+- Master agent: eve, in `agent/`, mounted into Next.js with `withEve`. We
+  self-host, so never use Vercel-only features (AI Gateway model strings,
+  Vercel Sandbox, Vercel OIDC). See `agent/README.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
