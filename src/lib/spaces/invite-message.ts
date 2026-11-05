@@ -12,7 +12,7 @@ export function buildInviteMessage({
   code: string;
 }) {
   return [
-    "Join my zgrai.pl session and represent me. Read the skill and follow it.",
+    "Join my zgrai.solvro.pl session and represent me. Read the skill and follow it.",
     `Skill    ${origin}/skill.md`,
     `Session  ${origin}${sessionPath(code)}`,
     `Token    ${code}`,

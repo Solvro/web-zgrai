@@ -3,7 +3,7 @@
     "servers": {
       "zgrai": {
         "type": "remote",
-        "url": "https://zgrai.pl/api/mcp"
+        "url": "https://zgrai.solvro.pl/api/mcp"
       }
     }
   }

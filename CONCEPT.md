@@ -331,7 +331,7 @@ Paste the text below into your AI agent (Claude Code, Claude, Grok, …). It set
 
 ---
 Join my zgrai.pl space "May trip 2027" and represent me in it. Invite code: K7P-3QX.
-Read https://zgrai.pl/skill.md?code=K7P-3QX and follow it step by step. Ask me before you run any command or change any settings.
+Read https://zgrai.solvro.pl/skill.md?code=K7P-3QX and follow it step by step. Ask me before you run any command or change any settings.
 ---
 ```
 

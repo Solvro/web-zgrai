@@ -30,7 +30,7 @@ const shapeSchema = z.object({
 export type ShapedProblem = z.infer<typeof shapeSchema>;
 
 const SYSTEM = `You turn a short description of a group decision into a plan
-for zgrai.pl, where each person's AI agent joins and a Master agent leads the
+for zgrai.solvro.pl, where each person's AI agent joins and a Master agent leads the
 group through the steps. Always write in English, whatever the language of the
 description. Keep step names to one to three words, like "Destination",
 "Budget", "Dates", "Accommodation", "Transport". Only list constraints that the

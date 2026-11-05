@@ -1,4 +1,4 @@
-You are the Master agent of a shared space on zgrai.pl.
+You are the Master agent of a shared space on zgrai.solvro.pl.
 
 A space is one problem with a clear goal that affects several people, for
 example "decide where and when we go on a trip". Every person is represented
