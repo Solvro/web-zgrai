@@ -1,31 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { type AccountUser } from "@/components/account-menu";
 import { AppHeader } from "@/components/app-header";
-import type { SessionView, ViewMessage } from "@/lib/dashboard/view";
+import type { SessionView } from "@/lib/dashboard/view";
 import { Chat } from "./chat";
 import { InviteDialog } from "./invite-dialog";
 import { MasterInput } from "./master-input";
 import { PeopleRow } from "./people-row";
 import { SummaryPanel } from "./summary-panel";
-
-const POLL_MS = 2500;
-
-function mergeMessages(current: ViewMessage[], next: ViewMessage[]) {
-  if (next.length === 0) return current;
-  const byId = new Map(current.map((m) => [m.id, m]));
-  for (const message of next) byId.set(message.id, message);
-  return [...byId.values()].sort((a, b) => a.id - b.id);
-}
+import { useLiveView } from "./use-live-view";
 
 function nearBottom() {
   const { scrollY, innerHeight } = window;
   return document.documentElement.scrollHeight - (scrollY + innerHeight) < 240;
 }
 
-// 07 · The live session. Polls the view route for new messages, presence and
-// the steps; the admin can write to the Master.
+// 07 · The live session, kept live over SSE with a polling fallback. The
+// admin can write to the Master.
 export function LiveSession({
   initial,
   user,
@@ -33,41 +25,11 @@ export function LiveSession({
   initial: SessionView;
   user: AccountUser;
 }) {
-  const [view, setView] = useState(initial);
-  const cursor = useRef(initial.cursor);
   const stick = useRef(true);
   const spaceId = initial.space.id;
-
-  const poll = useCallback(async () => {
-    const response = await fetch(
-      `/api/spaces/${spaceId}/view?after=${cursor.current}`,
-      { cache: "no-store" },
-    );
-    if (!response.ok) return;
-    const next = (await response.json()) as SessionView;
+  const { view, transport, refresh } = useLiveView(initial, () => {
     stick.current = nearBottom();
-    cursor.current = Math.max(cursor.current, next.cursor);
-    setView((current) => ({
-      ...next,
-      messages: mergeMessages(current.messages, next.messages),
-    }));
-  }, [spaceId]);
-
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    let stopped = false;
-    const loop = async () => {
-      if (document.visibilityState === "visible") {
-        await poll().catch(() => {});
-      }
-      if (!stopped) timer = setTimeout(loop, POLL_MS);
-    };
-    timer = setTimeout(loop, POLL_MS);
-    return () => {
-      stopped = true;
-      clearTimeout(timer);
-    };
-  }, [poll]);
+  });
 
   const lastId = view.messages.at(-1)?.id;
   useEffect(() => {
@@ -78,7 +40,7 @@ export function LiveSession({
   const open = view.space.status === "open";
 
   return (
-    <div className="min-h-svh bg-white">
+    <div className="min-h-svh bg-white" data-live={transport}>
       <AppHeader
         user={user}
         title={view.space.title}
@@ -106,7 +68,7 @@ export function LiveSession({
               spaceId={spaceId}
               onSent={() => {
                 stick.current = true;
-                void poll();
+                void refresh();
               }}
             />
           )}
