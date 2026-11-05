@@ -1,6 +1,8 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
-import { findPrivateQuote } from "@/lib/master/privacy";
+import { setMessageMeta } from "@/lib/master/meta";
+import { requireSubproblem } from "@/lib/master/plan";
+import { assertNoPrivateQuote } from "@/lib/master/privacy";
 import { toolSpace } from "@/lib/master/tool-space";
 import { DEFAULT_DEADLINE_MINUTES, scheduleDeadline } from "@/lib/master/wake";
 import { ask } from "@/lib/spaces/master";
@@ -25,20 +27,26 @@ export default defineTool({
       .describe(
         `Minutes to wait for answers. Default ${DEFAULT_DEADLINE_MINUTES}.`,
       ),
+    subproblem_id: z
+      .string()
+      .optional()
+      .describe("The subproblem this question is about."),
   }),
-  async execute({ question, participant_ids, deadline_minutes }, ctx) {
+  async execute(
+    { question, participant_ids, deadline_minutes, subproblem_id },
+    ctx,
+  ) {
     const space = await toolSpace(ctx);
-    const quoted = await findPrivateQuote(space.id, question);
-    if (quoted) {
-      throw new Error(
-        `This repeats a participant's private note ("${quoted}"). Rephrase without revealing it.`,
-      );
-    }
+    await assertNoPrivateQuote(space.id, question);
+    if (subproblem_id) await requireSubproblem(space.id, subproblem_id);
     const row = await ask({
       spaceId: space.id,
       question,
       participantIds: participant_ids,
     });
+    if (subproblem_id) {
+      await setMessageMeta(space.id, row.id, { subproblemId: subproblem_id });
+    }
     if (space.status !== "open") return { question_id: row.id };
     const dueAt = await scheduleDeadline(
       space.id,

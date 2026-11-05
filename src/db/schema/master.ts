@@ -11,7 +11,7 @@ import {
   timestamp,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { space } from "./spaces";
+import { message, space } from "./spaces";
 
 // Tables owned by the Master agent (eve). The MCP tables in ./spaces stay
 // untouched, so this side can change without migrating theirs.
@@ -42,13 +42,15 @@ export const masterWakeKind = pgEnum("master_wake_kind", [
   "debounce",
   "deadline",
   "check",
+  "reminder",
 ]);
 
 // Pending Master turns. A `debounce` row batches events for a few seconds; a
 // `deadline` row fires when a question's answer time runs out; a `check` row is
 // a check-in the Master scheduled for itself, repeated every
-// `intervalMinutes`. The ticker in src/lib/master/runtime.ts claims due rows,
-// so nothing is lost on restart.
+// `intervalMinutes`; a `reminder` row is a one-off wake-up the Master set,
+// with its note in `reason`. The ticker in src/lib/master/runtime.ts claims
+// due rows, so nothing is lost on restart.
 export const masterWake = pgTable(
   "master_wake",
   {
@@ -61,6 +63,7 @@ export const masterWake = pgTable(
     // For `deadline`: the question message the deadline belongs to.
     refMessageId: bigint("ref_message_id", { mode: "number" }),
     // For `check`: how often it repeats, and why the Master scheduled it.
+    // For `reminder`: the Master's note to itself.
     intervalMinutes: integer("interval_minutes"),
     reason: text("reason"),
     claimedAt: timestamp("claimed_at"),
@@ -85,6 +88,25 @@ export const masterWake = pgTable(
         sql`${table.intervalMinutes} is not null and ${table.doneAt} is null`,
       ),
   ],
+);
+
+// What the Master knows about its own questions and proposals beyond the
+// message row: the subproblem they belong to, and whether a proposal was
+// withdrawn.
+export const masterMessageMeta = pgTable(
+  "master_message_meta",
+  {
+    messageId: bigint("message_id", { mode: "number" })
+      .primaryKey()
+      .references(() => message.id, { onDelete: "cascade" }),
+    spaceId: text("space_id")
+      .notNull()
+      .references(() => space.id, { onDelete: "cascade" }),
+    subproblemId: text("subproblem_id"),
+    withdrawnAt: timestamp("withdrawn_at"),
+    withdrawReason: text("withdraw_reason"),
+  },
+  (table) => [index("master_message_meta_space_idx").on(table.spaceId)],
 );
 
 export type SubproblemStatus = "open" | "discussing" | "conflict" | "decided";

@@ -79,21 +79,6 @@ export async function completeWakes(ids: number[]) {
     .where(inArray(masterWake.id, ids));
 }
 
-// Questions whose deadline hasn't passed yet, for the Master's snapshot.
-export async function pendingDeadlines(spaceId: string) {
-  return db
-    .select({ questionId: masterWake.refMessageId, dueAt: masterWake.dueAt })
-    .from(masterWake)
-    .where(
-      and(
-        eq(masterWake.spaceId, spaceId),
-        eq(masterWake.kind, "deadline"),
-        isNull(masterWake.doneAt),
-      ),
-    )
-    .orderBy(asc(masterWake.dueAt));
-}
-
 // Stops pending wakes, e.g. once the space is closed.
 export async function cancelWakes(spaceId: string) {
   await db
@@ -178,4 +163,81 @@ export async function activeCheck(spaceId: string) {
       ),
     );
   return row ?? null;
+}
+
+// One-off reminders: unlike the recurring check, the Master can set several,
+// each with its own note.
+export async function scheduleReminder(
+  spaceId: string,
+  minutes: number,
+  note: string,
+) {
+  const dueAt = new Date(Date.now() + minutes * 60_000);
+  const [row] = await db
+    .insert(masterWake)
+    .values({ spaceId, kind: "reminder", dueAt, reason: note })
+    .returning();
+  return row;
+}
+
+export async function pendingReminders(spaceId: string) {
+  return db
+    .select({
+      id: masterWake.id,
+      dueAt: masterWake.dueAt,
+      note: masterWake.reason,
+    })
+    .from(masterWake)
+    .where(
+      and(
+        eq(masterWake.spaceId, spaceId),
+        eq(masterWake.kind, "reminder"),
+        isNull(masterWake.doneAt),
+      ),
+    )
+    .orderBy(asc(masterWake.dueAt));
+}
+
+export async function cancelReminder(spaceId: string, reminderId: number) {
+  const rows = await db
+    .update(masterWake)
+    .set({ doneAt: new Date() })
+    .where(
+      and(
+        eq(masterWake.id, reminderId),
+        eq(masterWake.spaceId, spaceId),
+        eq(masterWake.kind, "reminder"),
+        isNull(masterWake.doneAt),
+      ),
+    )
+    .returning({ id: masterWake.id });
+  return rows.length > 0;
+}
+
+// Stops waiting for answers to a question.
+export async function cancelDeadline(spaceId: string, questionId: number) {
+  const rows = await db
+    .update(masterWake)
+    .set({ doneAt: new Date() })
+    .where(
+      and(
+        eq(masterWake.spaceId, spaceId),
+        eq(masterWake.kind, "deadline"),
+        eq(masterWake.refMessageId, questionId),
+        isNull(masterWake.doneAt),
+      ),
+    )
+    .returning({ id: masterWake.id });
+  return rows.length > 0;
+}
+
+// Moves a question's deadline to `minutes` from now, or sets a new one if the
+// old one already fired.
+export async function rescheduleDeadline(
+  spaceId: string,
+  questionId: number,
+  minutes: number,
+) {
+  await cancelDeadline(spaceId, questionId);
+  return scheduleDeadline(spaceId, questionId, minutes);
 }

@@ -29,6 +29,13 @@ The space is open. Participants' agents join, share context and answer you.
   decided when you pass its id.
 - Mark success criteria as met with mark_criterion as soon as they are.
 - Keep a check scheduled with schedule_check while work is open.
+- On a tie, or when people ranked options instead of voting, run rank_options
+  and propose the fairest result. Withdraw proposals that no longer apply.
+- When a <deadline> event lists people who didn't answer, remind them once or
+  move on without them. A <reminder> event is a one-off note you left
+  yourself with schedule_reminder.
+- If a new subproblem or constraint shows up during the discussion, add it to
+  the plan instead of keeping it only in your notes.
 - Keep update_notes current after every turn that changed what you know.`;
 
 // Snapshot of the space, rebuilt from the database before every model call.

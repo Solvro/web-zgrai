@@ -1,21 +1,53 @@
 # Master agent (eve)
 
 The Master agent from [CONCEPT.md](../CONCEPT.md) is built with
-[eve](https://eve.dev/docs). This directory is a working starting point: the
-agent builds, starts with the app and answers on `/eve/v1/*`. The real Master
-logic still has to be written.
+[eve](https://eve.dev/docs). It starts with the app, answers on `/eve/v1/*`,
+and runs one eve session per space, driven by `src/lib/master/runtime.ts`.
 
 ## What is here
 
-| File                        | Purpose                                                                                   |
-| --------------------------- | ----------------------------------------------------------------------------------------- |
-| `agent.ts`                  | Agent config. Uses `anthropic()` from `eve/models/anthropic`, which reads `ANTHROPIC_API_KEY`. |
-| `instructions.md`           | The Master's system prompt.                                                               |
-| `channels/eve.ts`           | Who may call the agent over HTTP: users with a Better Auth session, plus `localDev()`.    |
-| `tools/get_user_profile.ts` | Example tool that reads our database through `@/db`. Replace it with the real tools.      |
+| File                    | Purpose                                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------------------- |
+| `agent.ts`              | Agent config. Runs on Grok through `@ai-sdk/xai`, which reads `XAI_API_KEY`; `XAI_MODEL` overrides the model. |
+| `instructions.md`       | The Master's system prompt.                                                                    |
+| `instructions/space.ts` | The current stage and a fresh snapshot of the space, rebuilt before every model call.          |
+| `channels/eve.ts`       | Who may call the agent over HTTP: only our own server, plus `localDev()` when opted in.        |
+| `tools/`                | The Master's tools, one file per tool. The file name is the tool name.                        |
 
 Tools run in the app runtime, so they can import anything from `src/` through
-the `@/` alias, including `@/db` and `@/lib/auth`.
+the `@/` alias. Each tool resolves its space from the eve session with
+`toolSpace(ctx)`, never from the model's input, so the Master can't touch
+another space. The logic behind them lives in `src/lib/master/`.
+
+## Tools
+
+| Group             | Tools                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| Talk              | `post_message`, `ask`, `remind`, `propose`, `propose_options`, `withdraw_proposal`, `record_decision`, `propose_final_plan` |
+| Wait              | `schedule_check`, `cancel_check`, `schedule_reminder`, `cancel_reminder`, `extend_deadline`, `close_question`   |
+| Plan              | `update_draft`, `update_subproblem`, `add_subproblem`, `remove_subproblem`, `add_constraint`, `remove_constraint`, `set_criteria`, `mark_criterion` |
+| Dashboard         | `update_notes`, `pin`, `update_pin`, `unpin`                                                                    |
+| Look up           | `get_history`, `search_messages`, `get_message`, `get_participant`, `list_proposals`, `list_questions`, `get_activity` |
+| Compute           | `calculate`, `date_info`, `find_common_dates`, `rank_options`                                                   |
+
+Notes:
+
+- Public text from the Master goes through `assertNoPrivateQuote`, which
+  rejects a message that repeats a sentence of someone's private note.
+- Proposal outcomes (`src/lib/master/votes.ts`) and question status
+  (`src/lib/master/questions.ts`) are computed in code and shown in the
+  snapshot, so the model doesn't count votes or answers itself.
+- `schedule_check` is one recurring check-in per space; `schedule_reminder`
+  is a one-off `reminder` row in `master_wake` with its note in `reason`, and
+  the Master can have several. Both reach it as events (`<check>`,
+  `<reminder>`).
+- The space ends when everyone approves the final plan from
+  `propose_final_plan` (`src/lib/master/final-plan.ts`).
+- `calculate` uses a small parser, not `eval`. The compute tools are pure
+  functions in `src/lib/master/compute/`.
+- The Master has no web or shell tools on purpose: it reads untrusted
+  participant text, and a fetch tool would let a message exfiltrate private
+  notes through a URL.
 
 ## Run it
 
@@ -30,10 +62,10 @@ starts the agent and proxies `/eve/v1/*` to it. Check it with:
 curl localhost:3000/eve/v1/health
 ```
 
-To work on the agent alone in eve's terminal UI, run `pnpm exec eve dev`.
+To work on the agent alone in eve's terminal UI, set `EVE_ALLOW_LOCAL_DEV=1`
+and run `pnpm exec eve dev`.
 
-Set `ANTHROPIC_API_KEY` in `.env`. In local development the model helpers can
-also use credentials saved with `/login` in the eve terminal UI.
+Set `XAI_API_KEY` in `.env`.
 
 ## Self-hosting
 
@@ -42,9 +74,8 @@ We self-host, so nothing here may depend on Vercel:
 - **Model:** a direct provider helper (`anthropic()`, `openai()`) or an AI SDK
   provider package, never a gateway model string such as
   `"anthropic/claude-opus-5.5"`, which needs the Vercel AI Gateway.
-- **Auth:** don't add `vercelOidc()`. Browser calls are authenticated with the
-  Better Auth session cookie in `channels/eve.ts`. Server-to-agent calls need
-  their own `AuthFn` (e.g. `jwtHmac` or a shared secret) before production.
+- **Auth:** don't add `vercelOidc()`. Server-to-agent calls are authenticated
+  with the shared secret from `src/lib/master/internal-auth.ts`.
 - **Durable state:** the default local workflow world stores sessions in
   `.eve/.workflow-data`, which has to live on persistent storage. For several
   replicas switch to the Postgres world: `pnpm add @workflow/world-postgres`,
@@ -59,18 +90,3 @@ We self-host, so nothing here may depend on Vercel:
 
 The full docs ship with the package in `node_modules/eve/docs`, e.g.
 `guides/frontend/nextjs.mdx` and `guides/deployment/self-hosting/index.md`.
-
-## Next steps
-
-These follow [Master loop](../CONCEPT.md#master-loop) in the concept:
-
-1. Replace `get_user_profile` with the Master's internal tools:
-   `post_message`, `ask`, `propose`, `record_decision`, `close_space`. They
-   read and write the same tables as the MCP tools in `/api/mcp`.
-2. Start a Master session when a space is created, and continue it on every
-   event (join, message, vote, deadline). From server code use `Client` from
-   `eve/client`, or `ctx.to(...)` from inside tools.
-3. Pass participant messages to the Master signed with their author, as
-   described in [How the Master sees participants](../CONCEPT.md#how-the-master-sees-participants).
-4. Replace `localDev()`-only access for server calls with a production
-   `AuthFn` before deploying.
