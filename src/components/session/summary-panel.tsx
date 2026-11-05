@@ -10,6 +10,7 @@ import {
   type ViewStep,
 } from "@/lib/dashboard/view";
 import { cn } from "@/lib/utils";
+import { CriteriaSection } from "./criteria-section";
 
 function StepIcon({ step }: { step: ViewStep }) {
   if (step.status === "done") {
@@ -191,6 +192,8 @@ export function SummaryPanel({ view }: { view: SessionView }) {
           </div>
         );
       })}
+
+      <CriteriaSection view={view} />
     </aside>
   );
 }
