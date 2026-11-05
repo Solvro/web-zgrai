@@ -116,6 +116,8 @@ export type Subproblem = {
   title: string;
   status: SubproblemStatus;
   decision?: string;
+  // Each participant's position on this step in a few words, by participant id.
+  opinions?: Record<string, string>;
 };
 
 // A success criterion for the whole task. The space can only end once every

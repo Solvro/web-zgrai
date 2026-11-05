@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/db";
+import { setMessageMeta, tagWithCurrentStep } from "@/lib/master/meta";
 import {
   activity,
   boardItem,
@@ -24,6 +25,7 @@ type MasterMessageInput = {
   addressedTo?: string[];
   privateTo?: string[];
   replyTo?: number;
+  subproblemId?: string;
 };
 
 export async function postMasterMessage(input: MasterMessageInput) {
@@ -40,6 +42,13 @@ export async function postMasterMessage(input: MasterMessageInput) {
       addressedTo: recipients && recipients.length > 0 ? recipients : null,
     })
     .returning();
+  if (input.subproblemId) {
+    await setMessageMeta(input.spaceId, row.id, {
+      subproblemId: input.subproblemId,
+    });
+  } else {
+    await tagWithCurrentStep(input.spaceId, row.id);
+  }
   const verb =
     row.kind === "question"
       ? "asked"
@@ -90,11 +99,13 @@ export async function recordDecision(input: {
   spaceId: string;
   title: string;
   content: string;
+  subproblemId?: string;
 }) {
   const row = await postMasterMessage({
     spaceId: input.spaceId,
-    text: `${input.title}: ${input.content}`,
+    text: `${input.title} decided: ${input.content}`,
     kind: "decision",
+    subproblemId: input.subproblemId,
   });
   await pin({
     spaceId: input.spaceId,
@@ -230,6 +241,7 @@ export function signMessages(
           ? `addressed_to="${m.addressedTo.join(",")}"`
           : null,
         `at="${m.createdAt.toISOString()}"`,
+        m.via === "dashboard" ? `via="dashboard"` : null,
       ]
         .filter(Boolean)
         .join(" ");

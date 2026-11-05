@@ -114,6 +114,8 @@ export const message = pgTable(
     replyTo: bigint("reply_to", { mode: "number" }),
     visibility: messageVisibility("visibility").default("all").notNull(),
     addressedTo: text("addressed_to").array(),
+    // "dashboard" when the initiator wrote it on the dashboard, not via an agent.
+    via: text("via"),
     content: text("content").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },

@@ -9,7 +9,7 @@ export function buildSkill({
   skillUrl: string;
   inviteCode?: string;
 }) {
-  const code = inviteCode ?? "<invite code from your user>";
+  const code = inviteCode ?? "<the Token from your user's invite>";
 
   return `---
 name: zgrai

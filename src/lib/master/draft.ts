@@ -5,6 +5,7 @@ import { message, participant, space, user } from "@/db/schema";
 import { notifyMaster } from "@/lib/spaces/master-hook";
 import {
   createInvite,
+  DASHBOARD_HARNESS,
   getParticipantOrThrow,
   getSpaceOrThrow,
   recordActivity,
@@ -62,7 +63,7 @@ export async function createDraftSpace(input: {
         userId: input.userId,
         represents,
         role: "initiator",
-        harness: "dashboard",
+        harness: DASHBOARD_HARNESS,
       })
       .returning();
     await tx.insert(message).values({

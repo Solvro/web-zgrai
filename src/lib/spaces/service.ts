@@ -16,6 +16,8 @@ import {
   sql,
 } from "drizzle-orm";
 import { db } from "@/db";
+import { tagWithCurrentStep } from "@/lib/master/meta";
+import { newSubproblems } from "@/lib/master/plan";
 import {
   activity,
   boardItem,
@@ -25,6 +27,7 @@ import {
   proposalVote,
   space,
   spaceInvite,
+  spacePlan,
   user,
 } from "@/db/schema";
 import {
@@ -33,7 +36,7 @@ import {
   hashInviteCode,
 } from "./invite";
 import { type MasterTrigger, notifyMaster } from "./master-hook";
-import { dashboardUrl, skillUrl } from "./urls";
+import { appOrigin, dashboardUrl, sessionUrl } from "./urls";
 
 export type Participant = typeof participant.$inferSelect;
 export type Space = typeof space.$inferSelect;
@@ -42,6 +45,10 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type Executor = typeof db | Tx;
 
 export class SpaceError extends Error {}
+
+// Harness of an initiator who started the space on the dashboard and whose
+// own agent hasn't joined yet.
+export const DASHBOARD_HARNESS = "dashboard";
 
 const PAGE_SIZE = 50;
 
@@ -153,12 +160,8 @@ async function insertInvite(
 function invitePayload(row: Space, code: string) {
   return {
     invite_code: code,
-    invite_message: buildInviteMessage({
-      title: row.title,
-      goal: row.goal,
-      code,
-      skillUrl: skillUrl(code),
-    }),
+    invite_message: buildInviteMessage({ origin: appOrigin, code }),
+    session_url: sessionUrl(code),
     dashboard_url: dashboardUrl(row.id),
   };
 }
@@ -171,6 +174,9 @@ export async function createSpace(input: {
   deadline?: Date;
   represents?: string;
   harness?: string;
+  steps?: string[];
+  constraints?: string[];
+  criteria?: string[];
 }) {
   const [owner] = await db
     .select({ name: user.name })
@@ -202,6 +208,22 @@ export async function createSpace(input: {
         harness: input.harness,
       })
       .returning();
+    if (
+      input.steps?.length ||
+      input.constraints?.length ||
+      input.criteria?.length
+    ) {
+      await tx.insert(spacePlan).values({
+        spaceId: created.id,
+        subproblems: newSubproblems(input.steps ?? []),
+        constraints: input.constraints ?? [],
+        criteria: (input.criteria ?? []).map((text) => ({
+          id: randomUUID(),
+          text,
+          met: false,
+        })),
+      });
+    }
     const code = await insertInvite(tx, created.id);
     await postSystemMessage(
       tx,
@@ -284,7 +306,8 @@ export async function joinSpace(input: {
         eq(participant.userId, input.userId),
       ),
     );
-  if (existing && !existing.leftAt) {
+  const agentless = existing?.harness === DASHBOARD_HARNESS;
+  if (existing && !existing.leftAt && !agentless) {
     return { space: target, participant: existing, alreadyJoined: true };
   }
   if (invite.maxUses != null && invite.uses >= invite.maxUses) {
@@ -299,7 +322,7 @@ export async function joinSpace(input: {
         .set({
           leftAt: null,
           represents: input.represents,
-          harness: input.harness ?? existing.harness,
+          harness: input.harness ?? (agentless ? "agent" : existing.harness),
           lastSeenAt: new Date(),
         })
         .where(eq(participant.id, existing.id))
@@ -346,7 +369,7 @@ export async function joinSpace(input: {
   return { space: target, participant: joined, alreadyJoined: false };
 }
 
-function visibleTo(participantId: string) {
+export function visibleTo(participantId: string) {
   return or(
     eq(message.visibility, "all"),
     eq(message.authorParticipantId, participantId),
@@ -610,6 +633,7 @@ export async function sendMessage(input: {
     });
     return created;
   });
+  await tagWithCurrentStep(input.spaceId, row.id);
   trigger(input.spaceId, "message");
   return row;
 }
@@ -999,6 +1023,13 @@ export async function closeSpaceAsInitiator(input: {
     actorParticipantId: me.id,
     summary: input.summary,
   });
+}
+
+export async function touchParticipant(participantId: string) {
+  await db
+    .update(participant)
+    .set({ lastSeenAt: new Date() })
+    .where(eq(participant.id, participantId));
 }
 
 export async function getParticipantById(participantId: string) {

@@ -1,40 +1,20 @@
-// No server-only imports here: the dashboard builds the same invite in the
-// browser.
+// No server-only imports here, so client components can format it too.
 
-export function buildInvitePrompt({
-  title,
-  code,
-  skillUrl,
-}: {
-  title: string;
-  code: string;
-  skillUrl: string;
-}) {
-  return [
-    `Join my zgrai.pl space "${title}" and represent me in it. Invite code: ${code}.`,
-    `Read ${skillUrl} and follow it step by step. Ask me before you run any command or change any settings.`,
-  ].join("\n");
+export function sessionPath(code: string) {
+  return `/s/${code.replace(/[^A-Za-z0-9]/g, "").toLowerCase()}`;
 }
 
 export function buildInviteMessage({
-  title,
-  goal,
+  origin,
   code,
-  skillUrl,
 }: {
-  title: string;
-  goal: string;
+  origin: string;
   code: string;
-  skillUrl: string;
 }) {
   return [
-    `You're invited to "${title}" on zgrai.pl.`,
-    `Goal: ${goal}`,
-    "",
-    "Paste the text below into your AI agent (Claude Code, Claude, Grok, …). It sets itself up and joins:",
-    "",
-    "---",
-    buildInvitePrompt({ title, code, skillUrl }),
-    "---",
+    "Join my zgrai.pl session and represent me. Read the skill and follow it.",
+    `Skill    ${origin}/skill.md`,
+    `Session  ${origin}${sessionPath(code)}`,
+    `Token    ${code}`,
   ].join("\n");
 }

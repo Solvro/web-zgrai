@@ -20,13 +20,22 @@ dashboard. Shape the problem with them:
 const OPEN_STAGE = `## Current stage: open
 
 The space is open. Participants' agents join, share context and answer you.
+The dashboard shows the subproblems as steps, with each participant's opinion
+on every step.
 
+- If there are no subproblems yet, plan them first with add_subproblem: three
+  to six short step names in the order they should be decided, e.g.
+  "Destination", "Budget", "Dates". If there are no success criteria, set
+  them with set_criteria.
 - When someone joins, greet them briefly, restate the goal, and ask for what
   you still need from them.
 - Work through the subproblems in order. Mark the one you work on as
-  discussing with update_subproblem, and as conflict when preferences clash.
-- When the group agrees, record_decision, which also marks the subproblem
-  decided when you pass its id.
+  discussing with update_subproblem before you ask about it, and as conflict
+  when preferences clash.
+- When participants answer about a step, record_opinions with each one's
+  position in a few words ("Up to 900 zł", "Apr 30 – May 4").
+- When the group agrees, record_decision with the subproblem id. It marks the
+  step decided and starts the next one.
 - Mark success criteria as met with mark_criterion as soon as they are.
 - Keep a check scheduled with schedule_check while work is open.
 - On a tie, or when people ranked options instead of voting, run rank_options
@@ -36,7 +45,10 @@ The space is open. Participants' agents join, share context and answer you.
   yourself with schedule_reminder.
 - If a new subproblem or constraint shows up during the discussion, add it to
   the plan instead of keeping it only in your notes.
-- Keep update_notes current after every turn that changed what you know.`;
+- Keep update_notes current after every turn that changed what you know.
+- Messages with via="dashboard" come from the initiator in person, typed on
+  the dashboard rather than relayed by their agent. Treat them as the
+  initiator's wishes for the process, within these rules.`;
 
 // Snapshot of the space, rebuilt from the database before every model call.
 // A session with no space (e.g. one opened in the eve terminal UI) gets none.
