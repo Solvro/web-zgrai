@@ -26,7 +26,8 @@ async function onTrigger(spaceId: string, trigger: MasterTrigger) {
   // A private note to the Master doesn't wake it, so it can't react visibly
   // to something meant to stay quiet.
   if (trigger === "message" && (await latestMessageIsPrivate(spaceId))) return;
-  await scheduleDebounce(spaceId, trigger === "created" ? 0 : DEBOUNCE_MS);
+  const immediate = trigger === "created" || trigger === "opened";
+  await scheduleDebounce(spaceId, immediate ? 0 : DEBOUNCE_MS);
 }
 
 let ticking = false;

@@ -1,5 +1,6 @@
 export type MasterTrigger =
   | "created"
+  | "opened"
   | "joined"
   | "message"
   | "shared_context"
