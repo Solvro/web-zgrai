@@ -19,7 +19,7 @@ export default function Home() {
     <main className="flex flex-1 items-center justify-center p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Solvrownicy w piaskownicy</CardTitle>
+          <CardTitle>zgrai.pl</CardTitle>
           <CardDescription>
             <Suspense fallback={<Skeleton className="h-4 w-48" />}>
               <SessionStatus />
