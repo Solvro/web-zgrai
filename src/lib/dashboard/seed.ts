@@ -58,7 +58,11 @@ export function ensureSeeded() {
     inviteCode: "K7P-3QX",
     inviteStepDone: true,
     subproblems: subproblems(TRIP_SUBPROBLEMS),
-    constraints: ["6 people, 4-5 days in May", "Somewhere new for everyone", "Leaving from Wrocław"],
+    constraints: [
+      "6 people, 4-5 days in May",
+      "Somewhere new for everyone",
+      "Leaving from Wrocław",
+    ],
     createdAt: now() - 5 * MINUTE,
     openedAt: now() - 3 * MINUTE,
   });

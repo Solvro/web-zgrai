@@ -55,7 +55,8 @@ function log(...parts) {
 
 function buildPrompt(events) {
   const lines = events.map(
-    (e) => `- #${e.id} ${e.kind} from ${e.from}${e.addressed_to_you ? " (addressed to you)" : ""}: ${e.text}`,
+    (e) =>
+      `- #${e.id} ${e.kind} from ${e.from}${e.addressed_to_you ? " (addressed to you)" : ""}: ${e.text}`,
   );
   return [
     `There is new activity in the Grokownik space ${spaceId}, where you represent your user.`,
@@ -79,14 +80,22 @@ function agentCommand(prompt) {
     case "claude":
       return {
         command: "claude",
-        args: ["-p", prompt, "--allowedTools", "mcp__grokownik", ...(resume ? ["--continue"] : [])],
+        args: [
+          "-p",
+          prompt,
+          "--allowedTools",
+          "mcp__grokownik",
+          ...(resume ? ["--continue"] : []),
+        ],
       };
     case "codex":
       return { command: "codex", args: ["exec", prompt] };
     case "gemini":
       return { command: "gemini", args: ["-p", prompt] };
     default:
-      console.error(`Unknown agent "${opts.agent}". Use claude, codex, gemini or --cmd.`);
+      console.error(
+        `Unknown agent "${opts.agent}". Use claude, codex, gemini or --cmd.`,
+      );
       process.exit(1);
   }
 }
@@ -107,7 +116,9 @@ async function wake() {
   running = true;
   const prompt = buildPrompt(events);
   const { command, args, shell } = agentCommand(prompt);
-  log(`waking ${opts.cmd ? "custom command" : opts.agent} for ${events.length} new message(s)`);
+  log(
+    `waking ${opts.cmd ? "custom command" : opts.agent} for ${events.length} new message(s)`,
+  );
   if (opts["dry-run"]) {
     console.log(JSON.stringify({ command, args, prompt }, null, 2));
   } else {
@@ -116,7 +127,11 @@ async function wake() {
         cwd: workDir,
         shell: shell ?? false,
         stdio: ["ignore", "inherit", "inherit"],
-        env: { ...process.env, GROKOWNIK_PROMPT: prompt, GROKOWNIK_SPACE_ID: spaceId },
+        env: {
+          ...process.env,
+          GROKOWNIK_PROMPT: prompt,
+          GROKOWNIK_SPACE_ID: spaceId,
+        },
       });
       child.on("error", (error) => {
         log(`could not start the agent: ${error.message}`);
@@ -170,10 +185,13 @@ async function follow() {
       if (state.cursor) headers["last-event-id"] = state.cursor;
       const response = await fetch(streamUrl, { headers });
       if (response.status === 401 || response.status === 404) {
-        log("the stream url expired or you left the space. Get a new one with get_event_stream.");
+        log(
+          "the stream url expired or you left the space. Get a new one with get_event_stream.",
+        );
         process.exit(2);
       }
-      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok || !response.body)
+        throw new Error(`HTTP ${response.status}`);
       backoff = 1000;
       const decoder = new TextDecoder();
       let buffer = "";

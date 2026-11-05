@@ -78,12 +78,7 @@ export type ShapingMessage = {
 };
 
 export type DraftField =
-  | "title"
-  | "goal"
-  | "description"
-  | "subproblems"
-  | "constraints"
-  | "deadline";
+  "title" | "goal" | "description" | "subproblems" | "constraints" | "deadline";
 
 export type Space = {
   id: string;

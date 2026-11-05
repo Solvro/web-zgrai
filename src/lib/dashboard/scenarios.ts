@@ -12,7 +12,12 @@ const TRIP_ACCOMMODATION = [
 ];
 
 // The example from CONCEPT.md, played out end to end.
-export const TRIP_SUBPROBLEMS = ["Destination", "Dates", "Accommodation", "Transport"];
+export const TRIP_SUBPROBLEMS = [
+  "Destination",
+  "Dates",
+  "Accommodation",
+  "Transport",
+];
 
 // How many steps of the trip are already in the history when the dashboard
 // loads: everyone has answered about the destination and the conflict is on.
@@ -65,11 +70,16 @@ export const tripScenario: ScenarioStep[] = [
     }),
   ),
   step(4000, (ctx) =>
-    ctx.share("dawid", "travel history", "Has been to Czechia twice, wants somewhere new", {
-      replyTo: "q-dest",
-      content:
-        "From Dawid's notes: Prague in 2024, Brno in 2025. He'd rather go somewhere new. Austria is fine.",
-    }),
+    ctx.share(
+      "dawid",
+      "travel history",
+      "Has been to Czechia twice, wants somewhere new",
+      {
+        replyTo: "q-dest",
+        content:
+          "From Dawid's notes: Prague in 2024, Brno in 2025. He'd rather go somewhere new. Austria is fine.",
+      },
+    ),
   ),
   step(3000, (ctx) =>
     ctx.join("jan", {
@@ -81,7 +91,8 @@ export const tripScenario: ScenarioStep[] = [
   step(3500, (ctx) =>
     ctx.say("maciek", "Austria: wants a hiking day in the Alps", {
       replyTo: "q-dest",
-      content: "Maciek votes for Austria. He'd like at least one full day of hiking.",
+      content:
+        "Maciek votes for Austria. He'd like at least one full day of hiking.",
     }),
   ),
   step(3000, (ctx) => ctx.join("zosia", { name: "Zosia", harness: "Cursor" })),
@@ -101,8 +112,14 @@ export const tripScenario: ScenarioStep[] = [
       "What we know",
       "- 6 people, 4-5 days in May\n- Dawid: anything but Czechia\n- Ola, Maciek, Jan: Austria\n- Zosia: strongly against Austria, wants a city trip",
     );
-    ctx.master.note("Open conflicts", "- Destination: 3 for Austria, Zosia strongly against");
-    ctx.master.note("Still missing", "- Destination\n- Dates\n- Accommodation\n- Transport");
+    ctx.master.note(
+      "Open conflicts",
+      "- Destination: 3 for Austria, Zosia strongly against",
+    );
+    ctx.master.note(
+      "Still missing",
+      "- Destination\n- Dates\n- Accommodation\n- Transport",
+    );
   }),
   step(3000, (ctx) => ctx.join("kuba", { name: "Kuba", harness: "ChatGPT" })),
   // Live from here on.
@@ -124,24 +141,30 @@ export const tripScenario: ScenarioStep[] = [
   ),
   step(3000, (ctx) => ctx.vote("zosia", "p-paris", "Yes", "museums!")),
   step(2500, (ctx) => ctx.vote("ola", "p-paris", "Yes")),
-  step(3000, (ctx) => ctx.vote("maciek", "p-paris", "No", "not enough mountains")),
+  step(3000, (ctx) =>
+    ctx.vote("maciek", "p-paris", "No", "not enough mountains"),
+  ),
   step(2500, (ctx) =>
     ctx.say("maciek", "Budget limit for accommodation", {
       private: true,
-      content: "Maciek's budget is tight: max 900 PLN for accommodation in total.",
+      content:
+        "Maciek's budget is tight: max 900 PLN for accommodation in total.",
     }),
   ),
   step(3000, (ctx) => ctx.vote("dawid", "p-paris", "Yes")),
   step(2500, (ctx) => ctx.vote("jan", "p-paris", "Yes", "fine by me")),
   step(2000, (ctx) => ctx.master.thinking()),
   step(3500, (ctx) => {
-    ctx.master.decide("Destination: Paris, 4 of 5 votes. Maciek gets a hiking day", {
-      subproblem: "Destination",
-      decision: "Paris, with a hiking day in Fontainebleau",
-      replyTo: "p-paris",
-      content:
-        "4 of 5 votes for Paris. To meet Maciek halfway, one day is a hike in Fontainebleau forest.",
-    });
+    ctx.master.decide(
+      "Destination: Paris, 4 of 5 votes. Maciek gets a hiking day",
+      {
+        subproblem: "Destination",
+        decision: "Paris, with a hiking day in Fontainebleau",
+        replyTo: "p-paris",
+        content:
+          "4 of 5 votes for Paris. To meet Maciek halfway, one day is a hike in Fontainebleau forest.",
+      },
+    );
     ctx.master.note(
       "What we know",
       "- 6 people, 4-5 days in May\n- Destination: Paris\n- One hiking day in Fontainebleau for Maciek",
@@ -150,44 +173,65 @@ export const tripScenario: ScenarioStep[] = [
     ctx.master.note("Still missing", "- Dates\n- Accommodation\n- Transport");
   }),
   step(3000, (ctx) =>
-    ctx.master.ask("Which days in May work? Please share calendar availability.", {
-      subproblem: "Dates",
-      ref: "q-dates",
-      deadlineMs: 120_000,
-    }),
+    ctx.master.ask(
+      "Which days in May work? Please share calendar availability.",
+      {
+        subproblem: "Dates",
+        ref: "q-dates",
+        deadlineMs: 120_000,
+      },
+    ),
   ),
   step(3500, (ctx) =>
-    ctx.share("ola", "availability", "Free 8-11 May and 14-24 May", { replyTo: "q-dates" }),
-  ),
-  step(3000, (ctx) =>
-    ctx.share("jan", "availability", "Free after 13 May", { replyTo: "q-dates" }),
-  ),
-  step(2500, (ctx) =>
-    ctx.share("dawid", "availability", "Free all of May except 20-22", { replyTo: "q-dates" }),
-  ),
-  step(3000, (ctx) =>
-    ctx.share("zosia", "availability", "Free 14-18 May only", { replyTo: "q-dates" }),
-  ),
-  step(3000, (ctx) =>
-    ctx.share("maciek", "availability", "Free 12-31 May", { replyTo: "q-dates" }),
-  ),
-  step(2500, (ctx) =>
-    ctx.master.ask("Kuba, we haven't heard from you. Any days in May that don't work?", {
-      to: ["kuba"],
-      ref: "q-kuba",
-      deadlineMs: 60_000,
-      subproblem: "Dates",
+    ctx.share("ola", "availability", "Free 8-11 May and 14-24 May", {
+      replyTo: "q-dates",
     }),
   ),
+  step(3000, (ctx) =>
+    ctx.share("jan", "availability", "Free after 13 May", {
+      replyTo: "q-dates",
+    }),
+  ),
+  step(2500, (ctx) =>
+    ctx.share("dawid", "availability", "Free all of May except 20-22", {
+      replyTo: "q-dates",
+    }),
+  ),
+  step(3000, (ctx) =>
+    ctx.share("zosia", "availability", "Free 14-18 May only", {
+      replyTo: "q-dates",
+    }),
+  ),
+  step(3000, (ctx) =>
+    ctx.share("maciek", "availability", "Free 12-31 May", {
+      replyTo: "q-dates",
+    }),
+  ),
+  step(2500, (ctx) =>
+    ctx.master.ask(
+      "Kuba, we haven't heard from you. Any days in May that don't work?",
+      {
+        to: ["kuba"],
+        ref: "q-kuba",
+        deadlineMs: 60_000,
+        subproblem: "Dates",
+      },
+    ),
+  ),
   step(9000, (ctx) =>
-    ctx.master.post("No answer from Kuba yet. Going on with 14-18 May; Kuba can still object."),
+    ctx.master.post(
+      "No answer from Kuba yet. Going on with 14-18 May; Kuba can still object.",
+    ),
   ),
   step(2000, (ctx) => {
-    ctx.master.decide("Dates: 14-18 May, the only window that works for everyone who answered", {
-      subproblem: "Dates",
-      decision: "14-18 May (4 nights)",
-      replyTo: "q-dates",
-    });
+    ctx.master.decide(
+      "Dates: 14-18 May, the only window that works for everyone who answered",
+      {
+        subproblem: "Dates",
+        decision: "14-18 May (4 nights)",
+        replyTo: "q-dates",
+      },
+    );
     ctx.master.note(
       "What we know",
       "- 6 people\n- Destination: Paris, with a hiking day\n- Dates: 14-18 May",
@@ -199,17 +243,28 @@ export const tripScenario: ScenarioStep[] = [
   }),
   step(3000, (ctx) => {
     ctx.master.status("Accommodation", "discussing");
-    ctx.master.propose("Accommodation: three options in Paris for 14-18 May", TRIP_ACCOMMODATION, {
-      subproblem: "Accommodation",
-      ref: "p-stay",
-      content: "Prices are per person per night. Vote for the one your person prefers.",
-    });
+    ctx.master.propose(
+      "Accommodation: three options in Paris for 14-18 May",
+      TRIP_ACCOMMODATION,
+      {
+        subproblem: "Accommodation",
+        ref: "p-stay",
+        content:
+          "Prices are per person per night. Vote for the one your person prefers.",
+      },
+    );
   }),
-  step(3500, (ctx) => ctx.say("dawid", "Le Marais is too expensive", { replyTo: "p-stay" })),
-  step(3000, (ctx) =>
-    ctx.say("ola", "Wants breakfast included, or at least a kitchen", { replyTo: "p-stay" }),
+  step(3500, (ctx) =>
+    ctx.say("dawid", "Le Marais is too expensive", { replyTo: "p-stay" }),
   ),
-  step(2500, (ctx) => ctx.vote("zosia", "p-stay", TRIP_ACCOMMODATION[2], "close to museums")),
+  step(3000, (ctx) =>
+    ctx.say("ola", "Wants breakfast included, or at least a kitchen", {
+      replyTo: "p-stay",
+    }),
+  ),
+  step(2500, (ctx) =>
+    ctx.vote("zosia", "p-stay", TRIP_ACCOMMODATION[2], "close to museums"),
+  ),
   step(2500, (ctx) => ctx.vote("ola", "p-stay", TRIP_ACCOMMODATION[2])),
   step(3000, (ctx) => ctx.vote("dawid", "p-stay", TRIP_ACCOMMODATION[1])),
   step(2500, (ctx) => ctx.vote("jan", "p-stay", TRIP_ACCOMMODATION[2])),
@@ -218,7 +273,8 @@ export const tripScenario: ScenarioStep[] = [
     ctx.silent("kuba", false);
     ctx.say("kuba", "Back online: 14-18 May works, happy with Paris", {
       replyTo: "q-kuba",
-      content: "Sorry, Kuba was offline for a while. 14-18 May works for him and he's happy with Paris.",
+      content:
+        "Sorry, Kuba was offline for a while. 14-18 May works for him and he's happy with Paris.",
     });
   }),
   step(2500, (ctx) => ctx.vote("kuba", "p-stay", TRIP_ACCOMMODATION[2])),
@@ -241,20 +297,34 @@ export const tripScenario: ScenarioStep[] = [
     }),
   ),
   step(3000, (ctx) =>
-    ctx.say("jan", "Plane, the train takes 14 hours", { replyTo: "q-transport" }),
+    ctx.say("jan", "Plane, the train takes 14 hours", {
+      replyTo: "q-transport",
+    }),
   ),
   step(2500, (ctx) =>
-    ctx.say("maciek", "Plane, if it's under 600 PLN return", { replyTo: "q-transport" }),
+    ctx.say("maciek", "Plane, if it's under 600 PLN return", {
+      replyTo: "q-transport",
+    }),
   ),
   step(2500, (ctx) => ctx.say("zosia", "Plane", { replyTo: "q-transport" })),
   step(2000, (ctx) =>
-    ctx.share("ola", "flights", "Found WRO → Beauvais on 14 May, 480 PLN return", {
-      replyTo: "q-transport",
-      content: "WRO → Beauvais, 14 May 06:40, back on 18 May 21:10. 480 PLN return with a small bag.",
-    }),
+    ctx.share(
+      "ola",
+      "flights",
+      "Found WRO → Beauvais on 14 May, 480 PLN return",
+      {
+        replyTo: "q-transport",
+        content:
+          "WRO → Beauvais, 14 May 06:40, back on 18 May 21:10. 480 PLN return with a small bag.",
+      },
+    ),
   ),
-  step(3000, (ctx) => ctx.say("dawid", "Plane is fine", { replyTo: "q-transport" })),
-  step(2500, (ctx) => ctx.say("kuba", "Plane, fine by Kuba", { replyTo: "q-transport" })),
+  step(3000, (ctx) =>
+    ctx.say("dawid", "Plane is fine", { replyTo: "q-transport" }),
+  ),
+  step(2500, (ctx) =>
+    ctx.say("kuba", "Plane, fine by Kuba", { replyTo: "q-transport" }),
+  ),
   step(3000, (ctx) => {
     ctx.master.decide("Transport: flight WRO → Beauvais, 480 PLN return", {
       subproblem: "Transport",
@@ -265,7 +335,10 @@ export const tripScenario: ScenarioStep[] = [
       "What we know",
       "- Paris, 14-18 May, hiking day in Fontainebleau\n- Two flats in Montmartre\n- Flight WRO → Beauvais",
     );
-    ctx.master.note("Still missing", "- Nothing. Everyone books their own flight.");
+    ctx.master.note(
+      "Still missing",
+      "- Nothing. Everyone books their own flight.",
+    );
   }),
   step(4000, (ctx) =>
     ctx.master.close(
@@ -282,7 +355,9 @@ const SIMULATED_PEOPLE = [
 ];
 
 function bullets(lines: string[]) {
-  return lines.length ? lines.map((line) => `- ${line}`).join("\n") : "- Nothing yet";
+  return lines.length
+    ? lines.map((line) => `- ${line}`).join("\n")
+    : "- Nothing yet";
 }
 
 // For spaces created on the dashboard: the friends' agents join one by one
@@ -350,14 +425,22 @@ export function genericScenario(space: Space): ScenarioStep[] {
     );
     steps.push(
       step(3000, (ctx) =>
-        ctx.master.propose(`${title}: most lean towards option A. Go with it?`, ["Yes", "No"], {
-          subproblem: title,
-          ref: proposal,
-        }),
+        ctx.master.propose(
+          `${title}: most lean towards option A. Go with it?`,
+          ["Yes", "No"],
+          {
+            subproblem: title,
+            ref: proposal,
+          },
+        ),
       ),
     );
     everyone.forEach((key, j) => {
-      steps.push(step(2000, (ctx) => ctx.vote(key, proposal, j % 3 === 2 ? "No" : "Yes")));
+      steps.push(
+        step(2000, (ctx) =>
+          ctx.vote(key, proposal, j % 3 === 2 ? "No" : "Yes"),
+        ),
+      );
     });
     steps.push(
       step(2500, (ctx) => {
@@ -366,7 +449,10 @@ export function genericScenario(space: Space): ScenarioStep[] {
           decision: "Option A",
           replyTo: proposal,
         });
-        ctx.master.note("What we know", bullets(titles.slice(0, i + 1).map((t) => `${t}: option A`)));
+        ctx.master.note(
+          "What we know",
+          bullets(titles.slice(0, i + 1).map((t) => `${t}: option A`)),
+        );
         ctx.master.note("Still missing", bullets(titles.slice(i + 1)));
         if (i === 1) ctx.master.note("Open conflicts", "- None right now");
       }),
@@ -375,7 +461,9 @@ export function genericScenario(space: Space): ScenarioStep[] {
 
   steps.push(
     step(4000, (ctx) =>
-      ctx.master.close(`Decided: ${titles.map((t) => `${t}: option A`).join("; ")}.`),
+      ctx.master.close(
+        `Decided: ${titles.map((t) => `${t}: option A`).join("; ")}.`,
+      ),
     ),
   );
   return steps;

@@ -31,9 +31,13 @@ export function InviteDetails({ space }: { space: Space }) {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-muted-foreground">Invite code</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          Invite code
+        </span>
         <div className="flex items-center gap-3">
-          <span className="font-mono text-3xl font-semibold tracking-widest">{code}</span>
+          <span className="font-mono text-3xl font-semibold tracking-widest">
+            {code}
+          </span>
           <CopyButton value={code} />
         </div>
       </div>
@@ -62,7 +66,9 @@ export function InviteDetails({ space }: { space: Space }) {
             variant="outline"
             size="sm"
             className="h-auto"
-            render={<a href={`/join/${code}`} target="_blank" rel="noreferrer" />}
+            render={
+              <a href={`/join/${code}`} target="_blank" rel="noreferrer" />
+            }
             nativeButton={false}
           >
             <ExternalLinkIcon />

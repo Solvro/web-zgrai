@@ -26,8 +26,8 @@ export function SpaceView({ id }: { id: string }) {
           <CardHeader>
             <CardTitle>Space not found</CardTitle>
             <CardDescription>
-              The dashboard runs on mock data for now, so spaces you created
-              are gone after a reload.
+              The dashboard runs on mock data for now, so spaces you created are
+              gone after a reload.
             </CardDescription>
           </CardHeader>
           <CardFooter>

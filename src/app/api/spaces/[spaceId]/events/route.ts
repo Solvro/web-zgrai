@@ -45,7 +45,8 @@ export async function GET(
     await getSpaceOrThrow(spaceId);
     me = await resolveParticipant(request, spaceId);
   } catch (error) {
-    if (error instanceof SpaceError) return new Response(error.message, { status: 404 });
+    if (error instanceof SpaceError)
+      return new Response(error.message, { status: 404 });
     throw error;
   }
   if (!me) return new Response("Unauthorized", { status: 401 });
@@ -73,11 +74,15 @@ export async function GET(
               reply_to: m.reply_to,
               addressed_to_you: m.addressed_to_you,
             };
-            send(`id: ${m.id}\nevent: message\ndata: ${JSON.stringify(data)}\n\n`);
+            send(
+              `id: ${m.id}\nevent: message\ndata: ${JSON.stringify(data)}\n\n`,
+            );
             cursor = m.id;
           }
           if (space.status === "closed") {
-            send(`event: closed\ndata: ${JSON.stringify({ space_id: spaceId, status: "closed" })}\n\n`);
+            send(
+              `event: closed\ndata: ${JSON.stringify({ space_id: spaceId, status: "closed" })}\n\n`,
+            );
             break;
           }
           if (Date.now() - lastBeat > HEARTBEAT_MS) {

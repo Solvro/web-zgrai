@@ -104,7 +104,10 @@ export function updateSpace(id: string, update: (space: Space) => Space) {
   });
 }
 
-export type ActivityInput = Omit<Activity, "id" | "createdAt" | "visibility"> & {
+export type ActivityInput = Omit<
+  Activity,
+  "id" | "createdAt" | "visibility"
+> & {
   visibility?: Activity["visibility"];
 };
 
@@ -155,7 +158,9 @@ export function upsertBoardItem(
     );
     const board = existing
       ? space.board.map((b) =>
-          b === existing ? { ...b, content: item.content, updatedAt: now() } : b,
+          b === existing
+            ? { ...b, content: item.content, updatedAt: now() }
+            : b,
         )
       : [...space.board, { id: makeId("board"), ...item, updatedAt: now() }];
     return { ...space, board };

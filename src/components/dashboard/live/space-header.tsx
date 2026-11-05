@@ -21,7 +21,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { timeAgo } from "@/lib/dashboard/format";
-import { currentSubproblem, openQuestions, progress } from "@/lib/dashboard/selectors";
+import {
+  currentSubproblem,
+  openQuestions,
+  progress,
+} from "@/lib/dashboard/selectors";
 import type { Space } from "@/lib/dashboard/types";
 import { StatusBadge } from "../status-badge";
 import type { AdminDialog } from "./admin-dialogs";
@@ -63,18 +67,29 @@ export function SpaceHeader({
             )}
           </div>
           <p className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">Goal:</span> {space.goal}
+            <span className="font-medium text-foreground">Goal:</span>{" "}
+            {space.goal}
           </p>
         </div>
         {canManage && (
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => onOpenDialog("invite")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenDialog("invite")}
+            >
               <UserPlusIcon />
               Invite · <span className="font-mono">{space.inviteCode}</span>
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button variant="outline" size="icon-sm" aria-label="Space actions" />}
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label="Space actions"
+                  />
+                }
               >
                 <MoreHorizontalIcon />
               </DropdownMenuTrigger>
@@ -88,7 +103,10 @@ export function SpaceHeader({
                   Invite or new code
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive" onClick={() => onOpenDialog("close")}>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => onOpenDialog("close")}
+                >
                   Close the space
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -118,13 +136,16 @@ function WhereWeAre({ space, now }: { space: Space; now: number }) {
       </div>
       {space.status === "closed" ? (
         <span className="text-muted-foreground">
-          Closed {space.closedAt ? timeAgo(space.closedAt, now) : ""}. The goal is reached.
+          Closed {space.closedAt ? timeAgo(space.closedAt, now) : ""}. The goal
+          is reached.
         </span>
       ) : (
         <>
           <span>
             <span className="text-muted-foreground">Now:</span>{" "}
-            <span className="font-medium">{current?.title ?? "Wrapping up"}</span>
+            <span className="font-medium">
+              {current?.title ?? "Wrapping up"}
+            </span>
           </span>
           {conflicts.length > 0 && (
             <span className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
@@ -135,7 +156,8 @@ function WhereWeAre({ space, now }: { space: Space; now: number }) {
           {questions.length > 0 && (
             <span className="flex items-center gap-1">
               <MessageCircleQuestionIcon className="size-4 text-muted-foreground" />
-              {questions.length} open {questions.length === 1 ? "question" : "questions"}
+              {questions.length} open{" "}
+              {questions.length === 1 ? "question" : "questions"}
             </span>
           )}
           {space.masterThinking && (

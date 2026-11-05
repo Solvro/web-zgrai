@@ -60,7 +60,9 @@ export function DraftEditor({ space }: { space: Space }) {
           <Input
             value={space.title}
             placeholder="e.g. May trip 2027"
-            onChange={(event) => updateDraft(space.id, { title: event.target.value })}
+            onChange={(event) =>
+              updateDraft(space.id, { title: event.target.value })
+            }
           />
         </DraftField>
 
@@ -72,7 +74,9 @@ export function DraftEditor({ space }: { space: Space }) {
           <Textarea
             rows={2}
             value={space.goal}
-            onChange={(event) => updateDraft(space.id, { goal: event.target.value })}
+            onChange={(event) =>
+              updateDraft(space.id, { goal: event.target.value })
+            }
           />
         </DraftField>
 
@@ -106,16 +110,23 @@ export function DraftEditor({ space }: { space: Space }) {
             className="w-fit"
             value={space.deadline ?? ""}
             onChange={(event) =>
-              updateDraft(space.id, { deadline: event.target.value || undefined })
+              updateDraft(space.id, {
+                deadline: event.target.value || undefined,
+              })
             }
           />
         </DraftField>
 
-        <DraftField label="Original description" highlighted={patched("description")}>
+        <DraftField
+          label="Original description"
+          highlighted={patched("description")}
+        >
           <Textarea
             rows={3}
             value={space.description}
-            onChange={(event) => updateDraft(space.id, { description: event.target.value })}
+            onChange={(event) =>
+              updateDraft(space.id, { description: event.target.value })
+            }
           />
         </DraftField>
       </CardContent>
@@ -128,7 +139,10 @@ export function DraftEditor({ space }: { space: Space }) {
         )}
         <div className="flex justify-between gap-2">
           <DiscardDraftButton spaceId={space.id} />
-          <Button disabled={issues.length > 0} onClick={() => openSpace(space.id)}>
+          <Button
+            disabled={issues.length > 0}
+            onClick={() => openSpace(space.id)}
+          >
             Open the space and invite
           </Button>
         </div>
@@ -152,13 +166,17 @@ function DraftField({
     <Field
       className={cn(
         "-m-2 rounded-lg p-2 transition-colors duration-700",
-        highlighted && "bg-amber-50 ring-1 ring-amber-300 dark:bg-amber-950/30 dark:ring-amber-700",
+        highlighted &&
+          "bg-amber-50 ring-1 ring-amber-300 dark:bg-amber-950/30 dark:ring-amber-700",
       )}
     >
       <div className="flex items-center gap-2">
         <FieldLabel>{label}</FieldLabel>
         {highlighted && (
-          <Badge variant="outline" className="border-amber-300 text-amber-700 dark:text-amber-300">
+          <Badge
+            variant="outline"
+            className="border-amber-300 text-amber-700 dark:text-amber-300"
+          >
             <SparklesIcon />
             Updated by the Master
           </Badge>
@@ -195,7 +213,9 @@ function EditableList({
           <Input
             value={item}
             onChange={(event) =>
-              onChange(items.map((other, j) => (j === i ? event.target.value : other)))
+              onChange(
+                items.map((other, j) => (j === i ? event.target.value : other)),
+              )
             }
           />
           <Button
@@ -217,7 +237,12 @@ function EditableList({
             if (event.key === "Enter") add();
           }}
         />
-        <Button variant="outline" size="icon" aria-label={placeholder} onClick={add}>
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label={placeholder}
+          onClick={add}
+        >
           <PlusIcon />
         </Button>
       </div>
@@ -239,7 +264,9 @@ function DiscardDraftButton({ spaceId }: { spaceId: string }) {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>Keep it</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>
+            Keep it
+          </DialogClose>
           <Button
             variant="destructive"
             onClick={() => {

@@ -3,7 +3,12 @@
 import { SendIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { sendShapingMessage } from "@/lib/dashboard/actions";
 import type { Space } from "@/lib/dashboard/types";
@@ -18,7 +23,8 @@ export function ShapingChat({ space }: { space: Space }) {
 
   useEffect(() => {
     const element = scrollRef.current;
-    if (element) element.scrollTo({ top: element.scrollHeight, behavior: "smooth" });
+    if (element)
+      element.scrollTo({ top: element.scrollHeight, behavior: "smooth" });
   }, [messages.length, space.masterThinking]);
 
   function send() {
@@ -33,12 +39,15 @@ export function ShapingChat({ space }: { space: Space }) {
       <CardHeader className="border-b py-3">
         <CardTitle>Shape the problem with the Master</CardTitle>
         <CardDescription>
-          Only you and the Master see this chat. Answer its questions or tell
-          it what to change.
+          Only you and the Master see this chat. Answer its questions or tell it
+          what to change.
         </CardDescription>
       </CardHeader>
 
-      <div ref={scrollRef} className="flex min-h-64 flex-1 flex-col gap-3 overflow-y-auto p-4">
+      <div
+        ref={scrollRef}
+        className="flex min-h-64 flex-1 flex-col gap-3 overflow-y-auto p-4"
+      >
         {messages.map((message) => (
           <div
             key={message.id}

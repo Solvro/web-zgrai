@@ -1,65 +1,63 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { toast } from "sonner"
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
-import { QueryLink } from "@/components/query-link"
-import { Button } from "@/components/ui/button"
+import { QueryLink } from "@/components/query-link";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import { signUp } from "@/lib/auth-client"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { signUp } from "@/lib/auth-client";
 
-export function SignupForm({
-  ...props
-}: React.ComponentProps<typeof Card>) {
-  const router = useRouter()
-  const [pending, setPending] = useState(false)
-  const [passwordMismatch, setPasswordMismatch] = useState(false)
+export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const form = new FormData(event.currentTarget)
-    const password = String(form.get("password"))
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const password = String(form.get("password"));
 
     if (password !== String(form.get("confirm-password"))) {
-      setPasswordMismatch(true)
-      return
+      setPasswordMismatch(true);
+      return;
     }
-    setPasswordMismatch(false)
+    setPasswordMismatch(false);
 
-    setPending(true)
+    setPending(true);
     const { data, error } = await signUp.email({
       name: String(form.get("name")),
       email: String(form.get("email")),
       password,
-    })
+    });
 
     if (error) {
-      setPending(false)
-      toast.error(error.message ?? "Something went wrong")
-      return
+      setPending(false);
+      toast.error(error.message ?? "Something went wrong");
+      return;
     }
 
     // During an OAuth (MCP) flow the auth client follows the returned redirect on its own.
-    if ("redirect" in data && data.redirect) return
+    if ("redirect" in data && data.redirect) return;
 
-    router.push("/")
-    router.refresh()
+    router.push("/");
+    router.refresh();
   }
 
   return (
@@ -146,5 +144,5 @@ export function SignupForm({
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

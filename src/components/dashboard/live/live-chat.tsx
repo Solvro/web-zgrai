@@ -27,8 +27,10 @@ function matchesFilter(activity: Activity, filter: string) {
   if (filter === "all") return true;
   if (filter === "master") return activity.actor.kind === "master";
   return (
-    (activity.actor.kind === "participant" && activity.actor.participantId === filter) ||
-    (activity.type === "question" && (activity.addressedTo?.includes(filter) ?? true))
+    (activity.actor.kind === "participant" &&
+      activity.actor.participantId === filter) ||
+    (activity.type === "question" &&
+      (activity.addressedTo?.includes(filter) ?? true))
   );
 }
 
@@ -75,7 +77,8 @@ export function LiveChat({
     const element = scrollRef.current;
     if (!element) return;
     following.current =
-      element.scrollHeight - element.scrollTop - element.clientHeight < STICKY_PX;
+      element.scrollHeight - element.scrollTop - element.clientHeight <
+      STICKY_PX;
     if (following.current) setUnseen(0);
   }
 
@@ -84,7 +87,8 @@ export function LiveChat({
       ? "Everyone"
       : filter === "master"
         ? "Master only"
-        : (space.participants.find((p) => p.id === filter)?.represents ?? "Everyone");
+        : (space.participants.find((p) => p.id === filter)?.represents ??
+          "Everyone");
 
   return (
     <section className="relative flex h-[75dvh] flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 lg:h-auto lg:min-h-0 lg:flex-1">
@@ -100,16 +104,25 @@ export function LiveChat({
           {space.activities.length} interactions
         </span>
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="ml-auto" />}>
+          <DropdownMenuTrigger
+            render={<Button variant="ghost" size="sm" className="ml-auto" />}
+          >
             <FilterIcon />
             {filterLabel}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuGroup>
               <DropdownMenuLabel>Show bubbles from</DropdownMenuLabel>
-              <DropdownMenuRadioGroup value={filter} onValueChange={(value) => setFilter(value)}>
-                <DropdownMenuRadioItem value="all">Everyone</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="master">Master only</DropdownMenuRadioItem>
+              <DropdownMenuRadioGroup
+                value={filter}
+                onValueChange={(value) => setFilter(value)}
+              >
+                <DropdownMenuRadioItem value="all">
+                  Everyone
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="master">
+                  Master only
+                </DropdownMenuRadioItem>
                 {space.participants.map((p) => (
                   <DropdownMenuRadioItem key={p.id} value={p.id}>
                     {agentName(p)}
@@ -118,7 +131,10 @@ export function LiveChat({
               </DropdownMenuRadioGroup>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem checked={showSystem} onCheckedChange={setShowSystem}>
+            <DropdownMenuCheckboxItem
+              checked={showSystem}
+              onCheckedChange={setShowSystem}
+            >
               Joins and system events
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
