@@ -9,7 +9,13 @@ import {
   isNull,
 } from "drizzle-orm";
 import { db } from "@/db";
-import { message, participant, space, spacePlan } from "@/db/schema";
+import {
+  message,
+  participant,
+  space,
+  spaceInvite,
+  spacePlan,
+} from "@/db/schema";
 import type {
   PresenceStatus,
   ProblemSummary,
@@ -25,6 +31,7 @@ import {
   getPlan,
   type Plan,
 } from "@/lib/master/plan";
+import { hashInviteCode } from "./invite";
 import { notifyMaster } from "./master-hook";
 import {
   DASHBOARD_HARNESS,
@@ -301,4 +308,31 @@ export async function sendDashboardMessage(input: {
   });
   notifyMaster(input.spaceId, "message");
   return created;
+}
+
+export async function resolveInvite(code: string) {
+  const [invite] = await db
+    .select()
+    .from(spaceInvite)
+    .where(eq(spaceInvite.codeHash, hashInviteCode(code)));
+  if (!invite || invite.revokedAt) return null;
+  if (invite.expiresAt && invite.expiresAt < new Date()) return null;
+  return invite;
+}
+
+// What the public session link shows before you join.
+export async function getInvitePreview(spaceId: string) {
+  const row = await getSpaceOrThrow(spaceId);
+  const [initiator] = await db
+    .select({ represents: participant.represents })
+    .from(participant)
+    .where(
+      and(eq(participant.spaceId, spaceId), eq(participant.role, "initiator")),
+    );
+  return {
+    title: row.title,
+    goal: row.goal,
+    status: row.status,
+    initiatorName: initiator?.represents ?? "Someone",
+  };
 }
