@@ -74,6 +74,22 @@ export async function requireSubproblem(spaceId: string, id: string) {
   return target;
 }
 
+export function newSubproblems(titles: string[]): Subproblem[] {
+  return titles.map((title) => ({ id: randomUUID(), title, status: "open" }));
+}
+
+export function currentStep(plan: Plan) {
+  return plan.subproblems.find(
+    (s) => s.status === "discussing" || s.status === "conflict",
+  );
+}
+
+export async function currentStepId(spaceId: string) {
+  return currentStep(await getPlan(spaceId))?.id ?? null;
+}
+
+// Deciding a step starts the next open one, so the dashboard always shows
+// which step the group is on even if the Master forgets to mark it.
 export async function updateSubproblem(
   spaceId: string,
   id: string,
@@ -84,9 +100,17 @@ export async function updateSubproblem(
   const changes = Object.fromEntries(
     Object.entries(patch).filter(([, value]) => value !== undefined),
   );
-  const subproblems = plan.subproblems.map((s) =>
+  let subproblems: Subproblem[] = plan.subproblems.map((s) =>
     s.id === id ? { ...s, ...changes } : s,
   );
+  if (patch.status === "decided" && !currentStep({ ...plan, subproblems })) {
+    const next = subproblems.find((s) => s.status === "open");
+    if (next) {
+      subproblems = subproblems.map((s) =>
+        s.id === next.id ? { ...s, status: "discussing" } : s,
+      );
+    }
+  }
   await savePlan(spaceId, { ...plan, subproblems });
   return subproblems.find((s) => s.id === id)!;
 }
@@ -185,4 +209,20 @@ export async function removeConstraint(spaceId: string, constraint: string) {
   }
   await savePlan(spaceId, { ...plan, constraints });
   return constraints;
+}
+
+export async function recordOpinions(
+  spaceId: string,
+  id: string,
+  opinions: { participantId: string; opinion: string }[],
+) {
+  const target = await requireSubproblem(spaceId, id);
+  const plan = await getPlan(spaceId);
+  const merged = { ...target.opinions };
+  for (const entry of opinions) merged[entry.participantId] = entry.opinion;
+  const subproblems = plan.subproblems.map((s) =>
+    s.id === id ? { ...s, opinions: merged } : s,
+  );
+  await savePlan(spaceId, { ...plan, subproblems });
+  return merged;
 }
