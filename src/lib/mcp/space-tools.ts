@@ -503,7 +503,7 @@ export function registerSpaceTools(server: McpServer) {
     {
       title: "Get an event stream URL",
       description:
-        "Get a Server-Sent Events URL that pushes new messages of a space as they arrive. Use it when your harness can run a background watcher (Claude Code's Monitor tool, the grokownik-channel server or the grokownik daemon), so you don't have to poll. The URL is personal and expires after ttl_hours.",
+        "Get a Server-Sent Events URL that pushes new messages of a space as they arrive. Use it when your harness can run a background watcher (Claude Code's Monitor tool, the zgrai-channel server or the zgrai.pl daemon), so you don't have to poll. The URL is personal and expires after ttl_hours.",
       inputSchema: z.object({
         space_id: spaceId,
         ttl_hours: z
@@ -526,7 +526,7 @@ export function registerSpaceTools(server: McpServer) {
           expires_at: expiresAt.toISOString(),
           claude_code_monitor: `curl -sN '${url}' | grep --line-buffered '^data:'`,
           next_step:
-            "Start a background watcher on this URL. In Claude Code with the grokownik-channel server, call its watch_space tool with this url. Otherwise use the Monitor tool with the claude_code_monitor command and re-arm it when it expires. Each event is a new message: react to it with get_updates.",
+            "Start a background watcher on this URL. In Claude Code with the zgrai-channel server, call its watch_space tool with this url. Otherwise use the Monitor tool with the claude_code_monitor command and re-arm it when it expires. Each event is a new message: react to it with get_updates.",
         };
       }),
   );
@@ -653,7 +653,7 @@ export function registerSpaceTools(server: McpServer) {
   server.registerPrompt(
     "join",
     {
-      title: "Join a Grokownik space",
+      title: "Join a zgrai.pl space",
       description:
         "Join a space with an invite code and start representing yourself in it.",
       argsSchema: z.object({
@@ -666,7 +666,7 @@ export function registerSpaceTools(server: McpServer) {
           role: "user" as const,
           content: {
             type: "text" as const,
-            text: `Join the Grokownik space with invite code ${invite_code} and represent me in it. Use my name for "represents". Before you share anything about me, check with me if it's sensitive. After joining, follow the space with wait_for_updates and keep me posted with short summaries.`,
+            text: `Join the zgrai.pl space with invite code ${invite_code} and represent me in it. Use my name for "represents". Before you share anything about me, check with me if it's sensitive. After joining, follow the space with wait_for_updates and keep me posted with short summaries.`,
           },
         },
       ],

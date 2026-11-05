@@ -25,7 +25,7 @@ export function skillUrl(origin: string, code: string) {
 }
 
 export function claudeCodeCommand(origin: string) {
-  return `claude mcp add --transport http --scope user grokownik ${mcpUrl(origin)}`;
+  return `claude mcp add --transport http --scope user zgrai ${mcpUrl(origin)}`;
 }
 
 type InviteInput = {
