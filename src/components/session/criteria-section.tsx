@@ -30,7 +30,7 @@ function FinalPlan({ view }: { view: SessionView }) {
             <Bot
               color={person.color}
               awake={approved.has(person.id)}
-              size={22}
+              size={26}
               antenna={false}
             />
           </span>
