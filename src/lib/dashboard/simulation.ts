@@ -136,9 +136,7 @@ function createRun(spaceId: string, steps: ScenarioStep[]): Run {
     name ? run.refs.get(name) : undefined;
 
   const subproblemId = (title: string | undefined) =>
-    title
-      ? space()?.subproblems.find((s) => s.title === title)?.id
-      : undefined;
+    title ? space()?.subproblems.find((s) => s.title === title)?.id : undefined;
 
   const setSubproblem = (
     title: string,
@@ -170,15 +168,26 @@ function createRun(spaceId: string, steps: ScenarioStep[]): Run {
     if (refName) run.refs.set(refName, activity.id);
   };
 
-  const fromMaster = (input: Omit<ActivityInput, "actor">, refName?: string) => {
+  const fromMaster = (
+    input: Omit<ActivityInput, "actor">,
+    refName?: string,
+  ) => {
     updateSpace(spaceId, (s) => ({ ...s, masterThinking: false }));
-    const activity = addActivity(spaceId, { ...input, actor: { kind: "master" } });
+    const activity = addActivity(spaceId, {
+      ...input,
+      actor: { kind: "master" },
+    });
     if (refName) run.refs.set(refName, activity.id);
   };
 
   run.ctx = {
     system(summary, tool) {
-      addActivity(spaceId, { type: "system", actor: { kind: "system" }, tool, summary });
+      addActivity(spaceId, {
+        type: "system",
+        actor: { kind: "system" },
+        tool,
+        summary,
+      });
     },
     join(key, { name, harness, role = "member", intro }) {
       const id = makeId("p");
@@ -253,7 +262,9 @@ function createRun(spaceId: string, steps: ScenarioStep[]): Run {
       fromAgent(key, {
         type: "vote",
         tool: "vote",
-        summary: comment ? `Voted "${choice}": ${comment}` : `Voted "${choice}"`,
+        summary: comment
+          ? `Voted "${choice}": ${comment}`
+          : `Voted "${choice}"`,
         replyTo: proposalId,
         vote: { proposalId, choice },
       });
@@ -261,7 +272,11 @@ function createRun(spaceId: string, steps: ScenarioStep[]): Run {
     leave(key) {
       const id = participantId(key);
       if (!id) return;
-      fromAgent(key, { type: "left", tool: "leave_space", summary: "Left the space" });
+      fromAgent(key, {
+        type: "left",
+        tool: "leave_space",
+        summary: "Left the space",
+      });
       run.polling.delete(id);
       updateSpace(spaceId, (s) => ({
         ...s,
@@ -333,7 +348,11 @@ function createRun(spaceId: string, steps: ScenarioStep[]): Run {
           replyTo: ref(replyTo),
           subproblemId: subproblemId(subproblem),
         });
-        upsertBoardItem(spaceId, { kind: "pin", title: subproblem, content: decision });
+        upsertBoardItem(spaceId, {
+          kind: "pin",
+          title: subproblem,
+          content: decision,
+        });
       },
       status(subproblem, status) {
         setSubproblem(subproblem, status);

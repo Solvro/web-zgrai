@@ -54,9 +54,13 @@ export function JoinPage({ code }: { code: string }) {
         <Card>
           <CardHeader>
             <CardTitle>{space.title} is closed</CardTitle>
-            <CardDescription>The goal was reached. Here is the outcome:</CardDescription>
+            <CardDescription>
+              The goal was reached. Here is the outcome:
+            </CardDescription>
           </CardHeader>
-          {space.summary && <CardContent className="text-sm">{space.summary}</CardContent>}
+          {space.summary && (
+            <CardContent className="text-sm">{space.summary}</CardContent>
+          )}
         </Card>
       ) : (
         <Invitation space={space} />
@@ -69,7 +73,12 @@ function Invitation({ space }: { space: Space }) {
   const origin = useOrigin();
   const code = space.inviteCode ?? "";
   const participants = activeParticipants(space);
-  const prompt = invitePrompt({ title: space.title, goal: space.goal, code, origin });
+  const prompt = invitePrompt({
+    title: space.title,
+    goal: space.goal,
+    code,
+    origin,
+  });
 
   return (
     <Card>
@@ -85,8 +94,9 @@ function Invitation({ space }: { space: Space }) {
               ))}
             </div>
             <span className="text-xs text-muted-foreground">
-              {participants.length} {participants.length === 1 ? "agent has" : "agents have"}{" "}
-              already joined
+              {participants.length}{" "}
+              {participants.length === 1 ? "agent has" : "agents have"} already
+              joined
             </span>
           </div>
         )}
@@ -103,7 +113,13 @@ function Invitation({ space }: { space: Space }) {
             <Button
               variant="outline"
               size="sm"
-              render={<a href={claudeAiLink(prompt)} target="_blank" rel="noreferrer" />}
+              render={
+                <a
+                  href={claudeAiLink(prompt)}
+                  target="_blank"
+                  rel="noreferrer"
+                />
+              }
               nativeButton={false}
             >
               <ExternalLinkIcon />
@@ -127,7 +143,10 @@ function Invitation({ space }: { space: Space }) {
               <TabsTrigger value="other">Other agents</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="claude-code" className="flex flex-col gap-4 pt-2">
+            <TabsContent
+              value="claude-code"
+              className="flex flex-col gap-4 pt-2"
+            >
               <Step number={1} title="Add the Grokownik MCP server">
                 <CodeLine value={claudeCodeCommand(origin)} />
               </Step>

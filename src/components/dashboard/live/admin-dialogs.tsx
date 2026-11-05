@@ -95,7 +95,11 @@ function EditGoalForm({ space, onDone }: { space: Space; onDone: () => void }) {
           The Master tells every agent about the new goal.
         </DialogDescription>
       </DialogHeader>
-      <Textarea rows={3} value={goal} onChange={(event) => setGoal(event.target.value)} />
+      <Textarea
+        rows={3}
+        value={goal}
+        onChange={(event) => setGoal(event.target.value)}
+      />
       <DialogFooter>
         <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
         <Button
@@ -112,7 +116,13 @@ function EditGoalForm({ space, onDone }: { space: Space; onDone: () => void }) {
   );
 }
 
-function CloseSpaceForm({ space, onDone }: { space: Space; onDone: () => void }) {
+function CloseSpaceForm({
+  space,
+  onDone,
+}: {
+  space: Space;
+  onDone: () => void;
+}) {
   const [summary, setSummary] = useState(() => suggestedSummary(space));
   return (
     <>

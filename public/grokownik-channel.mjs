@@ -24,13 +24,19 @@ const TOOLS = [
       "Start pushing new messages of a Grokownik space into this session. Pass the url returned by get_event_stream on the grokownik server.",
     inputSchema: {
       type: "object",
-      properties: { url: { type: "string", description: "Event stream url from get_event_stream." } },
+      properties: {
+        url: {
+          type: "string",
+          description: "Event stream url from get_event_stream.",
+        },
+      },
       required: ["url"],
     },
   },
   {
     name: "unwatch_space",
-    description: "Stop pushing messages of a Grokownik space into this session.",
+    description:
+      "Stop pushing messages of a Grokownik space into this session.",
     inputSchema: {
       type: "object",
       properties: { space_id: { type: "string" } },
@@ -55,13 +61,21 @@ function send(message) {
 }
 
 function notify(content, meta) {
-  send({ jsonrpc: "2.0", method: "notifications/claude/channel", params: { content, meta } });
+  send({
+    jsonrpc: "2.0",
+    method: "notifications/claude/channel",
+    params: { content, meta },
+  });
 }
 
 function saveState() {
   try {
     mkdirSync(STATE_DIR, { recursive: true });
-    const data = [...watches.values()].map((w) => ({ spaceId: w.spaceId, url: w.url, cursor: w.cursor }));
+    const data = [...watches.values()].map((w) => ({
+      spaceId: w.spaceId,
+      url: w.url,
+      cursor: w.cursor,
+    }));
     writeFileSync(STATE_FILE, JSON.stringify(data, null, 2));
   } catch (error) {
     log("could not save state:", error.message);
@@ -95,7 +109,9 @@ function parseStreamUrl(raw) {
 }
 
 function attr(value) {
-  return String(value ?? "").replace(/[^\p{L}\p{N} .,:()'_-]/gu, "").slice(0, 80);
+  return String(value ?? "")
+    .replace(/[^\p{L}\p{N} .,:()'_-]/gu, "")
+    .slice(0, 80);
 }
 
 async function runWatch(watch) {
@@ -104,7 +120,10 @@ async function runWatch(watch) {
     try {
       const headers = { accept: "text/event-stream" };
       if (watch.cursor) headers["last-event-id"] = String(watch.cursor);
-      const response = await fetch(watch.url, { headers, signal: watch.controller.signal });
+      const response = await fetch(watch.url, {
+        headers,
+        signal: watch.controller.signal,
+      });
       if (response.status === 401 || response.status === 404) {
         notify(
           "The event stream for this space stopped working (expired or no longer a participant). Call get_event_stream again and pass the new url to watch_space if you still want updates.",
@@ -113,7 +132,8 @@ async function runWatch(watch) {
         stopWatch(watch.spaceId);
         return;
       }
-      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok || !response.body)
+        throw new Error(`HTTP ${response.status}`);
       backoff = 1000;
       const decoder = new TextDecoder();
       let buffer = "";
@@ -152,10 +172,13 @@ function handleEvent(watch, block) {
     return;
   }
   if (event === "closed") {
-    notify("This Grokownik space was closed. Tell your user and stop following it.", {
-      space_id: watch.spaceId,
-      kind: "closed",
-    });
+    notify(
+      "This Grokownik space was closed. Tell your user and stop following it.",
+      {
+        space_id: watch.spaceId,
+        kind: "closed",
+      },
+    );
     stopWatch(watch.spaceId);
     return;
   }
@@ -175,7 +198,13 @@ function handleEvent(watch, block) {
 function startWatch(rawUrl, cursor) {
   const { url, spaceId } = parseStreamUrl(rawUrl);
   stopWatch(spaceId, { keepState: true });
-  const watch = { spaceId, url: url.toString(), cursor: cursor ?? null, controller: new AbortController(), stopped: false };
+  const watch = {
+    spaceId,
+    url: url.toString(),
+    cursor: cursor ?? null,
+    controller: new AbortController(),
+    stopped: false,
+  };
   watches.set(spaceId, watch);
   saveState();
   void runWatch(watch);
@@ -193,13 +222,18 @@ function stopWatch(spaceId, { keepState = false } = {}) {
 }
 
 function toolResult(text, isError = false) {
-  return { content: [{ type: "text", text }], ...(isError ? { isError: true } : {}) };
+  return {
+    content: [{ type: "text", text }],
+    ...(isError ? { isError: true } : {}),
+  };
 }
 
 function callTool(name, args = {}) {
   if (name === "watch_space") {
     const spaceId = startWatch(String(args.url ?? ""));
-    return toolResult(`Watching space ${spaceId}. New messages will arrive as <channel> events.`);
+    return toolResult(
+      `Watching space ${spaceId}. New messages will arrive as <channel> events.`,
+    );
   }
   if (name === "unwatch_space") {
     return stopWatch(String(args.space_id ?? ""))
@@ -207,7 +241,10 @@ function callTool(name, args = {}) {
       : toolResult("That space wasn't being watched.", true);
   }
   if (name === "list_watches") {
-    const list = [...watches.values()].map((w) => ({ space_id: w.spaceId, cursor: w.cursor }));
+    const list = [...watches.values()].map((w) => ({
+      space_id: w.spaceId,
+      cursor: w.cursor,
+    }));
     return toolResult(JSON.stringify(list, null, 2));
   }
   return toolResult(`Unknown tool ${name}.`, true);
@@ -241,10 +278,18 @@ function handle(message) {
       }
       send({ jsonrpc: "2.0", id, result });
     } else {
-      send({ jsonrpc: "2.0", id, error: { code: -32601, message: `Method not found: ${method}` } });
+      send({
+        jsonrpc: "2.0",
+        id,
+        error: { code: -32601, message: `Method not found: ${method}` },
+      });
     }
   } catch (error) {
-    send({ jsonrpc: "2.0", id, error: { code: -32603, message: error.message } });
+    send({
+      jsonrpc: "2.0",
+      id,
+      error: { code: -32603, message: error.message },
+    });
   }
 }
 

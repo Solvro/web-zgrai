@@ -28,7 +28,12 @@ export function claudeCodeCommand(origin: string) {
   return `claude mcp add --transport http --scope user grokownik ${mcpUrl(origin)}`;
 }
 
-type InviteInput = { title: string; goal: string; code: string; origin: string };
+type InviteInput = {
+  title: string;
+  goal: string;
+  code: string;
+  origin: string;
+};
 
 // The text a person pastes into their agent. The skill does the rest.
 export function invitePrompt({ title, code, origin }: InviteInput) {

@@ -38,7 +38,12 @@ export function BoardPanel({
   const notes = space.board.filter((item) => item.kind === "note");
 
   return (
-    <aside className={cn("flex min-h-0 flex-col gap-4 overflow-y-auto *:shrink-0", className)}>
+    <aside
+      className={cn(
+        "flex min-h-0 flex-col gap-4 overflow-y-auto *:shrink-0",
+        className,
+      )}
+    >
       {space.status === "closed" && (
         <Card className="bg-emerald-50 ring-emerald-300 dark:bg-emerald-950/40 dark:ring-emerald-800">
           <CardHeader>
@@ -59,7 +64,9 @@ export function BoardPanel({
             <PinIcon className="size-4" />
             Pins
           </CardTitle>
-          <CardDescription>Decisions and key facts, pinned by the Master.</CardDescription>
+          <CardDescription>
+            Decisions and key facts, pinned by the Master.
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-2">
           {pins.length === 0 && (
@@ -70,7 +77,8 @@ export function BoardPanel({
               key={pin.id}
               className={cn(
                 "rounded-lg border p-2.5 transition-colors duration-1000",
-                isFresh(pin, now) && "border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40",
+                isFresh(pin, now) &&
+                  "border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40",
               )}
             >
               <div className="text-xs text-muted-foreground">{pin.title}</div>
@@ -88,7 +96,9 @@ export function BoardPanel({
             <NotebookPenIcon className="size-4" />
             Master&apos;s notes
           </CardTitle>
-          <CardDescription>What the Master keeps in mind right now.</CardDescription>
+          <CardDescription>
+            What the Master keeps in mind right now.
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {notes.length === 0 && (
@@ -184,10 +194,14 @@ function ProgressCard({ space }: { space: Space }) {
                 <div className="flex min-w-0 flex-1 flex-col">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-sm">{sub.title}</span>
-                    <span className={cn("text-xs", status.className)}>{status.label}</span>
+                    <span className={cn("text-xs", status.className)}>
+                      {status.label}
+                    </span>
                   </div>
                   {sub.decision && (
-                    <span className="text-xs text-muted-foreground">{sub.decision}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {sub.decision}
+                    </span>
                   )}
                 </div>
               </li>

@@ -1,7 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { activity, boardItem, boxItem, message, participant } from "@/db/schema";
+import {
+  activity,
+  boardItem,
+  boxItem,
+  message,
+  participant,
+} from "@/db/schema";
 import {
   closeSpace,
   getSpaceOrThrow,
@@ -85,7 +91,11 @@ export async function recordDecision(input: {
     text: `${input.title}: ${input.content}`,
     kind: "decision",
   });
-  await pin({ spaceId: input.spaceId, title: input.title, content: input.content });
+  await pin({
+    spaceId: input.spaceId,
+    title: input.title,
+    content: input.content,
+  });
   return row;
 }
 
@@ -101,7 +111,10 @@ export async function updateNotes(spaceId: string, content: string) {
       ),
     );
   if (existing) {
-    await db.update(boardItem).set({ content }).where(eq(boardItem.id, existing.id));
+    await db
+      .update(boardItem)
+      .set({ content })
+      .where(eq(boardItem.id, existing.id));
     return existing.id;
   }
   const id = randomUUID();
@@ -109,12 +122,18 @@ export async function updateNotes(spaceId: string, content: string) {
   return id;
 }
 
-export async function pin(input: { spaceId: string; title: string; content: string }) {
+export async function pin(input: {
+  spaceId: string;
+  title: string;
+  content: string;
+}) {
   const id = randomUUID();
   const existing = await db
     .select({ id: boardItem.id })
     .from(boardItem)
-    .where(and(eq(boardItem.spaceId, input.spaceId), eq(boardItem.kind, "pin")));
+    .where(
+      and(eq(boardItem.spaceId, input.spaceId), eq(boardItem.kind, "pin")),
+    );
   await db.insert(boardItem).values({
     id,
     spaceId: input.spaceId,
@@ -138,7 +157,10 @@ export function closeSpaceAsMaster(spaceId: string, summary: string) {
 }
 
 function escapeAttr(value: string) {
-  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;");
 }
 
 export async function getMasterContext(spaceId: string, afterMessageId = 0) {
@@ -157,7 +179,9 @@ export async function getMasterContext(spaceId: string, afterMessageId = 0) {
 
   const transcript = messages
     .map((m) => {
-      const author = m.authorParticipantId ? byId.get(m.authorParticipantId) : null;
+      const author = m.authorParticipantId
+        ? byId.get(m.authorParticipantId)
+        : null;
       const attrs = [
         `id="${m.id}"`,
         `from="${m.kind === "system" ? "system" : author ? `participant:${author.id}` : "master"}"`,
@@ -165,7 +189,9 @@ export async function getMasterContext(spaceId: string, afterMessageId = 0) {
         `kind="${m.kind}"`,
         m.replyTo ? `reply_to="${m.replyTo}"` : null,
         m.visibility === "private" ? `private="true"` : null,
-        m.addressedTo?.length ? `addressed_to="${m.addressedTo.join(",")}"` : null,
+        m.addressedTo?.length
+          ? `addressed_to="${m.addressedTo.join(",")}"`
+          : null,
       ]
         .filter(Boolean)
         .join(" ");
@@ -183,7 +209,10 @@ export async function getMasterContext(spaceId: string, afterMessageId = 0) {
     .map((p) => {
       const entries = items
         .filter((item) => item.participantId === p.id)
-        .map((item) => `  <item id="${item.id}" topic="${escapeAttr(item.topic)}">${item.content}</item>`)
+        .map(
+          (item) =>
+            `  <item id="${item.id}" topic="${escapeAttr(item.topic)}">${item.content}</item>`,
+        )
         .join("\n");
       return `<box participant="participant:${p.id}" represents="${escapeAttr(p.represents)}">\n${entries}\n</box>`;
     })
@@ -191,7 +220,10 @@ export async function getMasterContext(spaceId: string, afterMessageId = 0) {
 
   const proposals = messages.filter((m) => m.kind === "proposal");
   const tallies = await Promise.all(
-    proposals.map(async (p) => ({ proposal_id: p.id, ...(await voteTally(p.id)) })),
+    proposals.map(async (p) => ({
+      proposal_id: p.id,
+      ...(await voteTally(p.id)),
+    })),
   );
 
   return {
@@ -204,7 +236,11 @@ export async function getMasterContext(spaceId: string, afterMessageId = 0) {
   };
 }
 
-export async function getActivitySince(spaceId: string, afterId = 0, limit = 100) {
+export async function getActivitySince(
+  spaceId: string,
+  afterId = 0,
+  limit = 100,
+) {
   return db
     .select()
     .from(activity)

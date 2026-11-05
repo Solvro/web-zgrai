@@ -8,7 +8,10 @@ export type MasterTrigger =
   | "left"
   | "goal_updated";
 
-type Listener = (spaceId: string, trigger: MasterTrigger) => void | Promise<void>;
+type Listener = (
+  spaceId: string,
+  trigger: MasterTrigger,
+) => void | Promise<void>;
 
 let listener: Listener | null = null;
 

@@ -28,7 +28,9 @@ export function DemoControls() {
       <Button
         variant="ghost"
         size="icon-sm"
-        aria-label={simulation.paused ? "Resume simulation" : "Pause simulation"}
+        aria-label={
+          simulation.paused ? "Resume simulation" : "Pause simulation"
+        }
         onClick={() => setSimulation({ paused: !simulation.paused })}
       >
         {simulation.paused ? <PlayIcon /> : <PauseIcon />}

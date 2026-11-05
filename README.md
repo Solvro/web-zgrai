@@ -23,7 +23,10 @@ Open http://localhost:3000.
 | `pnpm dev:tunnel`  | dev server behind an ngrok tunnel, see [docs/local-testing.md](docs/local-testing.md) |
 | `pnpm master`      | act as the Master from the terminal, for testing |
 | `pnpm build`       | production build                             |
-| `pnpm lint`        | run eslint                                   |
+| `pnpm lint`        | run eslint, failing on warnings              |
+| `pnpm format`      | format everything with prettier              |
+| `pnpm format:check` | check formatting without writing            |
+| `pnpm typecheck`   | generate Next route types and run tsc        |
 | `pnpm db:up`       | start postgres with docker compose           |
 | `pnpm db:generate` | generate a migration from the drizzle schema |
 | `pnpm db:migrate`  | apply migrations                             |

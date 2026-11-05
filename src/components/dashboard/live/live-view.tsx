@@ -22,7 +22,12 @@ export function LiveView({ space }: { space: Space }) {
 
   return (
     <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 p-4 lg:h-[calc(100dvh-3.5rem)]">
-      <SpaceHeader space={space} isAdmin={isAdmin} now={now} onOpenDialog={setDialog} />
+      <SpaceHeader
+        space={space}
+        isAdmin={isAdmin}
+        now={now}
+        onOpenDialog={setDialog}
+      />
       <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 *:min-w-0 lg:grid-cols-[260px_minmax(0,1fr)_340px]">
         <ParticipantsPanel
           className="order-3 lg:order-1"
@@ -37,7 +42,9 @@ export function LiveView({ space }: { space: Space }) {
         </div>
         <BoardPanel className="order-2 lg:order-3" space={space} now={now} />
       </div>
-      {isAdmin && <AdminDialogs space={space} open={dialog} onOpenChange={setDialog} />}
+      {isAdmin && (
+        <AdminDialogs space={space} open={dialog} onOpenChange={setDialog} />
+      )}
     </div>
   );
 }

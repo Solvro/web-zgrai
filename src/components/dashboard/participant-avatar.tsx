@@ -54,7 +54,11 @@ export function PersonAvatar({
   );
 }
 
-export function MasterAvatar({ size = "default" }: { size?: "default" | "sm" | "lg" }) {
+export function MasterAvatar({
+  size = "default",
+}: {
+  size?: "default" | "sm" | "lg";
+}) {
   return (
     <Avatar size={size}>
       <AvatarFallback className="bg-primary text-primary-foreground">
@@ -64,7 +68,11 @@ export function MasterAvatar({ size = "default" }: { size?: "default" | "sm" | "
   );
 }
 
-export function SystemAvatar({ size = "default" }: { size?: "default" | "sm" | "lg" }) {
+export function SystemAvatar({
+  size = "default",
+}: {
+  size?: "default" | "sm" | "lg";
+}) {
   return (
     <Avatar size={size}>
       <AvatarFallback>

@@ -25,7 +25,11 @@ import {
 } from "@/lib/dashboard/selectors";
 import type { Activity, ActivityType, Space } from "@/lib/dashboard/types";
 import { cn } from "@/lib/utils";
-import { MasterAvatar, PersonAvatar, SystemAvatar } from "../participant-avatar";
+import {
+  MasterAvatar,
+  PersonAvatar,
+  SystemAvatar,
+} from "../participant-avatar";
 
 const TYPE_LABEL: Partial<Record<ActivityType, string>> = {
   question: "Question",
@@ -67,10 +71,17 @@ export function ChatBubble({
   // Private details are for the author and the Master only.
   const showContent = Boolean(activity.content) && (!isPrivate || isMine);
   const typeLabel =
-    isPrivate && activity.type === "message" ? "Private note" : TYPE_LABEL[activity.type];
+    isPrivate && activity.type === "message"
+      ? "Private note"
+      : TYPE_LABEL[activity.type];
 
   return (
-    <div className={cn("flex max-w-[min(92%,44rem)] gap-2", isMine && "flex-row-reverse self-end")}>
+    <div
+      className={cn(
+        "flex max-w-[min(92%,44rem)] gap-2",
+        isMine && "flex-row-reverse self-end",
+      )}
+    >
       <div className="pt-5">
         {isMaster ? (
           <MasterAvatar size="sm" />
@@ -84,14 +95,20 @@ export function ChatBubble({
             {actorName(space, activity.actor)}
             {isMine && " (you)"}
           </span>
-          <InteractionPath activity={activity} space={space} harness={participant?.harness} />
+          <InteractionPath
+            activity={activity}
+            space={space}
+            harness={participant?.harness}
+          />
           <span>{clockTime(activity.createdAt)}</span>
         </div>
 
         <div
           className={cn(
             "flex flex-col gap-2 rounded-2xl px-3 py-2 text-sm",
-            isMaster ? "rounded-tl-sm bg-primary/[0.06] ring-1 ring-primary/15" : "bg-muted",
+            isMaster
+              ? "rounded-tl-sm bg-primary/[0.06] ring-1 ring-primary/15"
+              : "bg-muted",
             !isMaster && (isMine ? "rounded-tr-sm" : "rounded-tl-sm"),
             activity.type === "decision" &&
               "bg-emerald-50 ring-1 ring-emerald-300 dark:bg-emerald-950/40 dark:ring-emerald-800",
@@ -102,7 +119,9 @@ export function ChatBubble({
             {activity.type === "decision" && (
               <PinIcon className="mt-0.5 size-4 shrink-0 text-emerald-600" />
             )}
-            {isPrivate && <LockIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
+            {isPrivate && (
+              <LockIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            )}
             <p className="flex-1">{activity.summary}</p>
             {typeLabel && (
               <Badge variant="outline" className="shrink-0 bg-background">
@@ -115,9 +134,14 @@ export function ChatBubble({
           {activity.type === "question" && (
             <QuestionStatus activity={activity} space={space} now={now} />
           )}
-          {activity.type === "proposal" && <ProposalTally activity={activity} space={space} />}
+          {activity.type === "proposal" && (
+            <ProposalTally activity={activity} space={space} />
+          )}
           {showContent && activity.content && (
-            <Details content={activity.content} label={isPrivate ? "What only the Master sees" : "Full message"} />
+            <Details
+              content={activity.content}
+              label={isPrivate ? "What only the Master sees" : "Full message"}
+            />
           )}
         </div>
       </div>
@@ -158,14 +182,21 @@ function InteractionPath({
   );
 }
 
-function ReplyReference({ activity, space }: { activity: Activity; space: Space }) {
+function ReplyReference({
+  activity,
+  space,
+}: {
+  activity: Activity;
+  space: Space;
+}) {
   const original = findActivity(space, activity.replyTo);
   if (!original || activity.type === "decision") return null;
   return (
     <div className="flex items-center gap-1 text-xs text-muted-foreground">
       <CornerDownRightIcon className="size-3 shrink-0" />
       <span className="truncate">
-        {original.type === "proposal" ? "On the proposal" : "Answers"}: {original.summary}
+        {original.type === "proposal" ? "On the proposal" : "Answers"}:{" "}
+        {original.summary}
       </span>
     </div>
   );
@@ -182,7 +213,10 @@ function QuestionStatus({
 }) {
   const status = questionStatus(space, activity);
   const names = (ids: string[]) =>
-    ids.map((id) => findParticipant(space, id)?.represents).filter(Boolean).join(", ");
+    ids
+      .map((id) => findParticipant(space, id)?.represents)
+      .filter(Boolean)
+      .join(", ");
   const left = activity.deadline ? activity.deadline - now : undefined;
 
   return (
@@ -209,7 +243,13 @@ function QuestionStatus({
   );
 }
 
-function ProposalTally({ activity, space }: { activity: Activity; space: Space }) {
+function ProposalTally({
+  activity,
+  space,
+}: {
+  activity: Activity;
+  space: Space;
+}) {
   const tally = proposalTally(space, activity);
   const total = tally.reduce((sum, option) => sum + option.voters.length, 0);
   const decided = proposalDecision(space, activity);
@@ -220,7 +260,11 @@ function ProposalTally({ activity, space }: { activity: Activity; space: Space }
       {tally.map(({ option, voters }) => (
         <div key={option} className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-2 text-xs">
-            <span className={cn(decided && voters.length === max && max > 0 && "font-medium")}>
+            <span
+              className={cn(
+                decided && voters.length === max && max > 0 && "font-medium",
+              )}
+            >
               {option}
             </span>
             <span className="flex items-center gap-1.5">
@@ -233,7 +277,9 @@ function ProposalTally({ activity, space }: { activity: Activity; space: Space }
                   />
                 ))}
               </span>
-              <span className="w-4 text-right tabular-nums">{voters.length}</span>
+              <span className="w-4 text-right tabular-nums">
+                {voters.length}
+              </span>
             </span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-background">

@@ -90,7 +90,12 @@ function replyAsMaster(spaceId: string, text: string, answerIndex: number) {
     shaping: {
       messages: [
         ...s.shaping.messages,
-        { id: makeId("msg"), from: "master", text: reply.text, createdAt: now() },
+        {
+          id: makeId("msg"),
+          from: "master",
+          text: reply.text,
+          createdAt: now(),
+        },
       ],
       lastPatched: { fields: reply.fields, at: now() },
     },

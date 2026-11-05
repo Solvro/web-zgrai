@@ -12,7 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { removeParticipant } from "@/lib/dashboard/actions";
 import { timeAgo } from "@/lib/dashboard/format";
-import { agentName, pendingQuestions, presence } from "@/lib/dashboard/selectors";
+import {
+  agentName,
+  pendingQuestions,
+  presence,
+} from "@/lib/dashboard/selectors";
 import type { Participant, Space } from "@/lib/dashboard/types";
 import { cn } from "@/lib/utils";
 import { PersonAvatar } from "../participant-avatar";
@@ -32,7 +36,9 @@ export function ParticipantsPanel({
   onInvite: () => void;
   className?: string;
 }) {
-  const online = space.participants.filter((p) => presence(p, now) === "online").length;
+  const online = space.participants.filter(
+    (p) => presence(p, now) === "online",
+  ).length;
 
   return (
     <aside
@@ -65,7 +71,12 @@ export function ParticipantsPanel({
       </ul>
       {isAdmin && space.status === "open" && (
         <footer className="border-t p-2">
-          <Button variant="outline" size="sm" className="w-full" onClick={onInvite}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={onInvite}
+          >
             <UserPlusIcon />
             Invite more people
           </Button>
@@ -88,8 +99,12 @@ function ParticipantRow({
   isViewer: boolean;
   isAdmin: boolean;
 }) {
-  const state = space.status === "open" ? presence(participant, now) : undefined;
-  const owes = space.status === "open" ? pendingQuestions(space, participant.id).length : 0;
+  const state =
+    space.status === "open" ? presence(participant, now) : undefined;
+  const owes =
+    space.status === "open"
+      ? pendingQuestions(space, participant.id).length
+      : 0;
   const gone = participant.removedAt || participant.leftAt;
 
   const statusText =
@@ -104,11 +119,21 @@ function ParticipantRow({
             : `Joined ${timeAgo(participant.joinedAt, now)}`;
 
   return (
-    <li className={cn("group flex items-center gap-2.5 rounded-lg p-2 hover:bg-muted/60", gone && "opacity-60")}>
+    <li
+      className={cn(
+        "group flex items-center gap-2.5 rounded-lg p-2 hover:bg-muted/60",
+        gone && "opacity-60",
+      )}
+    >
       <PersonAvatar name={participant.represents} presence={state} />
       <div className="flex min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-1.5">
-          <span className={cn("truncate text-sm font-medium", gone && "line-through")}>
+          <span
+            className={cn(
+              "truncate text-sm font-medium",
+              gone && "line-through",
+            )}
+          >
             {agentName(participant)}
           </span>
           {isViewer && <Badge variant="secondary">you</Badge>}
@@ -121,38 +146,42 @@ function ParticipantRow({
           {statusText}
           {owes > 0 && (
             <span className="text-amber-700 dark:text-amber-300">
-              {" "}· owes {owes} {owes === 1 ? "answer" : "answers"}
+              {" "}
+              · owes {owes} {owes === 1 ? "answer" : "answers"}
             </span>
           )}
         </span>
       </div>
-      {isAdmin && !gone && space.status === "open" && participant.role !== "initiator" && (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Actions for ${agentName(participant)}`}
-                className="opacity-0 group-hover:opacity-100 data-popup-open:opacity-100"
-              />
-            }
-          >
-            <MoreHorizontalIcon />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => {
-                removeParticipant(space.id, participant.id);
-                toast(`Removed ${agentName(participant)}`);
-              }}
+      {isAdmin &&
+        !gone &&
+        space.status === "open" &&
+        participant.role !== "initiator" && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Actions for ${agentName(participant)}`}
+                  className="opacity-0 group-hover:opacity-100 data-popup-open:opacity-100"
+                />
+              }
             >
-              Remove from the space
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+              <MoreHorizontalIcon />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => {
+                  removeParticipant(space.id, participant.id);
+                  toast(`Removed ${agentName(participant)}`);
+                }}
+              >
+                Remove from the space
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
     </li>
   );
 }

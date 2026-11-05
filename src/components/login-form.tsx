@@ -1,57 +1,57 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { toast } from "sonner"
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
-import { QueryLink } from "@/components/query-link"
-import { Button } from "@/components/ui/button"
+import { QueryLink } from "@/components/query-link";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import { signIn } from "@/lib/auth-client"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
+import { signIn } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const router = useRouter()
-  const [pending, setPending] = useState(false)
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const form = new FormData(event.currentTarget)
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
 
-    setPending(true)
+    setPending(true);
     const { data, error } = await signIn.email({
       email: String(form.get("email")),
       password: String(form.get("password")),
-    })
+    });
 
     if (error) {
-      setPending(false)
-      toast.error(error.message ?? "Something went wrong")
-      return
+      setPending(false);
+      toast.error(error.message ?? "Something went wrong");
+      return;
     }
 
     // During an OAuth (MCP) flow the auth client follows the returned redirect on its own.
-    if (data.redirect) return
+    if (data.redirect) return;
 
-    router.push("/")
-    router.refresh()
+    router.push("/");
+    router.refresh();
   }
 
   return (
@@ -102,5 +102,5 @@ export function LoginForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

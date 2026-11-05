@@ -71,7 +71,11 @@ export async function recordActivity(
   });
 }
 
-async function postSystemMessage(executor: Executor, spaceId: string, content: string) {
+async function postSystemMessage(
+  executor: Executor,
+  spaceId: string,
+  content: string,
+) {
   const [row] = await executor
     .insert(message)
     .values({ spaceId, kind: "system", content })
@@ -537,7 +541,11 @@ export async function getSpaceDetails(spaceId: string, userId: string) {
   const me = await getParticipantOrThrow(spaceId, userId);
   const row = await getSpaceOrThrow(spaceId);
   const decisions = await db
-    .select({ id: message.id, text: message.content, created_at: message.createdAt })
+    .select({
+      id: message.id,
+      text: message.content,
+      created_at: message.createdAt,
+    })
     .from(message)
     .where(and(eq(message.spaceId, spaceId), eq(message.kind, "decision")))
     .orderBy(asc(message.id));
@@ -632,7 +640,12 @@ export async function getUpdates(input: {
 }) {
   const mine = await activeParticipants(input.userId, input.spaceId);
   if (mine.length === 0) {
-    return { messages: [], pending_questions: [], cursor: input.cursor ?? 0, has_more: false };
+    return {
+      messages: [],
+      pending_questions: [],
+      cursor: input.cursor ?? 0,
+      has_more: false,
+    };
   }
   const people = await participantsById(mine.map((p) => p.spaceId));
   const collected: AgentMessage[] = [];
@@ -644,7 +657,11 @@ export async function getUpdates(input: {
       .select()
       .from(message)
       .where(
-        and(eq(message.spaceId, me.spaceId), visibleTo(me.id), gt(message.id, after)),
+        and(
+          eq(message.spaceId, me.spaceId),
+          visibleTo(me.id),
+          gt(message.id, after),
+        ),
       )
       .orderBy(asc(message.id))
       .limit(PAGE_SIZE + 1);
@@ -656,18 +673,26 @@ export async function getUpdates(input: {
       .update(participant)
       .set({
         lastSeenAt: new Date(),
-        ...(last && last > (me.lastReadMessageId ?? 0) ? { lastReadMessageId: last } : {}),
+        ...(last && last > (me.lastReadMessageId ?? 0)
+          ? { lastReadMessageId: last }
+          : {}),
       })
       .where(eq(participant.id, me.id));
   }
 
   collected.sort((a, b) => a.id - b.id);
-  const pending = (await Promise.all(mine.map((me) => pendingQuestions(me)))).flat();
+  const pending = (
+    await Promise.all(mine.map((me) => pendingQuestions(me)))
+  ).flat();
   const highest = collected.at(-1)?.id;
   return {
     messages: collected,
     pending_questions: pending,
-    cursor: Math.max(highest ?? 0, input.cursor ?? 0, ...mine.map((m) => m.lastReadMessageId ?? 0)),
+    cursor: Math.max(
+      highest ?? 0,
+      input.cursor ?? 0,
+      ...mine.map((m) => m.lastReadMessageId ?? 0),
+    ),
     has_more: hasMore,
   };
 }
@@ -820,7 +845,8 @@ export async function vote(input: {
         eq(message.kind, "proposal"),
       ),
     );
-  if (!proposal) throw new SpaceError(`Proposal ${input.proposalId} not found.`);
+  if (!proposal)
+    throw new SpaceError(`Proposal ${input.proposalId} not found.`);
   await db
     .insert(proposalVote)
     .values({
@@ -831,7 +857,11 @@ export async function vote(input: {
     })
     .onConflictDoUpdate({
       target: [proposalVote.proposalMessageId, proposalVote.participantId],
-      set: { choice: input.choice, comment: input.comment, createdAt: new Date() },
+      set: {
+        choice: input.choice,
+        comment: input.comment,
+        createdAt: new Date(),
+      },
     });
   await recordActivity(db, {
     spaceId: input.spaceId,
@@ -893,7 +923,11 @@ export async function removeParticipant(input: {
   if (target.role === "initiator") {
     throw new SpaceError("The initiator can't be removed.");
   }
-  await markLeft(target, "removed", `${target.represents} was removed from the space.`);
+  await markLeft(
+    target,
+    "removed",
+    `${target.represents} was removed from the space.`,
+  );
 }
 
 export async function updateGoal(input: {
@@ -904,8 +938,15 @@ export async function updateGoal(input: {
   const me = await requireInitiator(input.spaceId, input.userId);
   await requireOpenSpace(input.spaceId);
   await db.transaction(async (tx) => {
-    await tx.update(space).set({ goal: input.goal }).where(eq(space.id, input.spaceId));
-    await postSystemMessage(tx, input.spaceId, `The goal changed to: ${input.goal}`);
+    await tx
+      .update(space)
+      .set({ goal: input.goal })
+      .where(eq(space.id, input.spaceId));
+    await postSystemMessage(
+      tx,
+      input.spaceId,
+      `The goal changed to: ${input.goal}`,
+    );
     await recordActivity(tx, {
       spaceId: input.spaceId,
       actorParticipantId: me.id,
@@ -925,12 +966,18 @@ export async function closeSpace(input: {
   await db.transaction(async (tx) => {
     await tx
       .update(space)
-      .set({ status: "closed", closedAt: new Date(), summary: input.summary ?? row.summary })
+      .set({
+        status: "closed",
+        closedAt: new Date(),
+        summary: input.summary ?? row.summary,
+      })
       .where(eq(space.id, input.spaceId));
     await postSystemMessage(
       tx,
       input.spaceId,
-      input.summary ? `The space is closed. Summary: ${input.summary}` : "The space is closed.",
+      input.summary
+        ? `The space is closed. Summary: ${input.summary}`
+        : "The space is closed.",
     );
     await recordActivity(tx, {
       spaceId: input.spaceId,
@@ -947,7 +994,11 @@ export async function closeSpaceAsInitiator(input: {
   summary?: string;
 }) {
   const me = await requireInitiator(input.spaceId, input.userId);
-  await closeSpace({ spaceId: input.spaceId, actorParticipantId: me.id, summary: input.summary });
+  await closeSpace({
+    spaceId: input.spaceId,
+    actorParticipantId: me.id,
+    summary: input.summary,
+  });
 }
 
 export async function getParticipantById(participantId: string) {
@@ -977,7 +1028,11 @@ export async function peekMessages(me: Participant, afterId: number) {
     .select()
     .from(message)
     .where(
-      and(eq(message.spaceId, me.spaceId), visibleTo(me.id), gt(message.id, afterId)),
+      and(
+        eq(message.spaceId, me.spaceId),
+        visibleTo(me.id),
+        gt(message.id, afterId),
+      ),
     )
     .orderBy(asc(message.id))
     .limit(PAGE_SIZE);

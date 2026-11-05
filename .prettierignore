@@ -1,0 +1,9 @@
+.next
+.eve
+.output
+node_modules
+drizzle/meta
+pnpm-lock.yaml
+next-env.d.ts
+*.md
+*.mdx

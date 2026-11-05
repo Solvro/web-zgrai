@@ -26,7 +26,9 @@ export function InviteStep({ space }: { space: Space }) {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">{space.title} is open. Invite everyone</CardTitle>
+            <CardTitle className="text-xl">
+              {space.title} is open. Invite everyone
+            </CardTitle>
             <CardDescription>
               Send the message wherever you talk: Messenger, Slack, email. Each
               person pastes it into their own agent, and your own agent joins
@@ -54,12 +56,17 @@ export function InviteStep({ space }: { space: Space }) {
               <div key={p.id} className="flex items-center gap-2 text-sm">
                 <PersonAvatar name={p.represents} size="sm" />
                 <span className="flex-1">{agentName(p)}</span>
-                <span className="text-xs text-muted-foreground">{p.harness}</span>
+                <span className="text-xs text-muted-foreground">
+                  {p.harness}
+                </span>
               </div>
             ))}
           </CardContent>
           <CardFooter>
-            <Button className="w-full" onClick={() => finishInviteStep(space.id)}>
+            <Button
+              className="w-full"
+              onClick={() => finishInviteStep(space.id)}
+            >
               Follow live
               <ArrowRightIcon />
             </Button>

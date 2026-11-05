@@ -50,10 +50,13 @@ async function main() {
       break;
     }
     case "activity":
-      for (const row of await getActivitySince(spaceId)) console.log(`#${row.id} ${row.summary}`);
+      for (const row of await getActivitySince(spaceId))
+        console.log(`#${row.id} ${row.summary}`);
       break;
     case "say":
-      console.log((await postMasterMessage({ spaceId, text: rest.join(" ") })).id);
+      console.log(
+        (await postMasterMessage({ spaceId, text: rest.join(" ") })).id,
+      );
       break;
     case "ask": {
       const [question, ...participantIds] = rest;
@@ -62,20 +65,42 @@ async function main() {
     }
     case "dm": {
       const [participantId, ...text] = rest;
-      console.log((await postMasterMessage({ spaceId, text: text.join(" "), privateTo: [participantId] })).id);
+      console.log(
+        (
+          await postMasterMessage({
+            spaceId,
+            text: text.join(" "),
+            privateTo: [participantId],
+          })
+        ).id,
+      );
       break;
     }
     case "propose":
       console.log((await propose({ spaceId, proposal: rest.join(" ") })).id);
       break;
     case "decide":
-      console.log((await recordDecision({ spaceId, title: rest[0], content: rest.slice(1).join(" ") })).id);
+      console.log(
+        (
+          await recordDecision({
+            spaceId,
+            title: rest[0],
+            content: rest.slice(1).join(" "),
+          })
+        ).id,
+      );
       break;
     case "notes":
       console.log(await updateNotes(spaceId, rest.join(" ")));
       break;
     case "pin":
-      console.log(await pin({ spaceId, title: rest[0], content: rest.slice(1).join(" ") }));
+      console.log(
+        await pin({
+          spaceId,
+          title: rest[0],
+          content: rest.slice(1).join(" "),
+        }),
+      );
       break;
     case "close":
       await closeSpaceAsMaster(spaceId, rest.join(" "));

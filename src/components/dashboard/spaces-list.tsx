@@ -122,7 +122,9 @@ function SpaceCard({ space }: { space: Space }) {
 }
 
 function DraftPreview({ space }: { space: Space }) {
-  const lastMaster = space.shaping.messages.findLast((m) => m.from === "master");
+  const lastMaster = space.shaping.messages.findLast(
+    (m) => m.from === "master",
+  );
   return (
     <div className="flex gap-2 rounded-lg bg-muted/60 p-2.5 text-xs">
       <BrainIcon className="mt-0.5 size-3.5 shrink-0" />
@@ -141,7 +143,9 @@ function SpacePreview({ space, now }: { space: Space; now: number }) {
   const current = currentSubproblem(space);
   const last = lastActivity(space);
   const waiting = openQuestions(space).length;
-  const online = participants.filter((p) => presence(p, now) === "online").length;
+  const online = participants.filter(
+    (p) => presence(p, now) === "online",
+  ).length;
 
   return (
     <>
@@ -189,7 +193,8 @@ function SpacePreview({ space, now }: { space: Space; now: number }) {
           ) : (
             "Waiting for the first agent"
           )}
-          {waiting > 0 && ` · ${waiting} open ${waiting === 1 ? "question" : "questions"}`}
+          {waiting > 0 &&
+            ` · ${waiting} open ${waiting === 1 ? "question" : "questions"}`}
         </p>
       )}
     </>

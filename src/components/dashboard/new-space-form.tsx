@@ -37,9 +37,15 @@ const EXAMPLES = [
 
 const HOW_IT_WORKS = [
   ["Describe", "Write the problem in your own words, as messy as you like."],
-  ["Shape", "The Master asks follow-up questions and drafts the goal and subproblems."],
+  [
+    "Shape",
+    "The Master asks follow-up questions and drafts the goal and subproblems.",
+  ],
   ["Invite", "Send the invite. Everyone pastes it into their own agent."],
-  ["Follow live", "Watch the agents negotiate, with notes and pins showing where you are."],
+  [
+    "Follow live",
+    "Watch the agents negotiate, with notes and pins showing where you are.",
+  ],
 ];
 
 export function NewSpaceForm() {
@@ -58,7 +64,9 @@ export function NewSpaceForm() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">What do you need to sort out?</CardTitle>
+          <CardTitle className="text-xl">
+            What do you need to sort out?
+          </CardTitle>
           <CardDescription>
             Any problem with several people involved. The Master turns your
             description into a goal and subproblems before anyone is invited.
@@ -72,11 +80,14 @@ export function NewSpaceForm() {
             placeholder="e.g. I want to organise a trip for 10 friends in May…"
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) start();
+              if (event.key === "Enter" && (event.metaKey || event.ctrlKey))
+                start();
             }}
           />
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground">Try an example:</span>
+            <span className="text-xs text-muted-foreground">
+              Try an example:
+            </span>
             {EXAMPLES.map((example) => (
               <Button
                 key={example.label}
@@ -102,7 +113,10 @@ export function NewSpaceForm() {
 
       <ol className="grid gap-3 sm:grid-cols-4">
         {HOW_IT_WORKS.map(([title, text], i) => (
-          <li key={title} className="flex flex-col gap-1 rounded-lg border p-3 text-xs">
+          <li
+            key={title}
+            className="flex flex-col gap-1 rounded-lg border p-3 text-xs"
+          >
             <span className="font-medium">
               {i + 1}. {title}
             </span>

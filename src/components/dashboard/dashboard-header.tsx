@@ -16,7 +16,12 @@ export function DashboardHeader() {
           Grokownik
         </Link>
         <nav className="hidden items-center gap-1 text-sm sm:flex">
-          <Button variant="ghost" size="sm" render={<Link href="/spaces" />} nativeButton={false}>
+          <Button
+            variant="ghost"
+            size="sm"
+            render={<Link href="/spaces" />}
+            nativeButton={false}
+          >
             Spaces
           </Button>
         </nav>

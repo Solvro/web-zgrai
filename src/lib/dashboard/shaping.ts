@@ -7,16 +7,46 @@ import type { DraftField, Space } from "./types";
 type Domain = "trip" | "project" | "research" | "event" | "generic";
 
 const KEYWORDS: Record<Exclude<Domain, "generic">, string[]> = {
-  trip: ["trip", "travel", "holiday", "vacation", "weekend", "wyjazd", "wycieczk", "urlop", "wakacj"],
-  project: ["project", "course", "assignment", "thesis", "hackathon", "projekt", "studia", "zaliczen"],
+  trip: [
+    "trip",
+    "travel",
+    "holiday",
+    "vacation",
+    "weekend",
+    "wyjazd",
+    "wycieczk",
+    "urlop",
+    "wakacj",
+  ],
+  project: [
+    "project",
+    "course",
+    "assignment",
+    "thesis",
+    "hackathon",
+    "projekt",
+    "studia",
+    "zaliczen",
+  ],
   research: ["research", "survey", "study", "paper", "badan", "ankiet"],
-  event: ["party", "event", "meetup", "birthday", "wedding", "impreza", "urodzin", "spotkanie"],
+  event: [
+    "party",
+    "event",
+    "meetup",
+    "birthday",
+    "wedding",
+    "impreza",
+    "urodzin",
+    "spotkanie",
+  ],
 };
 
 const GOALS: Record<Domain, string> = {
   trip: "Decide where and when we go, where we sleep and how we get there.",
-  project: "Agree on the scope and split the work, so everyone knows what to do and by when.",
-  research: "Agree on the research question and the method, and split the work.",
+  project:
+    "Agree on the scope and split the work, so everyone knows what to do and by when.",
+  research:
+    "Agree on the research question and the method, and split the work.",
   event: "Pick a date and a place everyone can make, and plan food and budget.",
   generic: "Reach a decision everyone can live with.",
 };
@@ -64,9 +94,7 @@ export function shapingReply(
   text: string,
   answerIndex: number,
 ): ShapingReply {
-  const domain = detectDomain(
-    `${space.description} ${space.title} ${text}`,
-  );
+  const domain = detectDomain(`${space.description} ${space.title} ${text}`);
 
   if (answerIndex === 0) {
     const title = titleFrom(text) || "New space";
