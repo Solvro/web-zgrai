@@ -1,11 +1,22 @@
-import { LoginForm } from "@/components/login-form";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { LoginScreen } from "@/components/login-screen";
+import { googleConfigured } from "@/lib/auth";
+import { safeNext } from "@/lib/safe-next";
+import { getSession } from "@/lib/session";
 
-export default function Page() {
+export default function LoginPage(props: PageProps<"/login">) {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <LoginForm />
-      </div>
-    </div>
+    <Suspense>
+      <Login {...props} />
+    </Suspense>
   );
+}
+
+async function Login({ searchParams }: PageProps<"/login">) {
+  const params = await searchParams;
+  const next = safeNext(params.next);
+  // During an MCP OAuth flow the page carries a signed query; stay on it.
+  if (!params.sig && (await getSession())) redirect(next);
+  return <LoginScreen googleEnabled={googleConfigured} next={next} />;
 }
