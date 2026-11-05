@@ -17,6 +17,7 @@ import {
 } from "drizzle-orm";
 import { db } from "@/db";
 import { tagWithCurrentStep } from "@/lib/master/meta";
+import { newSubproblems } from "@/lib/master/plan";
 import {
   activity,
   boardItem,
@@ -26,6 +27,7 @@ import {
   proposalVote,
   space,
   spaceInvite,
+  spacePlan,
   user,
 } from "@/db/schema";
 import {
@@ -172,6 +174,8 @@ export async function createSpace(input: {
   deadline?: Date;
   represents?: string;
   harness?: string;
+  steps?: string[];
+  constraints?: string[];
 }) {
   const [owner] = await db
     .select({ name: user.name })
@@ -203,6 +207,13 @@ export async function createSpace(input: {
         harness: input.harness,
       })
       .returning();
+    if (input.steps?.length || input.constraints?.length) {
+      await tx.insert(spacePlan).values({
+        spaceId: created.id,
+        subproblems: newSubproblems(input.steps ?? []),
+        constraints: input.constraints ?? [],
+      });
+    }
     const code = await insertInvite(tx, created.id);
     await postSystemMessage(
       tx,
