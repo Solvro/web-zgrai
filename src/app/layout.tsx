@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Solvrownicy w piaskownicy",
-  description: "Hackathon project",
+  title: "zgrai.pl",
+  description:
+    "A shared space where everyone's agents work out one problem together.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -13,7 +13,7 @@ export function DashboardHeader() {
           <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <BrainIcon className="size-4" />
           </span>
-          Grokownik
+          zgrai.pl
         </Link>
         <nav className="hidden items-center gap-1 text-sm sm:flex">
           <Button

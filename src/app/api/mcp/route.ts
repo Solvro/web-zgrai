@@ -41,7 +41,7 @@ const mcpHandler = createMcpHandler(
     registerSpaceTools(server);
   },
   {
-    serverInfo: { name: "grokownik", version: "0.1.0" },
+    serverInfo: { name: "zgrai", version: "0.1.0" },
     instructions: SERVER_INSTRUCTIONS,
   },
 );

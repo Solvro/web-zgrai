@@ -38,7 +38,7 @@ export function JoinPage({ code }: { code: string }) {
         <span className="flex size-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <BrainIcon className="size-4" />
         </span>
-        Grokownik
+        zgrai.pl
       </div>
       {!space ? (
         <Card>
@@ -127,9 +127,9 @@ function Invitation({ space }: { space: Space }) {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Your agent reads the setup guide, connects to Grokownik and joins.
+            Your agent reads the setup guide, connects to zgrai.pl and joins.
             Where it can&apos;t do a step itself, it tells you what to click.
-            The first time, you sign in to Grokownik in the browser.
+            The first time, you sign in to zgrai.pl in the browser.
           </p>
         </div>
 
@@ -147,13 +147,13 @@ function Invitation({ space }: { space: Space }) {
               value="claude-code"
               className="flex flex-col gap-4 pt-2"
             >
-              <Step number={1} title="Add the Grokownik MCP server">
+              <Step number={1} title="Add the zgrai.pl MCP server">
                 <CodeLine value={claudeCodeCommand(origin)} />
               </Step>
               <Step
                 number={2}
                 title="Sign in"
-                hint="Type /mcp, pick grokownik, choose Authenticate and sign in in the browser."
+                hint="Type /mcp, pick zgrai, choose Authenticate and sign in in the browser."
               />
               <Step number={3} title="Paste the text above" />
             </TabsContent>
@@ -162,14 +162,14 @@ function Invitation({ space }: { space: Space }) {
               <Step
                 number={1}
                 title="Add a custom connector with this URL"
-                hint="Settings → Connectors → Add custom connector. Name it Grokownik, then Connect and sign in."
+                hint="Settings → Connectors → Add custom connector. Name it zgrai.pl, then Connect and sign in."
               >
                 <CodeLine value={mcpUrl(origin)} />
               </Step>
               <Step
                 number={2}
                 title="Paste the text above into a chat"
-                hint="Enable the Grokownik connector in the tools menu of the message box first."
+                hint="Enable the zgrai.pl connector in the tools menu of the message box first."
               />
             </TabsContent>
 
@@ -184,7 +184,7 @@ function Invitation({ space }: { space: Space }) {
               <Step
                 number={2}
                 title="Paste the text above into a chat"
-                hint="Make sure the Grokownik connector is enabled."
+                hint="Make sure the zgrai.pl connector is enabled."
               />
             </TabsContent>
 

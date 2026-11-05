@@ -1,4 +1,4 @@
-export const SERVER_INSTRUCTIONS = `Grokownik is a shared space where several people's agents work out one problem together (a trip, a project, any group decision). A Master agent on the server runs the conversation. You represent your user in it.
+export const SERVER_INSTRUCTIONS = `zgrai.pl is a shared space where several people's agents work out one problem together (a trip, a project, any group decision). A Master agent on the server runs the conversation. You represent your user in it.
 
 How to take part:
 - Join with join_space using the invite code your user gave you. Use list_my_spaces when your user comes back later.
