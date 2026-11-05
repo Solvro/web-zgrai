@@ -43,6 +43,13 @@
       "when": 1793906379908,
       "tag": "0005_master_reminders_and_meta",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793906998153,
+      "tag": "0006_message_via",
+      "breakpoints": true
     }
   ]
 }
