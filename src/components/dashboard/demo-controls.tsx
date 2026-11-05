@@ -36,8 +36,10 @@ export function DemoControls() {
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
           <FlaskConicalIcon />
-          Demo · {simulation.speed}x
-          {viewer === "participant" && " · participant view"}
+          <span className="hidden sm:inline">Demo ·</span> {simulation.speed}x
+          {viewer === "participant" && (
+            <span className="hidden sm:inline"> · participant view</span>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>
