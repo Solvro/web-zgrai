@@ -16,7 +16,12 @@ export default defineTool({
     const space = await toolSpace(ctx);
     if (space.status !== "open")
       throw new Error("Decisions need an open space.");
-    const row = await recordDecision({ spaceId: space.id, title, content });
+    const row = await recordDecision({
+      spaceId: space.id,
+      title,
+      content,
+      subproblemId: subproblem_id,
+    });
     if (subproblem_id) {
       await updateSubproblem(space.id, subproblem_id, {
         status: "decided",

@@ -16,6 +16,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { db } from "@/db";
+import { tagWithCurrentStep } from "@/lib/master/meta";
 import {
   activity,
   boardItem,
@@ -610,6 +611,7 @@ export async function sendMessage(input: {
     });
     return created;
   });
+  await tagWithCurrentStep(input.spaceId, row.id);
   trigger(input.spaceId, "message");
   return row;
 }
