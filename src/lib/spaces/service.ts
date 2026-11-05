@@ -34,7 +34,7 @@ import {
   hashInviteCode,
 } from "./invite";
 import { type MasterTrigger, notifyMaster } from "./master-hook";
-import { dashboardUrl, skillUrl } from "./urls";
+import { appOrigin, dashboardUrl, sessionUrl } from "./urls";
 
 export type Participant = typeof participant.$inferSelect;
 export type Space = typeof space.$inferSelect;
@@ -154,12 +154,8 @@ async function insertInvite(
 function invitePayload(row: Space, code: string) {
   return {
     invite_code: code,
-    invite_message: buildInviteMessage({
-      title: row.title,
-      goal: row.goal,
-      code,
-      skillUrl: skillUrl(code),
-    }),
+    invite_message: buildInviteMessage({ origin: appOrigin, code }),
+    session_url: sessionUrl(code),
     dashboard_url: dashboardUrl(row.id),
   };
 }
