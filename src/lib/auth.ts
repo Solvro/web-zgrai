@@ -21,7 +21,7 @@ export const auth = betterAuth({
   plugins: [
     jwt(),
     mcp({
-      loginPage: "/sign-in",
+      loginPage: "/login",
       consentPage: "/consent",
       resource: mcpResource,
       allowDynamicClientRegistration: true,
