@@ -1,7 +1,7 @@
 import { and, asc, eq, gt, inArray, isNotNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { activity, masterSession, message } from "@/db/schema";
-import { getMasterContext } from "@/lib/spaces/master";
+import { escapeAttr, escapeText, getMasterContext } from "@/lib/spaces/master";
 import { getSpaceOrThrow } from "@/lib/spaces/service";
 import { endSpaceIfApproved } from "./final-plan";
 import { answeredQuestions, getQuestionStatuses } from "./questions";
@@ -15,13 +15,6 @@ const ACTIVITY_EVENTS = [
   "shared_context",
   "retracted_context",
 ] as const;
-
-function escapeText(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
 
 // Joins since the cursor. Each one gets an explicit cue in the turn, so the
 // Master greets the newcomer instead of waiting for them to speak.
@@ -150,7 +143,7 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
     }
     for (const check of checks) {
       parts.push(
-        `<check every_minutes="${check.intervalMinutes}" reason="${escapeText(check.reason ?? "")}">Nothing happened in the space for ${check.intervalMinutes} minutes. Go through the success criteria and subproblems: mark what is met, move what is stuck, or end the turn without posting.</check>`,
+        `<check every_minutes="${check.intervalMinutes}" reason="${escapeAttr(check.reason ?? "")}">Nothing happened in the space for ${check.intervalMinutes} minutes. Go through the success criteria and subproblems: mark what is met, move what is stuck, or end the turn without posting.</check>`,
       );
     }
     parts.push("</events>");
