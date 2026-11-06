@@ -72,6 +72,20 @@ async function replaceMasterSession(spaceId: string, staleSessionId: string) {
   return (await getMasterSession(spaceId))!.sessionId;
 }
 
+// A session that is still starting answers session_not_ready for a moment.
+async function send(sessionId: string, text: string) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await masterClient().sessions.attach(sessionId).send(text);
+    } catch (error) {
+      const starting =
+        error instanceof SessionNotActiveError && error.retryable;
+      if (!starting || attempt >= 20) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+}
+
 // Queues one Master turn. eve runs turns of a session one after another, so a
 // turn sent while another runs waits for it.
 export async function sendToMaster(
@@ -80,7 +94,7 @@ export async function sendToMaster(
   text: string,
 ) {
   try {
-    await masterClient().sessions.attach(sessionId).send(text);
+    await send(sessionId, text);
   } catch (error) {
     if (!(error instanceof SessionNotActiveError) || error.retryable) {
       throw error;
@@ -89,7 +103,7 @@ export async function sendToMaster(
       `Master session ${sessionId} of space ${spaceId} is gone, starting a new one`,
     );
     const fresh = await replaceMasterSession(spaceId, sessionId);
-    await masterClient().sessions.attach(fresh).send(text);
+    await send(fresh, text);
   }
 }
 
