@@ -37,7 +37,10 @@ Notes:
 - Proposal outcomes (`src/lib/master/votes.ts`) and question status
   (`src/lib/master/questions.ts`) are computed in code and shown in the
   snapshot, so the model doesn't count votes or answers itself.
-- `schedule_check` is one recurring check-in per space; `schedule_reminder`
+- The Master gets a turn 10 s after the last event (at most 30 s after the
+  first), or right away once everyone answered a question (`<answered>`).
+- `schedule_check` is one idle check per space: it fires once the space has
+  been quiet for its interval, and every event pushes it back; `schedule_reminder`
   is a one-off `reminder` row in `master_wake` with its note in `reason`, and
   the Master can have several. Both reach it as events (`<check>`,
   `<reminder>`).
@@ -85,8 +88,10 @@ We self-host, so nothing here may depend on Vercel:
   and the agent together (the agent listens on port 4274, change it with
   `EVE_NEXT_PRODUCTION_PORT`). The reverse proxy must forward `/eve/` and
   `/.well-known/workflow/` without rewriting paths.
-- **Sandbox:** the Master doesn't need shell or file tools. If we ever add
-  them, use Docker (`DockerSandbox.environment()`), not Vercel Sandbox.
+- **Sandbox:** the Master doesn't need shell or file tools, so
+  `agent/sandbox.ts` selects just-bash, which needs no Docker daemon. If we
+  ever add those tools, switch to Docker (`DockerSandbox.environment()`), not
+  Vercel Sandbox.
 
 The full docs ship with the package in `node_modules/eve/docs`, e.g.
 `guides/frontend/nextjs.mdx` and `guides/deployment/self-hosting/index.md`.

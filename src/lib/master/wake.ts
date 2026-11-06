@@ -2,8 +2,10 @@ import { and, asc, eq, inArray, isNull, lt, lte, or } from "drizzle-orm";
 import { db } from "@/db";
 import { masterWake } from "@/db/schema";
 
-// Events arriving within this window become one Master turn.
-export const DEBOUNCE_MS = 5_000;
+// A Master turn starts once the space has been quiet this long after an
+// event, but never later than DEBOUNCE_MAX_MS after the first event.
+export const DEBOUNCE_MS = 10_000;
+const DEBOUNCE_MAX_MS = 30_000;
 
 // How long participants have to answer a Master question by default.
 export const DEFAULT_DEADLINE_MINUTES = Number(
@@ -15,17 +17,46 @@ const CLAIM_TIMEOUT_MS = 2 * 60_000;
 
 export type MasterWake = typeof masterWake.$inferSelect;
 
-// Opens a batch for the space, or joins the open one. The window starts at the
-// first event and isn't extended, so a chatty space still gets regular turns.
+// Opens a batch for the space, or joins the open one and moves it back by
+// `delayMs`. A delay of 0 fires the batch right away.
 export async function scheduleDebounce(spaceId: string, delayMs = DEBOUNCE_MS) {
-  await db
-    .insert(masterWake)
-    .values({
-      spaceId,
-      kind: "debounce",
-      dueAt: new Date(Date.now() + delayMs),
-    })
-    .onConflictDoNothing();
+  const now = Date.now();
+  await db.transaction(async (tx) => {
+    const [pending] = await tx
+      .select()
+      .from(masterWake)
+      .where(
+        and(
+          eq(masterWake.spaceId, spaceId),
+          eq(masterWake.kind, "debounce"),
+          isNull(masterWake.claimedAt),
+          isNull(masterWake.doneAt),
+        ),
+      )
+      .for("update");
+    if (!pending) {
+      await tx
+        .insert(masterWake)
+        .values({
+          spaceId,
+          kind: "debounce",
+          dueAt: new Date(now + delayMs),
+          createdAt: new Date(now),
+        })
+        .onConflictDoNothing();
+      return;
+    }
+    if (pending.dueAt.getTime() <= now) return;
+    const dueAt = Math.min(
+      now + delayMs,
+      pending.createdAt.getTime() + DEBOUNCE_MAX_MS,
+    );
+    if (dueAt === pending.dueAt.getTime()) return;
+    await tx
+      .update(masterWake)
+      .set({ dueAt: new Date(dueAt) })
+      .where(eq(masterWake.id, pending.id));
+  });
 }
 
 export async function scheduleDeadline(
@@ -87,10 +118,10 @@ export async function cancelWakes(spaceId: string) {
     .where(and(eq(masterWake.spaceId, spaceId), isNull(masterWake.doneAt)));
 }
 
-// Self-scheduled check-ins: the Master asks to be woken every few minutes to
-// review the criteria and stages, even when nobody writes. One per space.
-export const CHECK_MIN_MINUTES = 5;
-export const CHECK_MAX_MINUTES = 60;
+// Idle checks: the Master asks to be woken when the space has been quiet for
+// a while. Every event pushes the check back. One per space.
+export const CHECK_MIN_MINUTES = 10;
+export const CHECK_MAX_MINUTES = 120;
 
 export async function cancelChecks(spaceId: string) {
   await db
@@ -145,6 +176,26 @@ export async function repeatCheck(wake: MasterWake) {
   if (current?.doneAt) return;
   await completeWakes([wake.id]);
   await queueCheck(wake.spaceId, wake.intervalMinutes, wake.reason ?? "");
+}
+
+// Something happened in the space: the idle check counts from now.
+export async function postponeCheck(spaceId: string) {
+  const [check] = await db
+    .select({ id: masterWake.id, everyMinutes: masterWake.intervalMinutes })
+    .from(masterWake)
+    .where(
+      and(
+        eq(masterWake.spaceId, spaceId),
+        eq(masterWake.kind, "check"),
+        isNull(masterWake.claimedAt),
+        isNull(masterWake.doneAt),
+      ),
+    );
+  if (!check?.everyMinutes) return;
+  await db
+    .update(masterWake)
+    .set({ dueAt: new Date(Date.now() + check.everyMinutes * 60_000) })
+    .where(and(eq(masterWake.id, check.id), isNull(masterWake.claimedAt)));
 }
 
 export async function activeCheck(spaceId: string) {

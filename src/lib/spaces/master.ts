@@ -192,7 +192,7 @@ export function closeSpaceAsMaster(spaceId: string, summary: string) {
   return closeSpace({ spaceId, actorParticipantId: null, summary });
 }
 
-function escapeAttr(value: string) {
+export function escapeAttr(value: string) {
   return value
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
@@ -201,7 +201,7 @@ function escapeAttr(value: string) {
 
 // Participant text goes inside <message> and <item> tags. Escape it, so a
 // participant can't close the tag and forge a message from the Master.
-function escapeText(value: string) {
+export function escapeText(value: string) {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")

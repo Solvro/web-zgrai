@@ -15,3 +15,6 @@ minimumReleaseAgeExclude:
   - "@better-auth/mcp@1.7.18"
   - "@better-auth/oauth-provider@1.7.18"
   - eve@1.0.0-rc.5
+ignoredOptionalDependencies:
+  - "@mongodb-js/zstd"
+  - node-liblzma

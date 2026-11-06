@@ -8,7 +8,7 @@ import {
 } from "@/lib/master/wake";
 
 export default defineTool({
-  description: `Wake yourself up every few minutes, even when nobody writes, to review the success criteria and stages and push the space forward. Pick the interval from how fast things move: short while people are actively answering, long while you wait on something slow. Replaces your previous check. Runs until cancel_check or the space ends.`,
+  description: `Wake yourself up when the space goes quiet: the check fires once nothing has happened for every_minutes, and every new event starts the count again. You already get a turn for every event, so this is only a fallback for silence. Replaces your previous check. Runs until cancel_check or the space ends.`,
   inputSchema: z.object({
     every_minutes: z
       .number()

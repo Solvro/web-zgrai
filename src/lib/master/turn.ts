@@ -1,12 +1,12 @@
 import { and, asc, eq, gt, inArray, isNotNull, or } from "drizzle-orm";
 import { db } from "@/db";
 import { activity, masterSession, message } from "@/db/schema";
-import { getMasterContext } from "@/lib/spaces/master";
+import { escapeAttr, escapeText, getMasterContext } from "@/lib/spaces/master";
 import { getSpaceOrThrow } from "@/lib/spaces/service";
 import { endSpaceIfApproved } from "./final-plan";
-import { getQuestionStatuses } from "./questions";
+import { answeredQuestions, getQuestionStatuses } from "./questions";
 import { ensureMasterSession, sendToMaster } from "./session";
-import { cancelWakes, type MasterWake } from "./wake";
+import { cancelDeadline, cancelWakes, type MasterWake } from "./wake";
 
 // Events that aren't messages. Joins, leaves and goal changes already show up
 // as system messages in the transcript.
@@ -15,13 +15,6 @@ const ACTIVITY_EVENTS = [
   "shared_context",
   "retracted_context",
 ] as const;
-
-function escapeText(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
 
 // Joins since the cursor. Each one gets an explicit cue in the turn, so the
 // Master greets the newcomer instead of waiting for them to speak.
@@ -89,6 +82,7 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
   const activities = await newActivity(spaceId, session.lastActivityId);
   const joins = await newJoins(spaceId, session.lastActivityId);
   const expired = await expiredQuestions(spaceId, wakes);
+  const answered = await answeredQuestions(spaceId);
   const reminders = wakes.filter((wake) => wake.kind === "reminder");
 
   // The transcript also holds the Master's own recent messages. They alone
@@ -108,6 +102,7 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
     fromOthers.length > 0 ||
     activities.length > 0 ||
     expired.length > 0 ||
+    answered.length > 0 ||
     checks.length > 0 ||
     reminders.length > 0;
   const lastActivityId = Math.max(
@@ -136,6 +131,11 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
         `<deadline question_id="${question_id}">The answer time ran out. No answer from: ${names.join(", ")}.</deadline>`,
       );
     }
+    for (const { question_id } of answered) {
+      parts.push(
+        `<answered question_id="${question_id}">Everyone you asked has answered. Act on the answers now.</answered>`,
+      );
+    }
     for (const reminder of reminders) {
       parts.push(
         `<reminder id="${reminder.id}" set_at="${reminder.createdAt.toISOString()}">${escapeText(reminder.reason ?? "")}</reminder>`,
@@ -143,7 +143,7 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
     }
     for (const check of checks) {
       parts.push(
-        `<check every_minutes="${check.intervalMinutes}" reason="${escapeText(check.reason ?? "")}">Your scheduled check. Go through the success criteria and subproblems: mark what is met, move what is stuck, or end the turn without posting.</check>`,
+        `<check every_minutes="${check.intervalMinutes}" reason="${escapeAttr(check.reason ?? "")}">Nothing happened in the space for ${check.intervalMinutes} minutes. Go through the success criteria and subproblems: mark what is met, move what is stuck, or end the turn without posting.</check>`,
       );
     }
     parts.push("</events>");
@@ -162,6 +162,9 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
       "Decide what the space needs next and act through your tools. React to what participants said or asked so the current step keeps moving. End the turn without posting only if nothing new needs an answer.",
     );
     await sendToMaster(spaceId, session.sessionId, parts.join("\n"));
+    for (const { question_id } of answered) {
+      await cancelDeadline(spaceId, question_id);
+    }
   }
 
   await db
