@@ -2,8 +2,10 @@ import { and, asc, eq, inArray, isNull, lt, lte, or } from "drizzle-orm";
 import { db } from "@/db";
 import { masterWake } from "@/db/schema";
 
-// Events arriving within this window become one Master turn.
-export const DEBOUNCE_MS = 5_000;
+// A Master turn starts once the space has been quiet this long after an
+// event, but never later than DEBOUNCE_MAX_MS after the first event.
+export const DEBOUNCE_MS = 10_000;
+const DEBOUNCE_MAX_MS = 30_000;
 
 // How long participants have to answer a Master question by default.
 export const DEFAULT_DEADLINE_MINUTES = Number(
@@ -15,17 +17,46 @@ const CLAIM_TIMEOUT_MS = 2 * 60_000;
 
 export type MasterWake = typeof masterWake.$inferSelect;
 
-// Opens a batch for the space, or joins the open one. The window starts at the
-// first event and isn't extended, so a chatty space still gets regular turns.
+// Opens a batch for the space, or joins the open one and moves it back by
+// `delayMs`. A delay of 0 fires the batch right away.
 export async function scheduleDebounce(spaceId: string, delayMs = DEBOUNCE_MS) {
-  await db
-    .insert(masterWake)
-    .values({
-      spaceId,
-      kind: "debounce",
-      dueAt: new Date(Date.now() + delayMs),
-    })
-    .onConflictDoNothing();
+  const now = Date.now();
+  await db.transaction(async (tx) => {
+    const [pending] = await tx
+      .select()
+      .from(masterWake)
+      .where(
+        and(
+          eq(masterWake.spaceId, spaceId),
+          eq(masterWake.kind, "debounce"),
+          isNull(masterWake.claimedAt),
+          isNull(masterWake.doneAt),
+        ),
+      )
+      .for("update");
+    if (!pending) {
+      await tx
+        .insert(masterWake)
+        .values({
+          spaceId,
+          kind: "debounce",
+          dueAt: new Date(now + delayMs),
+          createdAt: new Date(now),
+        })
+        .onConflictDoNothing();
+      return;
+    }
+    if (pending.dueAt.getTime() <= now) return;
+    const dueAt = Math.min(
+      now + delayMs,
+      pending.createdAt.getTime() + DEBOUNCE_MAX_MS,
+    );
+    if (dueAt === pending.dueAt.getTime()) return;
+    await tx
+      .update(masterWake)
+      .set({ dueAt: new Date(dueAt) })
+      .where(eq(masterWake.id, pending.id));
+  });
 }
 
 export async function scheduleDeadline(
