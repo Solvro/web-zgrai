@@ -88,8 +88,10 @@ We self-host, so nothing here may depend on Vercel:
   and the agent together (the agent listens on port 4274, change it with
   `EVE_NEXT_PRODUCTION_PORT`). The reverse proxy must forward `/eve/` and
   `/.well-known/workflow/` without rewriting paths.
-- **Sandbox:** the Master doesn't need shell or file tools. If we ever add
-  them, use Docker (`DockerSandbox.environment()`), not Vercel Sandbox.
+- **Sandbox:** the Master doesn't need shell or file tools, so
+  `agent/sandbox.ts` selects just-bash, which needs no Docker daemon. If we
+  ever add those tools, switch to Docker (`DockerSandbox.environment()`), not
+  Vercel Sandbox.
 
 The full docs ship with the package in `node_modules/eve/docs`, e.g.
 `guides/frontend/nextjs.mdx` and `guides/deployment/self-hosting/index.md`.
