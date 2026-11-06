@@ -101,3 +101,14 @@ export async function getQuestionOrThrow(spaceId: string, questionId: number) {
   if (!status) throw new Error(`Question ${questionId} not found.`);
   return status;
 }
+
+// Questions still waiting on a deadline that everyone asked already answered.
+export async function answeredQuestions(spaceId: string) {
+  const statuses = await getQuestionStatuses(spaceId);
+  return statuses.filter(
+    (status) =>
+      status.waiting &&
+      status.missing.length === 0 &&
+      status.answered.length > 0,
+  );
+}

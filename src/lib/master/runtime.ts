@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { message } from "@/db/schema";
 import { type MasterTrigger, onMasterTrigger } from "@/lib/spaces/master-hook";
 import { detectBudgetPauses } from "./budget";
+import { answeredQuestions } from "./questions";
 import { runMasterTurn } from "./turn";
 import {
   claimDueWakes,
@@ -19,6 +20,9 @@ const TICK_MS = 1_000;
 // its next turn, because its cursors cover everything after the last turn.
 const QUIET_TRIGGERS: MasterTrigger[] = ["retracted_context"];
 
+// Triggers that can complete the answers to a question.
+const ANSWER_TRIGGERS: MasterTrigger[] = ["message", "shared_context"];
+
 async function latestMessageIsPrivate(spaceId: string) {
   const [latest] = await db
     .select({ visibility: message.visibility })
@@ -34,7 +38,11 @@ async function onTrigger(spaceId: string, trigger: MasterTrigger) {
   // A private note to the Master doesn't wake it, so it can't react visibly
   // to something meant to stay quiet.
   if (trigger === "message" && (await latestMessageIsPrivate(spaceId))) return;
-  const immediate = trigger === "created" || trigger === "opened";
+  const immediate =
+    trigger === "created" ||
+    trigger === "opened" ||
+    (ANSWER_TRIGGERS.includes(trigger) &&
+      (await answeredQuestions(spaceId)).length > 0);
   await scheduleDebounce(spaceId, immediate ? 0 : DEBOUNCE_MS);
 }
 
