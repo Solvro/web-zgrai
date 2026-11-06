@@ -118,10 +118,10 @@ export async function cancelWakes(spaceId: string) {
     .where(and(eq(masterWake.spaceId, spaceId), isNull(masterWake.doneAt)));
 }
 
-// Self-scheduled check-ins: the Master asks to be woken every few minutes to
-// review the criteria and stages, even when nobody writes. One per space.
-export const CHECK_MIN_MINUTES = 5;
-export const CHECK_MAX_MINUTES = 60;
+// Idle checks: the Master asks to be woken when the space has been quiet for
+// a while. Every event pushes the check back. One per space.
+export const CHECK_MIN_MINUTES = 10;
+export const CHECK_MAX_MINUTES = 120;
 
 export async function cancelChecks(spaceId: string) {
   await db
@@ -176,6 +176,26 @@ export async function repeatCheck(wake: MasterWake) {
   if (current?.doneAt) return;
   await completeWakes([wake.id]);
   await queueCheck(wake.spaceId, wake.intervalMinutes, wake.reason ?? "");
+}
+
+// Something happened in the space: the idle check counts from now.
+export async function postponeCheck(spaceId: string) {
+  const [check] = await db
+    .select({ id: masterWake.id, everyMinutes: masterWake.intervalMinutes })
+    .from(masterWake)
+    .where(
+      and(
+        eq(masterWake.spaceId, spaceId),
+        eq(masterWake.kind, "check"),
+        isNull(masterWake.claimedAt),
+        isNull(masterWake.doneAt),
+      ),
+    );
+  if (!check?.everyMinutes) return;
+  await db
+    .update(masterWake)
+    .set({ dueAt: new Date(Date.now() + check.everyMinutes * 60_000) })
+    .where(and(eq(masterWake.id, check.id), isNull(masterWake.claimedAt)));
 }
 
 export async function activeCheck(spaceId: string) {

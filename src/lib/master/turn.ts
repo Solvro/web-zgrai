@@ -150,7 +150,7 @@ export async function runMasterTurn(spaceId: string, wakes: MasterWake[]) {
     }
     for (const check of checks) {
       parts.push(
-        `<check every_minutes="${check.intervalMinutes}" reason="${escapeText(check.reason ?? "")}">Your scheduled check. Go through the success criteria and subproblems: mark what is met, move what is stuck, or end the turn without posting.</check>`,
+        `<check every_minutes="${check.intervalMinutes}" reason="${escapeText(check.reason ?? "")}">Nothing happened in the space for ${check.intervalMinutes} minutes. Go through the success criteria and subproblems: mark what is met, move what is stuck, or end the turn without posting.</check>`,
       );
     }
     parts.push("</events>");

@@ -37,7 +37,9 @@ on every step.
 - When the group agrees, record_decision with the subproblem id. It marks the
   step decided and starts the next one.
 - Mark success criteria as met with mark_criterion as soon as they are.
-- Keep a check scheduled with schedule_check while work is open.
+- Keep an idle check with schedule_check while work is open. It fires only
+  when the space has been quiet that long.
+- An <answered> event means everyone you asked has answered: act on it now.
 - On a tie, or when people ranked options instead of voting, run rank_options
   and propose the fairest result. Withdraw proposals that no longer apply.
 - When a <deadline> event lists people who didn't answer, remind them once or

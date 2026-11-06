@@ -10,6 +10,7 @@ import {
   completeWakes,
   DEBOUNCE_MS,
   type MasterWake,
+  postponeCheck,
   repeatCheck,
   scheduleDebounce,
 } from "./wake";
@@ -35,6 +36,7 @@ async function latestMessageIsPrivate(spaceId: string) {
 
 async function onTrigger(spaceId: string, trigger: MasterTrigger) {
   if (QUIET_TRIGGERS.includes(trigger)) return;
+  await postponeCheck(spaceId);
   // A private note to the Master doesn't wake it, so it can't react visibly
   // to something meant to stay quiet.
   if (trigger === "message" && (await latestMessageIsPrivate(spaceId))) return;

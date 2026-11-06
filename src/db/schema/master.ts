@@ -45,10 +45,10 @@ export const masterWakeKind = pgEnum("master_wake_kind", [
   "reminder",
 ]);
 
-// Pending Master turns. A `debounce` row batches events for a few seconds; a
-// `deadline` row fires when a question's answer time runs out; a `check` row is
-// a check-in the Master scheduled for itself, repeated every
-// `intervalMinutes`; a `reminder` row is a one-off wake-up the Master set,
+// Pending Master turns. A `debounce` row batches events until the space is
+// quiet for a few seconds; a `deadline` row fires when a question's answer time
+// runs out; a `check` row is an idle check the Master scheduled for itself,
+// fired after `intervalMinutes` without events; a `reminder` row is a one-off wake-up the Master set,
 // with its note in `reason`. The ticker in src/lib/master/runtime.ts claims
 // due rows, so nothing is lost on restart.
 export const masterWake = pgTable(
