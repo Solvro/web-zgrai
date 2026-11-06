@@ -43,18 +43,23 @@ export async function detectBudgetPauses() {
       ),
     );
 
-  for (const session of running) {
-    const prompt = await openBudgetPrompt(session.sessionId).catch(() => null);
-    if (!prompt) continue;
-    await db
-      .update(masterSession)
-      .set({ pausedAt: new Date(), budgetInteractionId: prompt.interactionId })
-      .where(eq(masterSession.spaceId, session.spaceId));
-    await postSystemNotice(
-      session.spaceId,
-      "The Master used up its token budget and paused. The initiator decides: continue it with continue_master, or close the space.",
-    );
-  }
+  await Promise.all(running.map(pauseIfAtBudget));
+}
+
+async function pauseIfAtBudget(session: {
+  spaceId: string;
+  sessionId: string;
+}) {
+  const prompt = await openBudgetPrompt(session.sessionId).catch(() => null);
+  if (!prompt) return;
+  await db
+    .update(masterSession)
+    .set({ pausedAt: new Date(), budgetInteractionId: prompt.interactionId })
+    .where(eq(masterSession.spaceId, session.spaceId));
+  await postSystemNotice(
+    session.spaceId,
+    "The Master used up its token budget and paused. The initiator decides: continue it with continue_master, or close the space.",
+  );
 }
 
 export async function isMasterPaused(spaceId: string) {
